@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>OncoRegistry - Clinical Abstract Form</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#2d3133",
+                        "on-surface-variant": "#444651",
+                        "primary-fixed": "#dae2ff",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-dim": "#d8dadc",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#e6e8ea",
+                        "background": "#f7f9fb",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#001f2a",
+                        "surface-bright": "#f7f9fb",
+                        "primary": "#001a48",
+                        "secondary": "#0d6683",
+                        "on-primary-fixed": "#001946",
+                        "primary-container": "#002d72",
+                        "surface-variant": "#e0e3e5",
+                        "on-primary-fixed-variant": "#224489",
+                        "on-error-container": "#93000a",
+                        "outline": "#747782",
+                        "on-secondary-container": "#056380",
+                        "on-primary-container": "#7a97e2",
+                        "outline-variant": "#c4c6d2",
+                        "inverse-on-surface": "#eff1f3",
+                        "primary-fixed-dim": "#b1c5ff",
+                        "tertiary-container": "#5d1b02",
+                        "surface-container": "#eceef0",
+                        "surface": "#f7f9fb",
+                        "on-tertiary-container": "#e17f5d",
+                        "surface-tint": "#3d5ca2",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#7a3014",
+                        "surface-container-low": "#f2f4f6",
+                        "on-tertiary-fixed": "#390c00",
+                        "on-secondary-fixed-variant": "#004d65",
+                        "secondary-fixed": "#bee9ff",
+                        "secondary-fixed-dim": "#8ad0f1",
+                        "inverse-primary": "#b1c5ff",
+                        "tertiary": "#3b0d00",
+                        "on-surface": "#191c1e",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#98deff",
+                        "tertiary-fixed-dim": "#ffb59c",
+                        "on-background": "#191c1e",
+                        "tertiary-fixed": "#ffdbd0",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Manrope', sans-serif;
+        }
+
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+    <!-- TopNavBar (Shared Component) -->
+    <header
+        class="bg-slate-50 flex justify-between items-center w-full px-4 md:px-6 py-3 h-16 fixed top-0 z-50 border-b border-surface-container-high">
+        <div class="flex items-center gap-4 lg:gap-8">
+            <span class="text-xl font-bold text-[#001a48] tracking-tight">OncoRegistry</span>
+            <div class="relative hidden sm:block">
+                <span
+                    class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+                <input
+                    class="pl-10 pr-4 py-2 bg-surface-container border-none rounded-xl text-sm w-48 lg:w-64 focus:ring-2 focus:ring-primary"
+                    placeholder="Search registry..." type="text" />
+            </div>
+        </div>
+        <div class="flex items-center gap-2 md:gap-4">
+            <button class="p-2 hover:bg-[#e0e3e5] transition-colors rounded-full text-[#001a48]">
+                <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+            </button>
+            <button class="p-2 hover:bg-[#e0e3e5] transition-colors rounded-full text-[#001a48] hidden sm:block">
+                <span class="material-symbols-outlined" data-icon="settings">settings</span>
+            </button>
+            <div class="h-8 w-8 rounded-full bg-primary-fixed overflow-hidden ml-1 md:ml-2">
+                <img alt="Researcher Profile"
+                    data-alt="professional medical researcher headshot with a confident smile in a clinical setting"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvI0vRNcmqmeDLG0Tb_DpROZNAUFY5Y3N3noNLIUE1Y5MkHozpACU6oeqIy-2ZxkyeZf3r3KegzHmea5gTr_zGHUn3VmqbXOuiItsMmOpqTJCWP42vntdBsxzRibmfRKV9BWgZrMxqq2dBNcdQlu5ZQ0YglPEt2p7o8EkkVzfMrD1QyJaTWdFhHc3wwbwBGDPRUJffAuqbYwLK4VAk5VnBvFVUzz6QzFgEeKgK3SD42IHoBKSjOwhAEwHAR-uu-8GcUSPC-yGFhaI" />
+            </div>
+        </div>
+    </header>
+    <div class="flex pt-16 flex-1 h-full">
+        <!-- SideNavBar (Shared Component) - Compact on Tablet (md), Full on Desktop (lg) -->
+        <aside
+            class="bg-[#f2f4f6] h-[calc(100vh-64px)] w-20 lg:w-64 fixed left-0 flex flex-col py-6 px-3 lg:px-4 space-y-2 transition-all duration-300 border-r border-surface-container-high z-40">
+            <div class="mb-6 px-2 text-center lg:text-left">
+                <h2 class="font-manrope font-extrabold text-[#001a48] hidden lg:block">KEMRI Registry</h2>
+                <span class="material-symbols-outlined text-primary block lg:hidden"
+                    data-icon="clinical_notes">clinical_notes</span>
+                <p class="text-[10px] text-on-surface-variant hidden lg:block">Precision Data Entry</p>
+            </div>
+            <nav class="flex-1 space-y-1">
+                <a class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2 text-[#444651] hover:bg-[#eceef0] transition-colors rounded-lg group"
+                    href="#" title="Registry">
+                    <span class="material-symbols-outlined text-xl" data-icon="clinical_notes">clinical_notes</span>
+                    <span class="font-inter text-sm font-medium hidden lg:block">Registry</span>
+                </a>
+                <a class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2 bg-white text-[#001a48] font-bold rounded-lg shadow-[0_4px_12px_rgba(0,26,72,0.04)] lg:translate-x-1 transition-transform"
+                    href="#" title="Patients">
+                    <span class="material-symbols-outlined text-xl" data-icon="groups">groups</span>
+                    <span class="font-inter text-sm font-medium hidden lg:block">Patients</span>
+                </a>
+                <a class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2 text-[#444651] hover:bg-[#eceef0] transition-colors rounded-lg group"
+                    href="#" title="Reports">
+                    <span class="material-symbols-outlined text-xl" data-icon="assessment">assessment</span>
+                    <span class="font-inter text-sm font-medium hidden lg:block">Reports</span>
+                </a>
+            </nav>
+            <div class="pt-4 border-t border-surface-container-high space-y-1">
+                <a class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2 text-[#444651] hover:bg-[#eceef0] transition-colors rounded-lg"
+                    href="#" title="Help Center">
+                    <span class="material-symbols-outlined text-xl" data-icon="help">help</span>
+                    <span class="font-inter text-sm font-medium hidden lg:block">Help Center</span>
+                </a>
+                <button
+                    class="w-full mt-4 bg-primary text-white p-2.5 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center">
+                    <span class="material-symbols-outlined block lg:hidden" data-icon="add">add</span>
+                    <span class="hidden lg:block">New Abstract</span>
+                </button>
+            </div>
+        </aside>
+        <!-- Main Content Canvas -->
+        <main class="ml-20 lg:ml-64 flex-1 p-4 md:p-8 bg-background overflow-x-hidden">
+            <div class="max-w-5xl mx-auto">
+                <!-- Header & Registry Info -->
+                <div class="mb-8 md:mb-10 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
+                    <div>
+                        <nav class="flex gap-2 text-[10px] md:text-xs font-medium text-outline mb-2">
+                            <span>REGISTRY</span>
+                            <span class="material-symbols-outlined text-[10px]"
+                                data-icon="chevron_right">chevron_right</span>
+                            <span>NEW CASE</span>
+                        </nav>
+                        <h1 class="text-2xl md:text-3xl font-extrabold text-primary tracking-tight">REG-2024-KEM-8842
+                        </h1>
+                        <p class="text-on-surface-variant text-xs md:text-sm mt-1">Manual Abstract Record • Clinical
+                            Research Unit</p>
+                    </div>
+                    <div class="flex items-center">
+                        <span
+                            class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-[10px] md:text-xs font-bold">DRAFT
+                            MODE</span>
+                    </div>
+                </div>
+                <!-- Form Layout with Stepper Sidebar -->
+                <div class="flex flex-col lg:flex-row gap-6 md:gap-8">
+                    <!-- Column: Stepper - Horizontal on Tablet (md), Vertical on Desktop (lg) -->
+                    <div class="w-full lg:w-1/4">
+                        <div
+                            class="sticky lg:top-24 flex flex-row lg:flex-col gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-2 lg:pb-0">
+                            <!-- Step 1: Active -->
+                            <div
+                                class="flex items-start gap-3 md:gap-4 p-3 md:p-4 rounded-xl bg-surface-container-lowest shadow-[0_12px_32px_rgba(0,26,72,0.06)] border-l-4 border-primary min-w-[160px] lg:min-w-0 flex-1 lg:flex-none">
+                                <div
+                                    class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-primary flex items-center justify-center text-white text-sm md:font-bold shrink-0">
+                                    1</div>
+                                <div>
+                                    <h4 class="text-xs md:text-sm font-bold text-primary whitespace-nowrap">Patient Info
+                                    </h4>
+                                    <p
+                                        class="text-[9px] md:text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold mt-0.5">
+                                        Step 1 of 3</p>
+                                </div>
+                            </div>
+                            <!-- Step 2: Future -->
+                            <div
+                                class="flex items-start gap-3 md:gap-4 p-3 md:p-4 rounded-xl bg-surface-container opacity-60 min-w-[160px] lg:min-w-0 flex-1 lg:flex-none">
+                                <div
+                                    class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-outline text-sm md:font-bold shrink-0">
+                                    2</div>
+                                <div>
+                                    <h4
+                                        class="text-xs md:text-sm font-medium text-on-surface-variant whitespace-nowrap">
+                                        Tumour Details</h4>
+                                    <p
+                                        class="text-[9px] md:text-[10px] text-outline uppercase tracking-wider font-semibold mt-0.5">
+                                        Pending</p>
+                                </div>
+                            </div>
+                            <!-- Step 3: Future -->
+                            <div
+                                class="flex items-start gap-3 md:gap-4 p-3 md:p-4 rounded-xl bg-surface-container opacity-60 min-w-[160px] lg:min-w-0 flex-1 lg:flex-none">
+                                <div
+                                    class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-outline text-sm md:font-bold shrink-0">
+                                    3</div>
+                                <div>
+                                    <h4
+                                        class="text-xs md:text-sm font-medium text-on-surface-variant whitespace-nowrap">
+                                        Treatment</h4>
+                                    <p
+                                        class="text-[9px] md:text-[10px] text-outline uppercase tracking-wider font-semibold mt-0.5">
+                                        Pending</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Right Column: Form Canvas -->
+                    <div class="w-full lg:w-3/4 space-y-6 md:space-y-8">
+                        <!-- SECTION 1: PATIENT INFORMATION -->
+                        <section
+                            class="bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
+                            <div class="flex items-center gap-2 mb-6 border-b border-surface-container-high pb-4">
+                                <span class="material-symbols-outlined text-primary" data-icon="person">person</span>
+                                <h3 class="text-base md:text-lg font-bold text-primary">Patient Information</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+                                <div class="md:col-span-2">
+                                    <label
+                                        class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Full
+                                        Name (Legal Document)</label>
+                                    <input
+                                        class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base text-on-surface focus:ring-2 focus:ring-primary transition-all"
+                                        placeholder="e.g. John Doe" type="text" />
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">National
+                                        ID / Passport</label>
+                                    <input
+                                        class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base text-on-surface focus:ring-2 focus:ring-primary transition-all"
+                                        placeholder="283XXXXX" type="text" />
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Telephone
+                                        Number</label>
+                                    <input
+                                        class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base text-on-surface focus:ring-2 focus:ring-primary transition-all"
+                                        placeholder="+254 7XX XXX XXX" type="tel" />
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label
+                                            class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Current
+                                            Age</label>
+                                        <input
+                                            class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base text-on-surface focus:ring-2 focus:ring-primary transition-all"
+                                            placeholder="45" type="number" />
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Religion</label>
+                                        <select
+                                            class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base text-on-surface focus:ring-2 focus:ring-primary transition-all">
+                                            <option>Christian</option>
+                                            <option>Muslim</option>
+                                            <option>Hindu</option>
+                                            <option>Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Place
+                                        of Residence</label>
+                                    <input
+                                        class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base text-on-surface focus:ring-2 focus:ring-primary transition-all"
+                                        placeholder="Nairobi, Westlands" type="text" />
+                                </div>
+                            </div>
+                        </section>
+                        <!-- SECTION 2: TUMOUR DETAILS -->
+                        <section
+                            class="bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
+                            <div class="flex items-center gap-2 mb-6 border-b border-surface-container-high pb-4">
+                                <span class="material-symbols-outlined text-primary" data-icon="biotech">biotech</span>
+                                <h3 class="text-base md:text-lg font-bold text-primary">Tumour Details</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+                                <div>
+                                    <label
+                                        class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Incidence
+                                        Date</label>
+                                    <div class="relative">
+                                        <input
+                                            class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base text-on-surface focus:ring-2 focus:ring-primary transition-all"
+                                            type="date" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Primary
+                                        Site</label>
+                                    <input
+                                        class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base text-on-surface focus:ring-2 focus:ring-primary transition-all"
+                                        placeholder="e.g. Left Mammillary" type="text" />
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label
+                                        class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Histology
+                                        (Morphology Code)</label>
+                                    <input
+                                        class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base text-on-surface focus:ring-2 focus:ring-primary transition-all"
+                                        placeholder="ICD-O-3 Morphology Code" type="text" />
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <label
+                                        class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">Behavior</label>
+                                    <div class="flex gap-2">
+                                        <button
+                                            class="flex-1 py-2.5 text-xs font-semibold rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-all">In
+                                            Situ</button>
+                                        <button
+                                            class="flex-1 py-2.5 text-xs font-semibold rounded-lg bg-primary text-white">Malignant</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Clinical
+                                        Stage (TNM)</label>
+                                    <input
+                                        class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base text-on-surface focus:ring-2 focus:ring-primary transition-all"
+                                        placeholder="T2 N1 M0" type="text" />
+                                </div>
+                            </div>
+                        </section>
+                        <!-- SECTION 3: TREATMENT & FOLLOW-UP -->
+                        <section
+                            class="bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
+                            <div class="flex items-center gap-2 mb-6 border-b border-surface-container-high pb-4">
+                                <span class="material-symbols-outlined text-primary"
+                                    data-icon="medical_services">medical_services</span>
+                                <h3 class="text-base md:text-lg font-bold text-primary">Treatment &amp; Follow-up</h3>
+                            </div>
+                            <div class="space-y-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div
+                                        class="p-4 rounded-xl border-2 border-surface-container-high bg-white flex items-center justify-between">
+                                        <span class="text-sm font-semibold">Surgery Performed</span>
+                                        <input
+                                            class="w-5 h-5 rounded-md border-outline-variant text-primary focus:ring-primary"
+                                            type="checkbox" />
+                                    </div>
+                                    <div
+                                        class="p-4 rounded-xl border-2 border-surface-container-high bg-white flex items-center justify-between">
+                                        <span class="text-sm font-semibold">Chemotherapy</span>
+                                        <input
+                                            class="w-5 h-5 rounded-md border-outline-variant text-primary focus:ring-primary"
+                                            type="checkbox" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Present
+                                        Status</label>
+                                    <div class="flex gap-6">
+                                        <label class="flex items-center gap-3 cursor-pointer group">
+                                            <div
+                                                class="w-5 h-5 rounded-full border-2 border-primary flex items-center justify-center p-1">
+                                                <div class="w-full h-full bg-primary rounded-full"></div>
+                                            </div>
+                                            <span class="text-sm font-medium text-on-surface">Alive</span>
+                                        </label>
+                                        <label class="flex items-center gap-3 cursor-pointer group">
+                                            <div
+                                                class="w-5 h-5 rounded-full border-2 border-outline-variant flex items-center justify-center p-1">
+                                            </div>
+                                            <span class="text-sm font-medium text-on-surface-variant">Deceased</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <!-- FORM ACTIONS -->
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 pt-4 pb-20">
+                            <button
+                                class="px-6 py-3 rounded-xl text-primary font-bold hover:bg-surface-container transition-colors flex items-center justify-center sm:justify-start gap-2 order-2 sm:order-1">
+                                <span class="material-symbols-outlined" data-icon="drafts">drafts</span>
+                                Save as Draft
+                            </button>
+                            <div class="flex gap-4 order-1 sm:order-2">
+                                <button
+                                    class="flex-1 sm:flex-none px-6 md:px-8 py-3 rounded-xl bg-surface-container-high text-outline font-bold hover:bg-surface-dim transition-colors text-sm md:text-base">
+                                    Back
+                                </button>
+                                <button
+                                    class="flex-1 sm:flex-none px-6 md:px-10 py-3 rounded-xl bg-gradient-to-r from-primary to-[#002d72] text-white font-bold shadow-[0_8px_24px_rgba(0,26,72,0.2)] hover:scale-105 transition-transform text-sm md:text-base">
+                                    Finalize Abstract
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

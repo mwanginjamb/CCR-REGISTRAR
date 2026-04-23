@@ -1,0 +1,15 @@
+.active-step {
+    @apply bg-white border-l-4 border-primary shadow-[0_12px_32px_rgba(0, 26, 72, 0.06)];
+}
+
+.active-step .step-number {
+    @apply bg-primary text-white;
+}
+
+.active-step .step-title {
+    @apply text-primary font-bold;
+}
+
+.inactive-step {
+    @apply bg-surface-container opacity-70;
+}
