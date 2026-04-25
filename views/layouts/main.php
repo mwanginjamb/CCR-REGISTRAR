@@ -396,9 +396,9 @@ $this->beginPage();
                             add
                         </span>
 
-                        <span>New Abstract</span>
+                        <span>New Site</span>
                     ',
-                    ['/abstract/create'],
+                    ['/patient/create'],
                     [
                         'class' => '
                             flex

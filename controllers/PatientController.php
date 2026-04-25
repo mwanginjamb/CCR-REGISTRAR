@@ -92,6 +92,7 @@ class PatientController extends Controller
      */
     public function actionUpdate($id)
     {
+        $this->layout = 'questionnaire';
         $model = $this->findModel($id);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
