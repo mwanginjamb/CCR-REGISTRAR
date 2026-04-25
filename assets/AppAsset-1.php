@@ -21,24 +21,12 @@ class AppAsset extends AssetBundle
     public $basePath = '@webroot';
     public $baseUrl = '@web';
     public $css = [
-       
-'https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap',
-        'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap',
-        'css/app.css',
-
+        'css/site.css',
     ];
     public $js = [
-        'https://cdn.tailwindcss.com?plugins=forms,container-queries',
-        'js/tailwind.config.js',
     ];
-
-    
-public $jsOptions = [
-        'position' => \yii\web\View::POS_HEAD,
-    ];
-
     public $depends = [
         'yii\web\YiiAsset',
-       // 'yii\bootstrap5\BootstrapAsset'
+        'yii\bootstrap5\BootstrapAsset'
     ];
 }
