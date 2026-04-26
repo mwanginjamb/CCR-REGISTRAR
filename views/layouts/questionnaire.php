@@ -96,7 +96,7 @@ AppAsset::register($this);
     </aside>
 
     <!-- Page Content -->
-     <main class="ml-20 lg:ml-64 flex-1 p-4 md:p-8 bg-background overflow-x-hidden">
+     <main class="ml-20 lg:ml-64 flex-1 p-4 md:p-8 bg-background">
     <?= $content ?>
 </main>
 

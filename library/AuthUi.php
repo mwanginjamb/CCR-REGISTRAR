@@ -153,4 +153,23 @@ public static function inputClass(): string
     }
 
 
+    /**
+     * Link element generator
+     * Usage:<?= AuthUi::link( 'Back to login',['site/login'],'block text-center mt-6') ?>
+     */
+
+    public static function link(
+        string $label,
+        array $url,
+        string $extraClass = ''
+    ): string {
+        return Html::a($label, $url, [
+            'class' => self::linkClass($extraClass),
+        ]);
+    }
+
+
+
+
+
 }

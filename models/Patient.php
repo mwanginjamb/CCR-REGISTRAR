@@ -80,4 +80,24 @@ class Patient extends \yii\db\ActiveRecord
         return new \app\models\queries\PatientQuery(get_called_class());
     }
 
+    public static function getEthnicGroups()
+    {
+        return [
+            1 => 'African',
+            2 => 'Asian',
+            3 => 'Caucasian',
+            4 => 'Hispanic',
+            5 => 'Other',
+        ];
+    }
+    
+    public static function getReligions()
+    {
+        return [
+            1 => 'Christian',
+            2 => 'Muslim',
+            3 => 'Other',
+        ];
+    }
+
 }

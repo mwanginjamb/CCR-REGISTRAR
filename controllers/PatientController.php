@@ -4,6 +4,8 @@ namespace app\controllers;
 
 use app\models\Patient;
 use app\models\PatientSearch;
+use app\models\Tumour;
+
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -78,8 +80,12 @@ class PatientController extends Controller
             $model->loadDefaultValues();
         }
 
+        $modelTumour = new Tumour();
+        $modelTumour->full_tnm = 0;
+
         return $this->render('create', [
             'model' => $model,
+            'modelTumour' => $modelTumour,
         ]);
     }
 

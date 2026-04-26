@@ -3,6 +3,7 @@
 use yii\helpers\Html;
 use yii\web\AssetBundle;
 use yii\widgets\ActiveForm;
+use app\library\AuthUi;
 
 /** @var yii\web\View $this */
 /** @var app\models\Patient $model */
@@ -10,7 +11,7 @@ use yii\widgets\ActiveForm;
 
 ?>
 
-<div class="patient-form">
+
 
     <div class="max-w-7xl mx-auto">
 
@@ -39,6 +40,9 @@ use yii\widgets\ActiveForm;
             </div>
 
         </div>
+
+        <!-- MOBILE STEPPER -->
+        <?= $this->render('_form_steps_mobile'); ?>
 
         <!-- FORM + STEPPER -->
         <div class="flex flex-col lg:flex-row gap-6 md:gap-8">
@@ -74,74 +78,48 @@ use yii\widgets\ActiveForm;
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
 
                         <div class="md:col-span-2">
+                           <?=$form->field($model, 'full_name')->textInput(['placeholder' => 'Enter full name', 'class' => \app\library\AuthUi::inputClass()])?>
+                        </div>
 
-                            <label
-                                class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">
-                                Full Name
-                            </label>
-
-                            <input type="text" placeholder="e.g. John Doe"
-                                class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base focus:ring-2 focus:ring-primary transition-all" />
-
+                        <div>
+                            <?=$form->field($model, 'national_id')->textInput(['placeholder' => 'Enter national ID / Passport', 'class' => \app\library\AuthUi::inputClass()])?>
                         </div>
 
                         <div>
 
-                            <label
-                                class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">
-                                National ID / Passport
-                            </label>
-
-                            <input type="text"
-                                class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base focus:ring-2 focus:ring-primary transition-all" />
-
+                            <?= $form->field($model, 'telephone_no_nok')->textInput(['placeholder' => 'Enter telephone number of next of kin', 'class' => \app\library\AuthUi::inputClass()]) ?>
                         </div>
 
                         <div>
 
-                            <label
-                                class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">
-                                Telephone Number
-                            </label>
-
-                            <input type="tel"
-                                class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base focus:ring-2 focus:ring-primary transition-all" />
-
+                            <?= $form->field($model, 'date_of_birth')->textInput(['placeholder' => 'Enter date of birth', 'class' => \app\library\AuthUi::inputClass(), 'type' => 'date']) ?>
                         </div>
 
                         <div>
 
-                            <label
-                                class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">
-                                Current Age
-                            </label>
-
-                            <input type="number"
-                                class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base focus:ring-2 focus:ring-primary transition-all" />
-
+                            <?= $form->field($model, 'age')->textInput([ 'class' => \app\library\AuthUi::inputClass(), 'readonly' => true]) ?>
+                        </div>
+                        
+                        <div>
+                            <?= $form->field($model, 'place_of_birth')->textInput([ 'class' => \app\library\AuthUi::inputClass(), 'readonly' => true]) ?>
                         </div>
 
                         <div>
-
-                            <label
-                                class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">
-                                Religion
-                            </label>
-
-                            <select
-                                class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base focus:ring-2 focus:ring-primary transition-all">
-                                <option>Christian</option>
-                                <option>Muslim</option>
-                                <option>Hindu</option>
-                                <option>Other</option>
-                            </select>
-
+                            <?= $form->field($model, 'ethnic_group')->dropDownList(\app\models\Patient::getEthnicGroups(), [ 'class' => \app\library\AuthUi::inputClass(), 'readonly' => true]) ?>
                         </div>
+
+                        <div>
+                            <?= $form->field($model, 'religion')->dropDownList(\app\models\Patient::getReligions(), [ 'class' => \app\library\AuthUi::inputClass(), 'readonly' => true]) ?>
+                        </div>
+
 
                     </div>
 
                 </section>
 
+               
+<?php ActiveForm::end(); ?>
+<?php $form = ActiveForm::begin(\app\library\AuthUi::formConfig('form-tumour')); ?>
                 <!-- SECTION 2 -->
                 <section id="tumour-details"
                     class="form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
@@ -162,43 +140,102 @@ use yii\widgets\ActiveForm;
 
                         <div>
 
-                            <label
-                                class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">
-                                Incidence Date
-                            </label>
-
-                            <input type="date"
-                                class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base focus:ring-2 focus:ring-primary transition-all" />
-
+                           <?= $form->field($modelTumour,'incident_date')->textInput(['class' => AuthUi::inputClass(), 'type' => 'date']) ?>
                         </div>
 
                         <div>
 
-                            <label
-                                class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">
-                                Primary Site
-                            </label>
-
-                            <input type="text"
-                                class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base focus:ring-2 focus:ring-primary transition-all" />
-
+                           <?= $form->field($modelTumour,'basis_of_diagnosis')->dropDownList(\app\models\Tumour::getBasisOfDiagnosis(), ['class' => AuthUi::inputClass(),'prompt' => 'Select Basis of Diagnosis']) ?>
                         </div>
 
-                        <div class="md:col-span-2">
+                        <div>
+                            <?= $form->field($modelTumour,'primary_site')->dropDownList(\app\models\Tumour::getPrimarySites(), ['class' => AuthUi::inputClass(),'prompt' => 'Select Primary Site']) ?>
+                        </div>
 
-                            <label
-                                class="block text-[10px] md:text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">
-                                Histology
-                            </label>
+                        <!-- Laterality -->
+                        <div>
+                            <?= $form->field($modelTumour,'laterality')->dropDownList(\app\models\Tumour::getLaterality(), ['class' => AuthUi::inputClass(),'prompt' => 'Select Laterality']) ?>
+                        </div>
 
-                            <input type="text"
-                                class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base focus:ring-2 focus:ring-primary transition-all" />
+                        <!-- Histology -->
+                        <div>
+                            <?= $form->field($modelTumour,'histology')->dropDownList(\app\models\Tumour::getHistology(), ['class' => AuthUi::inputClass(),'prompt' => 'Select Histology']) ?>
+                        </div>
+                        <!-- Behaviour -->
+                        <div>
+                            <?= $form->field($modelTumour,'behaviour')->dropDownList(\app\models\Tumour::getBehaviour(), ['class' => AuthUi::inputClass(),'prompt' => 'Select Behaviour']) ?>
+                        </div>
+
+                        <!-- Grade -->
+                        <div>
+                            <?= $form->field($modelTumour,'grade')->dropDownList(\app\models\Tumour::getGrade(), ['class' => AuthUi::inputClass(),'prompt' => 'Select Grade']) ?>
+                        </div>
+
+                        <!-- Stage -->
+                        <div>
+                            <?= $form->field($modelTumour,'stage')->dropDownList(\app\models\Tumour::getStage(), ['class' => AuthUi::inputClass(),'prompt' => 'Select Stage']) ?>
+                        </div>
+
+                        <!-- Full TNM Available: Bolean -->
+
+                        <div>
+                            <?= $form->field($modelTumour,'full_tnm')->checkbox(AuthUi::checkboxConfig('Full TNM Available ?')) ?>
+                        </div>
+
+                        <!-- T value for TNM -->
+                        <div>
+                            <?= $form->field($modelTumour,'t')->textInput(['class' => AuthUi::inputClass(),'placeholder' => 'Enter T value']) ?>
+                        </div>
+                        
+                        <!-- N value for TNM -->
+                        <div>
+                            <?= $form->field($modelTumour,'n')->textInput(['class' => AuthUi::inputClass(),'placeholder' => 'Enter N value']) ?>
+                        </div>
+                        
+                        <!-- M value for TNM -->
+                        <div>
+                            <?= $form->field($modelTumour,'m')->textInput(['class' => AuthUi::inputClass(),'placeholder' => 'Enter M value']) ?>
+                        </div>
+
+                        <!-- Essential TNM Fields : FILLD in absence of full TNM -->
+                        
+                        <!-- Add a border and necessary text legend -->
+                        <div class="border border-surface-container-high rounded-lg p-4 col-span-2 my-4" id="essential-tnm-fields">
+                            <h3 class="text-lg font-semibold text-primary mb-4">Essential TNM Fields</h3>
+                            <!-- Add your essential TNM fields here -->
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+                                    <!-- metastasis -->
+                                    <div>
+                                        <?= $form->field($modelTumour,'metastasis')->dropDownList(\app\models\Tumour::getMetastasis(), ['class' => AuthUi::inputClass(),'prompt' => 'Select Metastasis']) ?>
+                                    </div>
+
+                                    <!-- regional_nodes_involvement -->
+                                    <div>
+                                        <?= $form->field($modelTumour,'regional_nodes_involvement')->dropDownList(\app\models\Tumour::getRegionalNodesInvolvement(), ['class' => AuthUi::inputClass(),'prompt' => 'Select Regional Nodes Involvement']) ?>
+                                    </div>
+
+                                    <!-- localized_advanced -->
+                                    <div>
+                                        <?= $form->field($modelTumour,'localized_advanced')->dropDownList(\app\models\Tumour::getLocalizedAdvanced(), ['class' => AuthUi::inputClass(),'prompt' => 'Select Localized Advanced']) ?>
+                                    </div>
+
+                                    <!-- localized_limited -->
+                                    <div>
+                                        <?= $form->field($modelTumour,'localized_limited')->dropDownList(\app\models\Tumour::getLocalizedLimited(), ['class' => AuthUi::inputClass(),'prompt' => 'Select Localized Limited']) ?>
+                                    </div>
+                            
+                                </div>
 
                         </div>
 
                     </div>
 
-                </section>
+                </section> 
+
+                <?php ActiveForm::end(); ?>
+
+                <?php $form = ActiveForm::begin(\app\library\AuthUi::formConfig('form-treatment')); ?>
 
                 <!-- SECTION 3 -->
                 <section id="treatment-followup"
@@ -246,6 +283,10 @@ use yii\widgets\ActiveForm;
 
                 </section>
 
+                <?php ActiveForm::end(); ?>
+
+                
+
                 <!-- ACTIONS -->
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 pt-4 pb-20">
 
@@ -276,7 +317,7 @@ use yii\widgets\ActiveForm;
 
                 </div>
 
-                <?php ActiveForm::end(); ?>
+               
 
             </div>
 
@@ -284,13 +325,16 @@ use yii\widgets\ActiveForm;
 
     </div>
 
-</div>
+
 
 <?php
 // import form css
 $this->registerCssFile('@web/css/formPatient.css');
 // import form js
-$this->registerJsFile('@web/js/form.js', ['position' => \yii\web\View::POS_END]);
+$this->registerJsFile('@web/js/form.js');
+
+// add js for essential tnm fields
+$this->registerJsFile('@web/js/essentialTnmFields.js');
 ?>
 
 

@@ -50,7 +50,10 @@ $config = [
             'rules' => [
             ],
         ],
-        
+        // Add a timestamp on assets to force reload when changed
+        'assetManager' => [
+            'appendTimestamp' => true,
+        ],
     ],
     'params' => $params,
 ];

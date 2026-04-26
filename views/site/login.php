@@ -21,11 +21,7 @@ $this->params['breadcrumbs'][] = $this->title;
     <div class="row">
         <div class="form-container">
 
-            <?php $form = ActiveForm::begin([
-                'options' => [
-                    'class' => 'auth-form'
-                ],
-            ]); ?>
+            <?php $form = ActiveForm::begin(AuthUi::formConfig('login-form')); ?>
 
             <?= $form->field($model, 'username')->textInput([
                 'autofocus' => true,
