@@ -60,3 +60,66 @@
                 </p>
             </div>
         </button>
+
+        <!-- STEP 4 -->
+        <button
+            type="button"
+            data-target="concurrent-illness"
+            class="form-step inactive-step flex items-start gap-3 md:gap-4 p-3 md:p-4 rounded-xl bg-surface-container min-w-[160px] lg:min-w-0 flex-1 lg:flex-none text-left transition-all"
+        >
+            <div class="step-number w-7 h-7 md:w-8 md:h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-outline text-sm font-bold shrink-0">
+                4
+            </div>
+
+            <div>
+                <h4 class="step-title text-xs md:text-sm font-medium text-on-surface-variant whitespace-nowrap">
+                    Concurrent Illness
+                </h4>
+
+                <p class="text-[9px] md:text-[10px] text-outline uppercase tracking-wider font-semibold mt-0.5">
+                    Step 4 of 4
+                </p>
+            </div>
+        </button>
+
+        <!-- STEP 5 : sources -->
+        <button
+            type="button"
+            data-target="sources"
+            class="form-step inactive-step flex items-start gap-3 md:gap-4 p-3 md:p-4 rounded-xl bg-surface-container min-w-[160px] lg:min-w-0 flex-1 lg:flex-none text-left transition-all"
+        >
+            <div class="step-number w-7 h-7 md:w-8 md:h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-outline text-sm font-bold shrink-0">
+                5
+            </div>
+
+            <div>
+                <h4 class="step-title text-xs md:text-sm font-medium text-on-surface-variant whitespace-nowrap">
+                    Sources
+                </h4>
+
+                <p class="text-[9px] md:text-[10px] text-outline uppercase tracking-wider font-semibold mt-0.5">
+                    Step 5 of 5
+                </p>
+            </div>
+        </button>
+
+        <!-- STEP 6 : Follow Up -->
+        <button
+            type="button"
+            data-target="follow-up"
+            class="form-step inactive-step flex items-start gap-3 md:gap-4 p-3 md:p-4 rounded-xl bg-surface-container min-w-[160px] lg:min-w-0 flex-1 lg:flex-none text-left transition-all"
+        >
+            <div class="step-number w-7 h-7 md:w-8 md:h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-outline text-sm font-bold shrink-0">
+                6
+            </div>
+
+            <div>
+                <h4 class="step-title text-xs md:text-sm font-medium text-on-surface-variant whitespace-nowrap">
+                    Follow Up
+                </h4>
+
+                <p class="text-[9px] md:text-[10px] text-outline uppercase tracking-wider font-semibold mt-0.5">
+                    Step 6 of 6
+                </p>
+            </div>
+        </button>

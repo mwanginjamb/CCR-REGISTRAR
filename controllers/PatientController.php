@@ -5,6 +5,7 @@ namespace app\controllers;
 use app\models\Patient;
 use app\models\PatientSearch;
 use app\models\Tumour;
+use app\models\Treatment;
 
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -82,10 +83,16 @@ class PatientController extends Controller
 
         $modelTumour = new Tumour();
         $modelTumour->full_tnm = 0;
+        $modelTreatment = new Treatment();
+        $modelSources = new \app\models\Sources();
+        $modelFollowUp = new \app\models\FollowUp();
 
         return $this->render('create', [
             'model' => $model,
             'modelTumour' => $modelTumour,
+            'modelTreatment' => $modelTreatment,
+            'modelSources' => $modelSources,
+            'modelFollowUp' => $modelFollowUp,
         ]);
     }
 

@@ -8,7 +8,7 @@ use Yii;
  * This is the model class for table "follow_up".
  *
  * @property int $id
- * @property int|null $present_status
+ * @property int|null $present_status 
  * @property string|null $cause_of_death
  * @property string|null $last_date_of_contact
  * @property string|null $remarks
@@ -69,6 +69,15 @@ class FollowUp extends \yii\db\ActiveRecord
     public static function find()
     {
         return new \app\models\queries\FollowUpQuery(get_called_class());
+    }
+
+    // present status options
+    public static function getPresentStatusOptions()
+    {
+        return [
+            1 => 'Alive',
+            2 => 'Deceased',
+        ];
     }
 
 }

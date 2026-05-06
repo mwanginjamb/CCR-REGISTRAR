@@ -253,37 +253,106 @@ use app\library\AuthUi;
 
                     </div>
 
-                    <div class="space-y-4">
+                   <!-- A row with treatment checkbox with a value(surgery), treatment_status (1 - No, 2 - Yes, 3 - unknown), treatment_date input -->
 
-                        <div
-                            class="p-4 rounded-xl border-2 border-surface-container-high bg-white flex items-center justify-between">
-
-                            <span class="text-sm font-semibold">
-                                Surgery Performed
-                            </span>
-
-                            <input type="checkbox"
-                                class="w-5 h-5 rounded-md border-outline-variant text-primary focus:ring-primary" />
-
+                   <!-- Surgery -->
+                   <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4 items-end">
+                        <div>
+                            <?= $form->field($modelTreatment,'treatment')->dropDownList(\app\models\Treatment::getTreatment(), ['class' => AuthUi::inputClass(),'prompt' => 'Select Treatment']) ?>
                         </div>
-
-                        <div
-                            class="p-4 rounded-xl border-2 border-surface-container-high bg-white flex items-center justify-between">
-
-                            <span class="text-sm font-semibold">
-                                Chemotherapy
-                            </span>
-
-                            <input type="checkbox"
-                                class="w-5 h-5 rounded-md border-outline-variant text-primary focus:ring-primary" />
-
+                        <div>
+                            <?= $form->field($modelTreatment,'treatment_status')->dropDownList(\app\models\Treatment::getTreatmentStatus(), ['class' => AuthUi::inputClass(),'prompt' => 'Select Treatment Status'])->label(false) ?>
                         </div>
-
-                    </div>
+                        <div>
+                            <?= $form->field($modelTreatment,'treatment_date')->textInput(['type' => 'date','class' => AuthUi::inputClass(),'placeholder' => 'Treatment Date'])->label(false) ?>
+                        </div>
+                   </div>
 
                 </section>
 
+                 <!-- SECTION 4 -->
+                <section id="concurrent-illness" class="form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
+
+                 <div class="flex items-center gap-2 mb-6 border-b border-surface-container-high pb-4">
+
+                        <span class="material-symbols-outlined text-primary">
+                            medical_information
+                        </span>
+
+                        <h3 class="text-base md:text-lg font-bold text-primary">
+                            Concurrent Illness
+                        </h3>
+
+                    </div>
+
+                    <div>
+                        <?= $form->field($modelTreatment,'concurrent_illness')->textarea(['rows' => 3,'class' => AuthUi::inputClass(),'placeholder' => 'Concurrent Illness'])->label(false) ?>
+                    </div>
+                </section>
                 <?php ActiveForm::end(); ?>
+
+
+               
+
+                <!-- SECTION 5: Sources -->
+                <?php $form = ActiveForm::begin([
+                                    'options' => [
+                                        'class' => 'space-y-6 md:space-y-8'
+                                    ]
+                                ]); ?>
+                <section id="sources" class="form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
+                    <div class="flex items-center gap-2 mb-6 border-b border-surface-container-high pb-4">
+
+                        <span class="material-symbols-outlined text-primary">
+                            source
+                        </span>
+
+                        <h3 class="text-base md:text-lg font-bold text-primary">
+                            Sources
+                        </h3>
+
+                    </div>
+
+                    <!-- row with source type and source no  and date -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <?= $form->field($modelSources,'source_type')->dropDownList(\app\models\Sources::getSourceTypeOptions(),['class' => AuthUi::inputClass(),'prompt' => 'Select Source Type'])->label(false) ?>
+                        <?= $form->field($modelSources,'source_no')->textInput(['class' => AuthUi::inputClass(),'placeholder' => 'Source No'])->label(false) ?>
+                        <?= $form->field($modelSources,'source_date')->textInput(['class' => AuthUi::inputClass(),'placeholder' => 'Source Date'])->label(false) ?>
+                    </div>
+
+                </section>
+                <?php ActiveForm::end(); ?>
+
+
+                <!-- Section 6: Follow-up -->
+                <?php $form = ActiveForm::begin(AuthUi::formConfig('follow-up')); ?>
+                    <section id="follow-up" class="form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
+                        <div class="flex items-center gap-2 mb-6 border-b border-surface-container-high pb-4">
+
+                                                <span class="material-symbols-outlined text-primary">
+                                                    follow_the_signs
+                                                </span>
+
+                                                <h3 class="text-base md:text-lg font-bold text-primary">
+                                                    Follow-up
+                                                </h3>
+
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 mb-4">
+                            <?= $form->field($modelFollowUp,'present_status')->dropDownList(\app\models\FollowUp::getPresentStatusOptions(),['class' => AuthUi::inputClass(),'prompt' => 'Select Present Status'])->label(false) ?>
+                            <?= $form->field($modelFollowUp,'cause_of_death')->textInput(['class' => AuthUi::inputClass(),'placeholder' => 'Cause of Death'])->label(false) ?>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 mb-4">
+                            <?= $form->field($modelFollowUp,'last_date_of_contact')->textInput(['class' => AuthUi::inputClass(),'placeholder' => 'Last Date of Contact'])->label(false) ?>
+                            <?= $form->field($modelFollowUp,'remarks')->textarea(['class' => AuthUi::inputClass(),'placeholder' => 'Remarks'])->label(false) ?>
+                        </div>
+
+
+                    </section>
+                    
+                <?php ActiveForm::end(); ?>
+                
 
                 
 

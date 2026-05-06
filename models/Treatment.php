@@ -72,4 +72,26 @@ class Treatment extends \yii\db\ActiveRecord
         return new \app\models\queries\TreatmentQuery(get_called_class());
     }
 
+    // Get Treatment
+    public static function getTreatment()
+    {
+        return [
+            'surgery' => 'Surgery',
+            'chemotherapy' => 'Chemotherapy',
+            'immunotherapy' => 'Immunotherapy',
+            'radiation' => 'Radiation',
+            'other' => 'Other',
+        ];
+    }
+
+    // Get Treatment Status
+    public static function getTreatmentStatus()
+    {
+        return [
+            1 => 'No',
+            2 => 'Yes',
+            3 => 'Unknown',
+        ];
+    }
+
 }

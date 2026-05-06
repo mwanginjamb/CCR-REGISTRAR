@@ -69,4 +69,14 @@ class Sources extends \yii\db\ActiveRecord
         return new \app\models\queries\SourcesQuery(get_called_class());
     }
 
+    // Get Source Type Options
+    public static function getSourceTypeOptions()
+    {
+        return [
+            1 => 'Hospital',
+            2 => 'Lab', 
+            3 => 'Hospice',
+        ];
+    }
+
 }
