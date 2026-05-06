@@ -1,90 +1,120 @@
+document.addEventListener('DOMContentLoaded', function () {
+
+    const stepButtons = document.querySelectorAll('.form-step');
+    const sections = document.querySelectorAll('.form-section');
+
+    if (!stepButtons.length || !sections.length) {
+        console.warn('Stepper or sections not found.');
+        return;
+    }
+
+    /**
+     * ACTIVATE STEP
+     */
+    function activateStep(targetId) {
+
+        stepButtons.forEach(button => {
+            button.classList.remove('active-step');
+            button.classList.add('inactive-step');
+
+            const number = button.querySelector('.step-number');
+            if (number) {
+                number.classList.remove('bg-primary', 'text-white');
+                number.classList.add('bg-surface-container-high', 'text-outline');
+            }
+        });
+
+        const activeButtons = document.querySelectorAll(
+            `.form-step[data-target="${targetId}"]`
+        );
+
+        activeButtons.forEach(button => {
+            button.classList.remove('inactive-step');
+            button.classList.add('active-step');
+
+            const number = button.querySelector('.step-number');
+            if (number) {
+                number.classList.remove('bg-surface-container-high', 'text-outline');
+                number.classList.add('bg-primary', 'text-white');
+            }
+        });
+    }
 
 
-const stepButtons = document.querySelectorAll('.form-step');
-const sections = document.querySelectorAll('.form-section');
+    /**
+     * CLICK STEP -> SCROLL
+     */
+    stepButtons.forEach(button => {
+        button.addEventListener('click', function () {
 
-//
-// CLICK STEP -> SCROLL
-//
-stepButtons.forEach(button => {
+            const targetId = this.dataset.target;
+            const targetSection = document.getElementById(targetId);
 
-    button.addEventListener('click', () => {
-
-        const targetId = button.dataset.target;
-        const targetSection = document.getElementById(targetId);
-
-        if (targetSection) {
+            if (!targetSection) return;
 
             window.scrollTo({
-                top: targetSection.offsetTop - 100,
+                top: targetSection.offsetTop - 120,
                 behavior: 'smooth'
             });
 
+            activateStep(targetId);
+        });
+    });
+
+
+    /**
+     * SCROLL OBSERVER
+     */
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    activateStep(entry.target.id);
+                }
+            });
+        },
+        {
+            root: null,
+            threshold: 0.15,
+            rootMargin: '-120px 0px -55% 0px'
         }
-
-    });
-
-});
-
-//
-// ACTIVATE STEP
-//
-function activateStep(targetId) {
-
-    stepButtons.forEach(button => {
-
-        button.classList.remove('active-step');
-        button.classList.add('inactive-step');
-
-        const number = button.querySelector('.step-number');
-
-        number.classList.remove('bg-primary', 'text-white');
-        number.classList.add('bg-surface-container-high', 'text-outline');
-
-    });
-
-    const activeButton = document.querySelector(
-        '.form-step[data-target="' + targetId + '"]'
     );
 
-    if (activeButton) {
+    sections.forEach(section => observer.observe(section));
 
-        activeButton.classList.remove('inactive-step');
-        activeButton.classList.add('active-step');
 
-        const number = activeButton.querySelector('.step-number');
+    /**
+     * INITIAL ACTIVE STEP
+     */
+    activateStep(sections[0].id);
 
-        number.classList.remove('bg-surface-container-high', 'text-outline');
-        number.classList.add('bg-primary', 'text-white');
 
-    }
+    /**
+     * ADD TREATMENT
+     */
+    let treatmentIndex = document.querySelectorAll('.treatment-item').length;
 
-}
+    const wrapper = document.getElementById('treatment-wrapper');
+    const template = document.getElementById('treatment-template').innerHTML;
 
-//
-// SCROLL DETECTION
-//
-const observer = new IntersectionObserver(
+    document.getElementById('add-treatment').addEventListener('click', function () {
 
-    (entries) => {
+        let newItem = template.replace(/__index__/g, treatmentIndex);
 
-        entries.forEach(entry => {
+        const div = document.createElement('div');
+        div.innerHTML = newItem;
 
-            if (entry.isIntersecting) {
+        wrapper.appendChild(div.firstElementChild);
 
-                activateStep(entry.target.id);
+        treatmentIndex++;
+    });
 
-            }
+    wrapper.addEventListener('click', function (e) {
+        if (e.target.classList.contains('remove-treatment')) {
+            e.target.closest('.treatment-item').remove();
+        }
+    });
 
-        });
 
-    },
 
-    {
-        threshold: 0.4
-    }
-
-);
-
-sections.forEach(section => observer.observe(section));
-
+});

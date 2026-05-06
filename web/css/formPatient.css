@@ -1,5 +1,16 @@
+/* =========================
+   ACTIVE / INACTIVE STEPS
+========================= */
+
+.form-step {
+    transition: all 0.25s ease;
+    cursor: pointer;
+}
+
 .active-step {
-    @apply bg-white border-l-4 border-primary shadow-[0_12px_32px_rgba(0, 26, 72, 0.06)];
+    @apply bg-white border-l-4 border-primary shadow-[0_12px_32px_rgba(0, 26, 72, 0.08)];
+    opacity: 1;
+    transform: translateX(4px);
 }
 
 .active-step .step-number {
@@ -11,5 +22,43 @@
 }
 
 .inactive-step {
-    @apply bg-surface-container opacity-70;
+    @apply bg-surface-container;
+    opacity: 0.7;
+}
+
+.inactive-step .step-number {
+    @apply bg-surface-container-high text-outline;
+}
+
+.inactive-step .step-title {
+    @apply text-on-surface-variant font-medium;
+}
+
+
+/* =========================
+   FORM SECTIONS
+========================= */
+
+.form-section {
+    min-height: 55vh;
+    transition: all 0.2s ease;
+}
+
+/* helps browser scroll alignment */
+html {
+    scroll-behavior: smooth;
+}
+
+
+/* =========================
+   MOBILE HORIZONTAL STEPPER
+========================= */
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }

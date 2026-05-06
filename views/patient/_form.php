@@ -9,6 +9,8 @@ use app\library\AuthUi;
 /** @var app\models\Patient $model */
 /** @var yii\bootstrap5\ActiveForm $form */
 
+
+
 ?>
 
 
@@ -53,11 +55,7 @@ use app\library\AuthUi;
             <!-- RIGHT CONTENT -->
             <div class="w-full lg:w-3/4">
 
-                <?php $form = ActiveForm::begin([
-                    'options' => [
-                        'class' => 'space-y-6 md:space-y-8'
-                    ]
-                ]); ?>
+                <?php $form = ActiveForm::begin(AuthUi::formConfig('patient-form')); ?>
 
                 <!-- SECTION 1 -->
                 <section id="patient-information"
@@ -118,8 +116,7 @@ use app\library\AuthUi;
                 </section>
 
                
-<?php ActiveForm::end(); ?>
-<?php $form = ActiveForm::begin(\app\library\AuthUi::formConfig('form-tumour')); ?>
+
                 <!-- SECTION 2 -->
                 <section id="tumour-details"
                     class="form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
@@ -233,11 +230,11 @@ use app\library\AuthUi;
 
                 </section> 
 
-                <?php ActiveForm::end(); ?>
+                
 
-                <?php $form = ActiveForm::begin(\app\library\AuthUi::formConfig('form-treatment')); ?>
+               
 
-                <!-- SECTION 3 -->
+                <!-- SECTION 3: Treatment & Follow-up -->
                 <section id="treatment-followup"
                     class="form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
 
@@ -251,22 +248,21 @@ use app\library\AuthUi;
                             Treatment & Follow-up
                         </h3>
 
+                        <button type="button"
+                            id="add-treatment"
+                            class="px-4 py-2 bg-primary text-white rounded-lg">
+                            + Add Treatment
+                        </button>
+
                     </div>
 
                    <!-- A row with treatment checkbox with a value(surgery), treatment_status (1 - No, 2 - Yes, 3 - unknown), treatment_date input -->
 
-                   <!-- Surgery -->
-                   <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4 items-end">
-                        <div>
-                            <?= $form->field($modelTreatment,'treatment')->dropDownList(\app\models\Treatment::getTreatment(), ['class' => AuthUi::inputClass(),'prompt' => 'Select Treatment']) ?>
-                        </div>
-                        <div>
-                            <?= $form->field($modelTreatment,'treatment_status')->dropDownList(\app\models\Treatment::getTreatmentStatus(), ['class' => AuthUi::inputClass(),'prompt' => 'Select Treatment Status'])->label(false) ?>
-                        </div>
-                        <div>
-                            <?= $form->field($modelTreatment,'treatment_date')->textInput(['type' => 'date','class' => AuthUi::inputClass(),'placeholder' => 'Treatment Date'])->label(false) ?>
-                        </div>
-                   </div>
+                   <!-- Treatment Row -->
+                   <div id="treatment-wrapper" class="space-y-4">
+
+                   <!-- render template -->
+                   <?= $this->render('_template_treatment',['form' => $form]) ?>
 
                 </section>
 
@@ -286,20 +282,16 @@ use app\library\AuthUi;
                     </div>
 
                     <div>
-                        <?= $form->field($modelTreatment,'concurrent_illness')->textarea(['rows' => 3,'class' => AuthUi::inputClass(),'placeholder' => 'Concurrent Illness'])->label(false) ?>
+                        <?= $form->field(new \app\models\Treatment(),'concurrent_illness')->textarea(['rows' => 3,'class' => AuthUi::inputClass(),'placeholder' => 'Concurrent Illness']) ?>
                     </div>
                 </section>
-                <?php ActiveForm::end(); ?>
+                
 
 
                
 
                 <!-- SECTION 5: Sources -->
-                <?php $form = ActiveForm::begin([
-                                    'options' => [
-                                        'class' => 'space-y-6 md:space-y-8'
-                                    ]
-                                ]); ?>
+                
                 <section id="sources" class="form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
                     <div class="flex items-center gap-2 mb-6 border-b border-surface-container-high pb-4">
 
@@ -321,11 +313,11 @@ use app\library\AuthUi;
                     </div>
 
                 </section>
-                <?php ActiveForm::end(); ?>
+               
 
 
                 <!-- Section 6: Follow-up -->
-                <?php $form = ActiveForm::begin(AuthUi::formConfig('follow-up')); ?>
+               
                     <section id="follow-up" class="form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
                         <div class="flex items-center gap-2 mb-6 border-b border-surface-container-high pb-4">
 
@@ -351,7 +343,8 @@ use app\library\AuthUi;
 
                     </section>
                     
-                <?php ActiveForm::end(); ?>
+               
+                
                 
 
                 
@@ -386,7 +379,7 @@ use app\library\AuthUi;
 
                 </div>
 
-               
+                <?php ActiveForm::end(); ?>
 
             </div>
 
@@ -400,10 +393,10 @@ use app\library\AuthUi;
 // import form css
 $this->registerCssFile('@web/css/formPatient.css');
 // import form js
-$this->registerJsFile('@web/js/form.js');
+$this->registerJsFile('@web/js/form.js', ['position' => \yii\web\View::POS_END]);
 
 // add js for essential tnm fields
-$this->registerJsFile('@web/js/essentialTnmFields.js');
+$this->registerJsFile('@web/js/essentialTnmFields.js', ['position' => \yii\web\View::POS_END]);
 ?>
 
 

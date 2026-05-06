@@ -83,14 +83,14 @@ class PatientController extends Controller
 
         $modelTumour = new Tumour();
         $modelTumour->full_tnm = 0;
-        $modelTreatment = new Treatment();
+        $modelTreatments = [new Treatment()];
         $modelSources = new \app\models\Sources();
         $modelFollowUp = new \app\models\FollowUp();
 
         return $this->render('create', [
             'model' => $model,
             'modelTumour' => $modelTumour,
-            'modelTreatment' => $modelTreatment,
+            'modelTreatments' => $modelTreatments,
             'modelSources' => $modelSources,
             'modelFollowUp' => $modelFollowUp,
         ]);
