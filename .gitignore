@@ -45,4 +45,7 @@ Thumbs.db
 
 
 # node modules (if any)
-node_modules/
+node_modules
+
+node_modules/*
+
