@@ -37,7 +37,6 @@ tests/_support/_generated
 
 .env
 
-node_modules/
 package-lock.json
 
 # OS / editor noise (if not already present)
@@ -45,3 +44,5 @@ package-lock.json
 Thumbs.db
 
 
+# node modules (if any)
+node_modules/
