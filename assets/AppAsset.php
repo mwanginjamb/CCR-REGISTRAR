@@ -22,14 +22,13 @@ class AppAsset extends AssetBundle
     public $baseUrl = '@web';
     public $css = [
        
-'https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap',
+        'https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap',
         'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap',
-        'css/app.css',
+        'css/tailwind.css',
 
     ];
     public $js = [
-        'https://cdn.tailwindcss.com?plugins=forms,container-queries',
-        'js/tailwind.config.js',
+        
     ];
 
     

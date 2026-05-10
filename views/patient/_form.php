@@ -15,7 +15,7 @@ use app\library\AuthUi;
 
 
 
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-7xl mx-auto w-full">
 
         <!-- PAGE HEADER -->
         <div class="mb-8 md:mb-10 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
@@ -53,73 +53,76 @@ use app\library\AuthUi;
             <?php echo $this->render('_form_steps'); ?>
 
             <!-- RIGHT CONTENT -->
-            <div class="w-full lg:w-3/4">
+            <div class="w-full lg:w-3/4 space-y-6 md:space-y-8">
+
 
                 <?php $form = ActiveForm::begin(AuthUi::formConfig('patient-form')); ?>
-
+                
+               
                 <!-- SECTION 1 -->
-                <section id="patient-information"
-                    class="form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
-
-                    <div class="flex items-center gap-2 mb-6 border-b border-surface-container-high pb-4">
-
-                        <span class="material-symbols-outlined text-primary">
-                            person
-                        </span>
-
-                        <h3 class="text-base md:text-lg font-bold text-primary">
-                            Patient Information
-                        </h3>
-
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
-
-                        <div class="md:col-span-2">
-                           <?=$form->field($model, 'full_name')->textInput(['placeholder' => 'Enter full name', 'class' => \app\library\AuthUi::inputClass()])?>
-                        </div>
-
-                        <div>
-                            <?=$form->field($model, 'national_id')->textInput(['placeholder' => 'Enter national ID / Passport', 'class' => \app\library\AuthUi::inputClass()])?>
-                        </div>
-
-                        <div>
-
-                            <?= $form->field($model, 'telephone_no_nok')->textInput(['placeholder' => 'Enter telephone number of next of kin', 'class' => \app\library\AuthUi::inputClass()]) ?>
-                        </div>
-
-                        <div>
-
-                            <?= $form->field($model, 'date_of_birth')->textInput(['placeholder' => 'Enter date of birth', 'class' => \app\library\AuthUi::inputClass(), 'type' => 'date']) ?>
-                        </div>
-
-                        <div>
-
-                            <?= $form->field($model, 'age')->textInput([ 'class' => \app\library\AuthUi::inputClass(), 'readonly' => true]) ?>
-                        </div>
-                        
-                        <div>
-                            <?= $form->field($model, 'place_of_birth')->textInput([ 'class' => \app\library\AuthUi::inputClass(), 'readonly' => true]) ?>
-                        </div>
-
-                        <div>
-                            <?= $form->field($model, 'ethnic_group')->dropDownList(\app\models\Patient::getEthnicGroups(), [ 'class' => \app\library\AuthUi::inputClass(), 'readonly' => true]) ?>
-                        </div>
-
-                        <div>
-                            <?= $form->field($model, 'religion')->dropDownList(\app\models\Patient::getReligions(), [ 'class' => \app\library\AuthUi::inputClass(), 'readonly' => true]) ?>
-                        </div>
-
-
-                    </div>
-
-                </section>
+                     <section id="patient-information"
+                         class="form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
+     
+                         <div class="flex items-center gap-2 mb-6 border-b border-surface-container-high pb-4">
+     
+                             <span class="material-symbols-outlined text-primary">
+                                 person
+                             </span>
+     
+                             <h3 class="text-base md:text-lg font-bold text-primary">
+                                 Patient Information
+                             </h3>
+     
+                         </div>
+     
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+     
+                             <div class="md:col-span-2">
+                                <?=$form->field($model, 'full_name')->textInput(['placeholder' => 'Enter full name', 'class' => \app\library\AuthUi::inputClass()])?>
+                             </div>
+     
+                             <div>
+                                 <?=$form->field($model, 'national_id')->textInput(['placeholder' => 'Enter national ID / Passport', 'class' => \app\library\AuthUi::inputClass()])?>
+                             </div>
+     
+                             <div>
+     
+                                 <?= $form->field($model, 'telephone_no_nok')->textInput(['placeholder' => 'Enter telephone number of next of kin', 'class' => \app\library\AuthUi::inputClass()]) ?>
+                             </div>
+     
+                             <div>
+     
+                                 <?= $form->field($model, 'date_of_birth')->textInput(['placeholder' => 'Enter date of birth', 'class' => \app\library\AuthUi::inputClass(), 'type' => 'date']) ?>
+                             </div>
+     
+                             <div>
+     
+                                 <?= $form->field($model, 'age')->textInput([ 'class' => \app\library\AuthUi::inputClass(), 'readonly' => true]) ?>
+                             </div>
+                             
+                             <div>
+                                 <?= $form->field($model, 'place_of_birth')->textInput([ 'class' => \app\library\AuthUi::inputClass(), 'readonly' => true]) ?>
+                             </div>
+     
+                             <div>
+                                 <?= $form->field($model, 'ethnic_group')->dropDownList(\app\models\Patient::getEthnicGroups(), [ 'class' => \app\library\AuthUi::inputClass(), 'readonly' => true]) ?>
+                             </div>
+     
+                             <div>
+                                 <?= $form->field($model, 'religion')->dropDownList(\app\models\Patient::getReligions(), [ 'class' => \app\library\AuthUi::inputClass(), 'readonly' => true]) ?>
+                             </div>
+     
+     
+                         </div>
+     
+                     </section>
+               
 
                
 
                 <!-- SECTION 2 -->
                 <section id="tumour-details"
-                    class="form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
+                    class="my-4 form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
 
                     <div class="flex items-center gap-2 mb-6 border-b border-surface-container-high pb-4">
 
@@ -236,7 +239,7 @@ use app\library\AuthUi;
 
                 <!-- SECTION 3: Treatment & Follow-up -->
                 <section id="treatment-followup"
-                    class="form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
+                    class="my-4 form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
 
                     <div class="flex items-center gap-2 mb-6 border-b border-surface-container-high pb-4">
 
@@ -259,7 +262,7 @@ use app\library\AuthUi;
                    <!-- A row with treatment checkbox with a value(surgery), treatment_status (1 - No, 2 - Yes, 3 - unknown), treatment_date input -->
 
                    <!-- Treatment Row -->
-                   <div id="treatment-wrapper" class="space-y-4">
+                   <div id="treatment-wrapper" class="space-y-4"></div>
 
                    <!-- render template -->
                    <?= $this->render('_template_treatment',['form' => $form]) ?>
@@ -267,7 +270,7 @@ use app\library\AuthUi;
                 </section>
 
                  <!-- SECTION 4 -->
-                <section id="concurrent-illness" class="form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
+                <section id="concurrent-illness" class="my-4 form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
 
                  <div class="flex items-center gap-2 mb-6 border-b border-surface-container-high pb-4">
 
@@ -292,8 +295,8 @@ use app\library\AuthUi;
 
                 <!-- SECTION 5: Sources -->
                 
-                <section id="sources" class="form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
-                    <div class="flex items-center gap-2 mb-6 border-b border-surface-container-high pb-4">
+                <section id="sources" class=" my-4 form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
+                    <div class=" flex items-center gap-2 mb-6 border-b border-surface-container-high pb-4">
 
                         <span class="material-symbols-outlined text-primary">
                             source
@@ -318,8 +321,8 @@ use app\library\AuthUi;
 
                 <!-- Section 6: Follow-up -->
                
-                    <section id="follow-up" class="form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
-                        <div class="flex items-center gap-2 mb-6 border-b border-surface-container-high pb-4">
+                    <section id="follow-up" class="my-4 form-section scroll-mt-28 bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-[0_12px_32px_rgba(0,26,72,0.04)]">
+                        <div class=" items-center gap-2 mb-6 border-b border-surface-container-high pb-4">
 
                                                 <span class="material-symbols-outlined text-primary">
                                                     follow_the_signs

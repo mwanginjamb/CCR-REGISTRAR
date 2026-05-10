@@ -21,6 +21,10 @@ use Yii;
  * @property int|null $updated_at
  * @property int|null $created_by
  * @property int|null $updated_by
+ * @property string|null $geo_lat
+ * @property string|null $geo_lng
+ * @property string|null $geo_accuracy
+ * @property string|null $geo_captured
  */
 class Patient extends \yii\db\ActiveRecord
 {
@@ -40,11 +44,12 @@ class Patient extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['full_name', 'national_id', 'telephone_no_patient', 'telephone_no_nok', 'age', 'date_of_birth', 'place_of_birth', 'ethnic_group', 'religion', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'default', 'value' => null],
+            [['full_name', 'national_id', 'telephone_no_patient', 'telephone_no_nok', 'age', 'date_of_birth', 'place_of_birth', 'ethnic_group', 'religion', 'created_at', 'updated_at', 'created_by', 'updated_by', 'geo_lat', 'geo_lng', 'geo_accuracy', 'geo_captured'], 'default', 'value' => null],
             [['age', 'ethnic_group', 'religion', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'integer'],
             [['date_of_birth'], 'safe'],
             [['full_name', 'place_of_birth'], 'string', 'max' => 250],
             [['national_id', 'telephone_no_patient', 'telephone_no_nok'], 'string', 'max' => 30],
+            [['geo_lat', 'geo_lng', 'geo_accuracy', 'geo_captured'], 'safe'],
         ];
     }
 
@@ -68,6 +73,10 @@ class Patient extends \yii\db\ActiveRecord
             'updated_at' => Yii::t('app', 'Updated At'),
             'created_by' => Yii::t('app', 'Created By'),
             'updated_by' => Yii::t('app', 'Updated By'),
+            'geo_lat' => Yii::t('app', 'Geo Lat'),
+            'geo_lng' => Yii::t('app', 'Geo Lng'),
+            'geo_accuracy' => Yii::t('app', 'Geo Accuracy'),
+            'geo_captured' => Yii::t('app', 'Geo Captured'),
         ];
     }
 

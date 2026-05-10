@@ -35,18 +35,7 @@ class AuthUi {
 public static function inputClass(): string
     {
         return '
-            w-full
-            px-4
-            py-3
-            bg-surface-container
-            border-none
-            rounded-lg
-            focus:ring-2
-            focus:ring-primary-container
-            transition-all
-            text-on-surface
-            placeholder:text-outline-variant
-            font-medium
+            w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base text-on-surface focus:ring-2 focus:ring-primary transition-all
         ';
     }
 

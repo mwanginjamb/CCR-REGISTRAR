@@ -12,7 +12,11 @@ AppAsset::register($this);
     <meta charset="<?= Yii::$app->charset ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= Html::encode($this->title) ?></title>
-
+    <?= $this->registerLinkTag(['rel' => 'manifest', 'href' => '/manifest.json']); ?>
+    
+    <?= Html::csrfMetaTags() ?>
+    <!-- csrf meta for JS -->
+    <meta name="csrf-token" content="<?= Yii::$app->request->csrfToken ?>">
     <?php $this->head() ?>
 </head>
 
@@ -26,6 +30,11 @@ AppAsset::register($this);
         <span class="text-xl font-bold text-[#001a48] tracking-tight">
             OncoRegistry
         </span>
+        <!-- connection indicator injected near page header -->
+        <span id="connection-status"></span>
+        <!-- sync toast -->
+        <div id="sync-status-banner" style="display:none"></div>
+       
         <div class="relative hidden sm:block">
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">
                 search
@@ -60,7 +69,7 @@ AppAsset::register($this);
 
         <div class="mb-6 px-2 text-center lg:text-left">
             <h2 class="font-extrabold text-[#001a48] hidden lg:block">
-                KEMRI Registry
+                <?= Yii::$app->name ?>
             </h2>
             <span class="material-symbols-outlined text-primary block lg:hidden">
                 clinical_notes
@@ -96,9 +105,9 @@ AppAsset::register($this);
     </aside>
 
     <!-- Page Content -->
-     <main class="ml-20 lg:ml-64 flex-1 p-4 md:p-8 bg-background">
-    <?= $content ?>
-</main>
+    <main class="flex flex-col ml-20 lg:ml-64 flex-1 p-4 md:p-8 bg-background">
+        <?= $content ?>
+    </main>
 
 </div>
 

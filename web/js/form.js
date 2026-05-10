@@ -92,28 +92,46 @@ document.addEventListener('DOMContentLoaded', function () {
     /**
      * ADD TREATMENT
      */
-    let treatmentIndex = document.querySelectorAll('.treatment-item').length;
 
     const wrapper = document.getElementById('treatment-wrapper');
     const template = document.getElementById('treatment-template').innerHTML;
+    let treatmentIndex = wrapper.querySelectorAll('.treatment-item').length;
 
-    document.getElementById('add-treatment').addEventListener('click', function () {
-
-        let newItem = template.replace(/__index__/g, treatmentIndex);
-
+    function addTreatmentRow() {
+        const html = template.replace(/__index__/g, treatmentIndex);
         const div = document.createElement('div');
-        div.innerHTML = newItem;
-
+        div.innerHTML = html;
         wrapper.appendChild(div.firstElementChild);
-
         treatmentIndex++;
-    });
+        updateRemoveVisibility();
+    }
+
+    // conditional update of remove button visibility
+
+    function updateRemoveVisibility() {
+        const rows = wrapper.querySelectorAll('.treatment-item');
+        const alone = rows.length === 1;
+        rows.forEach(row => {
+            const btn = row.querySelector('.remove-treatment');
+            if (btn) btn.style.visibility = alone ? 'hidden' : 'visible';
+        });
+    }
+
+    document.getElementById('add-treatment').addEventListener('click', addTreatmentRow);
 
     wrapper.addEventListener('click', function (e) {
         if (e.target.classList.contains('remove-treatment')) {
-            e.target.closest('.treatment-item').remove();
+            if (wrapper.querySelectorAll('.treatment-item').length > 1) {
+                e.target.closest('.treatment-item').remove();
+                updateRemoveVisibility();
+            }
         }
     });
+
+    // Seed first row if wrapper is empty (JS-owned first row)
+    if (!wrapper.querySelector('.treatment-item')) {
+        addTreatmentRow();
+    }
 
 
 
