@@ -432,10 +432,8 @@ use app\library\AuthUi;
                         Back
                     </button>
 
-                    <button type="submit"
-                        class="flex-1 sm:flex-none px-6 md:px-10 py-3 rounded-xl bg-gradient-to-r from-primary to-primary-container text-white font-bold shadow-[0_8px_24px_rgba(0,26,72,0.2)] hover:scale-105 transition-transform">
-                        Finalize Abstract
-                    </button>
+                    <?= Html::submitButton('Submit', ['class' => AuthUi::buttonClass()])
+                        ?>
 
                 </div>
 

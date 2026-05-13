@@ -1,42 +1,28 @@
-/**
- * form.js — intercepts patient form submit
- * Captures geolocation → serialises form → saves to IndexedDB →
- * attempts immediate API sync if online → registers background sync if offline.
- */
 document.addEventListener('DOMContentLoaded', () => {
 
-    const API_ENDPOINT = '/api/patient/create';   // Yii2 REST endpoint
+    const API_ENDPOINT = 'patientApi/create';
     const SYNC_TAG = 'sync-patient-records';
     const form = document.getElementById('patient-form');
-    const statusBanner = document.getElementById('sync-status-banner'); // add this in view
+    const statusBanner = document.getElementById('sync-status-banner');
 
     if (!form) return;
 
     // ── Register Service Worker ──────────────────────────────────────────────
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/js/sw.js').then(reg => {
-            console.log('SW registered', reg.scope);
-        });
+        navigator.serviceWorker.register('/js/sw.js')
+            .then(reg => console.log('SW registered', reg.scope))
+            .catch(err => console.warn('SW failed:', err));
 
-        // Listen for sync-complete messages from SW
+        // Single listener — removed the duplicate outer one
         navigator.serviceWorker.addEventListener('message', ({ data }) => {
-            if (data?.type === 'SYNC_COMPLETE') showBanner('Records synced ✓', 'success');
-            if (data?.type === 'SYNC_FAILED') showBanner('Sync failed — will retry', 'error');
+            if (data?.type === 'SYNC_COMPLETE')
+                showBanner('Records synced ✓', 'success');
+            if (data?.type === 'SYNC_FAILED')
+                showBanner('Sync failed — will retry automatically', 'warning');
+            if (data?.type === 'SYNC_VALIDATION_ERROR')
+                showBanner('A saved record was rejected by the server — please review', 'error');
         });
     }
-
-    // -- SHOW SYNC ERRORS When they occur --
-
-    navigator.serviceWorker.addEventListener('message', ({ data }) => {
-        if (data?.type === 'SYNC_COMPLETE')
-            showBanner('Records synced ✓', 'success');
-
-        if (data?.type === 'SYNC_FAILED')
-            showBanner('Sync failed — will retry automatically', 'warning');
-
-        if (data?.type === 'SYNC_VALIDATION_ERROR')
-            showBanner('A saved record was rejected by the server — please review', 'error');
-    });
 
     // ── Online / Offline indicator ────────────────────────────────────────────
     const updateOnlineUI = () => {
@@ -52,23 +38,23 @@ document.addEventListener('DOMContentLoaded', () => {
     updateOnlineUI();
 
     // ── Form Submit ───────────────────────────────────────────────────────────
-    form.addEventListener('submit', async (e) => {
+    $(form).on('beforeSubmit', async function () {
         e.preventDefault();
 
         const submitBtn = form.querySelector('[type="submit"]');
         submitBtn.disabled = true;
         submitBtn.textContent = 'Saving…';
 
-        // 1. Capture geolocation (non-blocking, max 8 s)
-        const coords = await GeoTag.capture();
-        GeoTag.injectIntoForm(form);
+        // Use cached coords — already captured on DOMContentLoaded via patientForm.js
+        // No second capture needed; hidden inputs already populated by fillDisplay()
+        const coords = GeoTag.getCoords();
 
-        // 2. Serialise all form fields into a plain object
+        // Serialise all form fields including hidden geo_* inputs
         const payload = serialiseForm(form);
         if (coords) payload._geo = coords;
         payload._csrf = document.querySelector('meta[name="csrf-token"]')?.content;
 
-        // 3. Save to IndexedDB with status 'pending'
+        // Save to IndexedDB
         let local_id;
         try {
             local_id = await PatientDB.save({
@@ -85,11 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 4a. If online → attempt immediate sync
         if (navigator.onLine) {
             await attemptSync(local_id, payload);
         } else {
-            // 4b. Register background sync for when connection returns
             showBanner('Offline — will sync automatically when online', 'warning');
             if ('serviceWorker' in navigator && 'SyncManager' in window) {
                 const reg = await navigator.serviceWorker.ready;
@@ -120,45 +104,34 @@ document.addEventListener('DOMContentLoaded', () => {
             await PatientDB.markSynced(local_id, json.id);
             showBanner('Saved & synced ✓', 'success');
 
-            // Optionally redirect to readonly view
             if (json.id) setTimeout(() => { window.location = `/patient/${json.id}`; }, 1200);
 
         } catch (err) {
-            console.warn('Immediate sync failed, queuing for background sync', err);
+            console.warn('Immediate sync failed, queuing background sync', err);
             showBanner('Saved offline — syncing in background', 'warning');
-
             if ('serviceWorker' in navigator && 'SyncManager' in window) {
                 const reg = await navigator.serviceWorker.ready;
-                await reg.sync.register('sync-patient-records');
+                await reg.sync.register(SYNC_TAG);
             }
         }
     }
 
-    /** Convert all named form inputs to a nested object */
     function serialiseForm(formEl) {
         const data = {};
-
         new FormData(formEl).forEach((value, key) => {
-            // Yii2: Treatment[0][treatment_type] → parts: ['Treatment','0','treatment_type']
             const parts = key.replace(/\]/g, '').split('[');
             let node = data;
-
             parts.forEach((part, i) => {
                 const isLast = i === parts.length - 1;
                 const nextIsNumeric = !isLast && /^\d+$/.test(parts[i + 1]);
-
                 if (isLast) {
                     node[part] = value;
                 } else {
-                    if (node[part] === undefined) {
-                        // If next key is numeric, this level is an array
-                        node[part] = nextIsNumeric ? [] : {};
-                    }
+                    if (node[part] === undefined) node[part] = nextIsNumeric ? [] : {};
                     node = node[part];
                 }
             });
         });
-
         return data;
     }
 

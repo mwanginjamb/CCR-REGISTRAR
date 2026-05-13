@@ -29,8 +29,8 @@ class AppAsset extends AssetBundle
     ];
     public $js = [
         'js/offline-db.js',
-        'js/patientForm.js',
         'js/geo-tag.js',
+        'js/patientForm.js',
 
     ];
 
