@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
 
     const stepButtons = document.querySelectorAll('.form-step');
     const sections = document.querySelectorAll('.form-section');
@@ -133,6 +133,9 @@ document.addEventListener('DOMContentLoaded', function () {
         addTreatmentRow();
     }
 
+    // Await Geolocation permissions
 
+    const _coords = await GeoTag.capture();
+    GeoTag.fillDisplay(_coords);
 
 });

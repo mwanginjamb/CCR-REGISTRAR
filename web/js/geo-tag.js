@@ -28,20 +28,39 @@ const GeoTag = (() => {
 
     const getCoords = () => _coords;
 
-    /** Inject lat/lng as hidden inputs so they travel with the POST if needed */
-    const injectIntoForm = (formEl) => {
-        if (!_coords) return;
-        ['lat', 'lng', 'accuracy', 'captured_at'].forEach(key => {
-            let input = formEl.querySelector(`input[name="geo_${key}"]`);
-            if (!input) {
-                input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = `geo_${key}`;
-                formEl.appendChild(input);
+    //   fillDisplay helper - injects coords into form fields
+    const fillDisplay = (coords) => {
+        const badge = document.getElementById('geo-status-badge');
+
+        if (!coords) {
+            if (badge) {
+                badge.textContent = 'Unavailable';
+                badge.className = badge.className.replace('text-outline', 'text-error');
             }
-            input.value = _coords[key];
+            return;
+        }
+
+        ['lat', 'lng', 'accuracy', 'captured_at'].forEach(key => {
+            // hidden input for POST
+            const hidden = document.getElementById(`geo_${key}`);
+            if (hidden) hidden.value = coords[key];
+
+            // visible display input
+            const display = document.getElementById(`geo-display-${key}`);
+            if (display) {
+                display.value = key === 'captured_at'
+                    ? new Date(coords[key]).toLocaleTimeString()
+                    : (typeof coords[key] === 'number' ? coords[key].toFixed(5) : coords[key]);
+            }
         });
+
+        if (badge) {
+            badge.textContent = 'Captured ✓';
+            badge.className = badge.className
+                .replace('bg-surface-container-high', 'bg-tertiary-container')
+                .replace('text-outline', 'text-on-tertiary-container');
+        }
     };
 
-    return { capture, getCoords, injectIntoForm };
+    return { capture, getCoords, fillDisplay };
 })();
