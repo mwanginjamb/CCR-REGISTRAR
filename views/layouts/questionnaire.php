@@ -81,20 +81,16 @@ AppAsset::register($this);
 
         <nav class="flex-1 space-y-1">
            <a class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2 text-[#444651] hover:bg-[#eceef0] transition-colors rounded-lg group"
-                    href="#" title="Registry">
+                    href="<?= \yii\helpers\Url::to(['patient/index']) ?>" title="Registry">
                     <span class="material-symbols-outlined text-xl" data-icon="clinical_notes">clinical_notes</span>
-                    <span class="font-inter text-sm font-medium hidden lg:block">Registry</span>
+                    <span class="font-inter text-sm font-medium hidden lg:block">Registry List</span>
                 </a>
                 <a class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2 bg-white text-[#001a48] font-bold rounded-lg shadow-[0_4px_12px_rgba(0,26,72,0.04)] lg:translate-x-1 transition-transform"
                     href="#" title="Patients">
                     <span class="material-symbols-outlined text-xl" data-icon="groups">groups</span>
-                    <span class="font-inter text-sm font-medium hidden lg:block">Patients</span>
+                    <span class="font-inter text-sm font-medium hidden lg:block">Cancer Sites</span>
                 </a>
-                <a class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2 text-[#444651] hover:bg-[#eceef0] transition-colors rounded-lg group"
-                    href="#" title="Reports">
-                    <span class="material-symbols-outlined text-xl" data-icon="assessment">assessment</span>
-                    <span class="font-inter text-sm font-medium hidden lg:block">Reports</span>
-                </a>
+                
         </nav>
 
         <div class="pt-4 border-t border-surface-container-high">

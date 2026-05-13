@@ -50,7 +50,7 @@ $this->beginPage();
     <!-- Primary Nav Links -->
     <nav class="flex-1 space-y-2">
         <?= Html::a(
-            '<span class="material-symbols-outlined">dashboard</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Overview</span>',
+            '<span class="material-symbols-outlined">dashboard</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Dashboard</span>',
             ['/site/index'],
             [
                 'class' => 'nav-link flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-white/50 transition-transform duration-200 hover:translate-x-1',
@@ -59,36 +59,15 @@ $this->beginPage();
         ) ?>
         <?= Html::a(
             '<span class="material-symbols-outlined">query_stats</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Incidence</span>',
-            ['/incidence/index'],
+            ['/patient/index'],
             [
                 'class' => 'nav-link flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-white/50 transition-transform duration-200 hover:translate-x-1',
                 'encode' => false,
             ]
         ) ?>
-        <?= Html::a(
-            '<span class="material-symbols-outlined">analytics</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Stage Data</span>',
-            ['/stage/index'],
-            [
-                'class' => 'nav-link flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-white/50 transition-transform duration-200 hover:translate-x-1',
-                'encode' => false,
-            ]
-        ) ?>
-        <?= Html::a(
-            '<span class="material-symbols-outlined">speed</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Registry Performance</span>',
-            ['/performance/index'],
-            [
-                'class' => 'nav-link flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-white/50 transition-transform duration-200 hover:translate-x-1',
-                'encode' => false,
-            ]
-        ) ?>
-        <?= Html::a(
-            '<span class="material-symbols-outlined">assessment</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Reports</span>',
-            ['/report/index'],
-            [
-                'class' => 'nav-link flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-white/50 transition-transform duration-200 hover:translate-x-1',
-                'encode' => false,
-            ]
-        ) ?>
+        
+      
+        
     </nav>
 
     <!-- Bottom Actions -->
