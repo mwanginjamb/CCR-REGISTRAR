@@ -1,7 +1,8 @@
 <?php
 namespace app\library;
 
-class AuthUi {
+class AuthUi
+{
     public static function formConfig($id = 'auth-form'): array
     {
         return [
@@ -32,7 +33,7 @@ class AuthUi {
         ];
     }
 
-public static function inputClass(): string
+    public static function inputClass(): string
     {
         return '
             w-full bg-surface-container-low border-none rounded-lg p-3 text-sm md:text-base text-on-surface focus:ring-2 focus:ring-primary transition-all
@@ -42,25 +43,30 @@ public static function inputClass(): string
     public static function buttonClass(): string
     {
         return '
-            w-full
-            py-4
-            bg-gradient-to-r
-            from-primary
-            to-primary-container
-            text-on-primary
-            font-headline
-            font-bold
-            text-lg
-            rounded-lg
-            shadow-lg
-            hover:shadow-xl
-            transition-all
-            active:scale-[0.98]
-            flex
-            items-center
-            justify-center
-            gap-3
-        ';
+        w-full
+        py-3.5
+        md:py-4.5
+        px-4
+        bg-gradient-to-br
+        from-primary
+        to-primary-container
+        text-on-primary
+        font-headline
+        font-bold
+        text-base
+        md:text-lg
+        rounded-lg
+        shadow-[0_8px_20px_rgba(0,26,72,0.15)]
+        hover:shadow-[0_12px_24px_rgba(0,26,72,0.25)]
+        hover:scale-[1.01]
+        active:scale-95
+        transition-all
+        duration-150
+        flex
+        items-center
+        justify-center
+        gap-2
+    ';
     }
 
     public static function linkClass(): string
@@ -78,11 +84,11 @@ public static function inputClass(): string
     }
 
 
-     /*
-    |--------------------------------------------------------------------------
-    | Checkbox Field Config
-    |--------------------------------------------------------------------------
-    */
+    /*
+   |--------------------------------------------------------------------------
+   | Checkbox Field Config
+   |--------------------------------------------------------------------------
+   */
 
     public static function checkboxFieldConfig(): array
     {

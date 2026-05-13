@@ -1,5 +1,5 @@
 {
-    "name": "Clinical Registry",
+    "name": "Clinical Cancer Registry",
     "short_name": "ClinReg",
     "start_url": "/patient/create",
     "display": "standalone",
@@ -7,12 +7,12 @@
     "theme_color": "#001A48",
     "icons": [
         {
-            "src": "/img/icon-192.png",
+            "src": "/icons/icon-192x192-maskable.png",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "/img/icon-512.png",
+            "src": "/icons/icon-512x512-maskable.png",
             "sizes": "512x512",
             "type": "image/png"
         }

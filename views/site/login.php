@@ -8,51 +8,53 @@
 use yii\bootstrap5\ActiveForm;
 use yii\bootstrap5\Html;
 use app\library\AuthUi;
+use app\library\FormUi;
 
-$this->title = 'Login';
+$this->title = 'Registrar Login';
 $this->params['breadcrumbs'][] = $this->title;
 
 ?>
 <div class="site-login">
-    <h1><?= Html::encode($this->title) ?></h1>
 
-    <p>Please fill out the following fields to login:</p>
+
+    <p class="text-center">Please fill out the following fields to login:</p>
 
     <div class="row">
         <div class="form-container">
 
-            <?php $form = ActiveForm::begin(AuthUi::formConfig('login-form')); ?>
+            <?php $form = ActiveForm::begin(FormUi::formConfig('login-form')); ?>
 
-            <?= $form->field($model, 'username')->textInput([
+            <?= $form->field($model, 'username', FormUi::fieldConfig('person'))->textInput([
                 'autofocus' => true,
-                'class' => AuthUi::inputClass(),
+                'placeholder' => 'Username',
+                'class' => FormUi::inputClass(true),
             ]) ?>
 
-            <?= $form->field($model, 'password')->passwordInput([
-                'placeholder' => 'Password',
+            <?= $form->field($model, 'password', FormUi::fieldConfig('lock'))->passwordInput([
+                'placeholder' => '••••••••',
                 'autocomplete' => false,
                 'type' => 'password',
-                'class' => AuthUi::inputClass()
+                'class' => FormUi::inputClass(true)
             ]) ?>
 
             <?= $form->field($model, 'rememberMe', AuthUi::checkboxFieldConfig())->checkbox(AuthUi::checkboxConfig('Remember me')) ?>
 
             <div class="form-group">
                 <div>
-                    <?= Html::submitButton('Login', ['class' => AuthUi::buttonClass()]) ?>
+                    <?= Html::submitButton('Login', ['class' => FormUi::buttonClass()]) ?>
                 </div>
             </div>
 
             <?php ActiveForm::end(); ?>
 
             <div style="color:#999;">
-               <?= Html::a(
-    'Forgot password?',
-    ['site/request-password-reset'],
-    [
-        'class' => AuthUi::linkClass(),
-    ]
-) ?>
+                <?= Html::a(
+                    'Forgot password?',
+                    ['site/request-password-reset'],
+                    [
+                        'class' => AuthUi::linkClass(),
+                    ]
+                ) ?>
             </div>
 
         </div>

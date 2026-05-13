@@ -21,23 +21,26 @@ class AppAsset extends AssetBundle
     public $basePath = '@webroot';
     public $baseUrl = '@web';
     public $css = [
-       
+
         'https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap',
         'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap',
         'css/tailwind.css',
 
     ];
     public $js = [
-        
+        'js/offline-db.js',
+        'js/patientForm.js',
+        'js/geo-tag.js',
+
     ];
 
-    
-public $jsOptions = [
+
+    public $jsOptions = [
         'position' => \yii\web\View::POS_HEAD,
     ];
 
     public $depends = [
         'yii\web\YiiAsset',
-       // 'yii\bootstrap5\BootstrapAsset'
+        // 'yii\bootstrap5\BootstrapAsset'
     ];
 }
