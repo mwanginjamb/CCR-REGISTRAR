@@ -47,15 +47,18 @@ $this->params['breadcrumbs'][] = $this->title;
 
             <?php ActiveForm::end(); ?>
 
-            <div style="color:#999;">
-                <?= Html::a(
-                    'Forgot password?',
-                    ['site/request-password-reset'],
-                    [
-                        'class' => AuthUi::linkClass(),
-                    ]
-                ) ?>
+            <!-- 2 columns layout: forgot password + request access -->
+            <div class="flex flex-row gap-4 mt-4 justify-between">
+                <div style="color:#999;">
+                <?= FormUi::link('Forgot password?', ['site/request-password-reset']) ?>
+                </div>
+                <div>
+                    <?php
+                    echo \app\library\FormUi::link('Signup', ['site/signup']);
+                    ?>
+                </div>
             </div>
+           
 
         </div>
     </div>
