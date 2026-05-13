@@ -26,16 +26,19 @@ class AppAsset extends AssetBundle
         'css/tailwind.css',
     ];
     public $js = [
-        
+        'js/offline-db.js',
+        'js/patientForm.js',
+        'js/geo-tag.js',
+
     ];
 
-    
-public $jsOptions = [
-        'position' => \yii\web\View::POS_HEAD,
-    ];
+
+    /* public $jsOptions = [
+         'position' => \yii\web\View::POS_READY,
+     ];*/
 
     public $depends = [
         'yii\web\YiiAsset',
-       // 'yii\bootstrap5\BootstrapAsset'
+        // 'yii\bootstrap5\BootstrapAsset'
     ];
 }
