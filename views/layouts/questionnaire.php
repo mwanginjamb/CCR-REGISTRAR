@@ -1,5 +1,7 @@
 <?php
 use app\assets\AppAsset;
+use app\library\AuthUi;
+use app\library\FormUi;
 use yii\helpers\Html;
 
 AppAsset::register($this);
@@ -97,11 +99,14 @@ AppAsset::register($this);
                 </a>
             </nav>
 
-            <div class="pt-4 border-t border-surface-container-high">
-                <button class="w-full bg-primary text-white p-2.5 rounded-xl font-semibold">
-                    New Abstract
-                </button>
-            </div>
+            <?= \yii\helpers\Html::a(
+                '<span class="material-symbols-outlined block lg:hidden" data-icon="add">add</span>' .
+                '<span class="hidden lg:block">New Site</span>',
+                ['patient/create'], // Replace with your actual route
+                [
+                    'class' => AuthUi::buttonClass()
+                ]
+            ) ?>
         </aside>
 
         <!-- Page Content -->

@@ -18,11 +18,11 @@ class PatientApiController extends Controller
     {
         return array_merge(parent::behaviors(), [
             'contentNegotiator' => [
-                'class'   => ContentNegotiator::class,
+                'class' => ContentNegotiator::class,
                 'formats' => ['application/json' => Response::FORMAT_JSON],
             ],
             'verbs' => [
-                'class'   => VerbFilter::class,
+                'class' => VerbFilter::class,
                 'actions' => ['create' => ['POST']],
             ],
         ]);
@@ -41,9 +41,9 @@ class PatientApiController extends Controller
             $patient->load($body['Patient'] ?? [], '');
 
             if (!empty($body['_geo'])) {
-                $patient->geo_lat      = $body['_geo']['lat']         ?? null;
-                $patient->geo_lng      = $body['_geo']['lng']         ?? null;
-                $patient->geo_accuracy = $body['_geo']['accuracy']    ?? null;
+                $patient->geo_lat = $body['_geo']['lat'] ?? null;
+                $patient->geo_lng = $body['_geo']['lng'] ?? null;
+                $patient->geo_accuracy = $body['_geo']['accuracy'] ?? null;
                 $patient->geo_captured = $body['_geo']['captured_at'] ?? null;
                 if ($patient->geo_captured) {
                     $patient->geo_captured = str_replace(['T', 'Z'], [' ', ''], $patient->geo_captured);
@@ -57,7 +57,7 @@ class PatientApiController extends Controller
             }
 
             // ── 2. Tumour ─────────────────────────────────────────────────────
-            $tumour             = new Tumour();
+            $tumour = new Tumour();
             $tumour->patient_id = $patient->id;
             $tumour->load($body['Tumour'] ?? [], '');
 
@@ -79,10 +79,11 @@ class PatientApiController extends Controller
             }
 
             foreach ($treatmentRows as $rowData) {
-                if (empty($rowData['treatment_type'])) continue; // skip blank rows
+                if (empty($rowData['treatment_type']))
+                    continue; // skip blank rows
 
-                $treatment                     = new Treatment();
-                $treatment->patient_id         = $patient->id;
+                $treatment = new Treatment();
+                $treatment->patient_id = $patient->id;
                 $treatment->concurrent_illness = $concurrentIllness;
                 $treatment->load($rowData, '');
 
@@ -98,8 +99,8 @@ class PatientApiController extends Controller
 
             // Edge case: concurrent_illness filled but zero treatment rows added
             if ($concurrentIllness !== null) {
-                $treatment                     = new Treatment();
-                $treatment->patient_id         = $patient->id;
+                $treatment = new Treatment();
+                $treatment->patient_id = $patient->id;
                 $treatment->concurrent_illness = $concurrentIllness;
 
                 if (!$treatment->save()) {
@@ -110,7 +111,7 @@ class PatientApiController extends Controller
             }
 
             // ── 4. Sources ────────────────────────────────────────────────────
-            $sources             = new Sources();
+            $sources = new Sources();
             $sources->patient_id = $patient->id;
             $sources->load($body['Sources'] ?? [], '');
 
@@ -121,7 +122,7 @@ class PatientApiController extends Controller
             }
 
             // ── 5. Follow-up ──────────────────────────────────────────────────
-            $followUp             = new FollowUp();
+            $followUp = new FollowUp();
             $followUp->patient_id = $patient->id;
             $followUp->load($body['FollowUp'] ?? [], '');
 
@@ -134,10 +135,10 @@ class PatientApiController extends Controller
             $tx->commit();
 
             return [
-                'id'         => $patient->id,
-                'tumour_id'  => $tumour->id,
-                'status'     => 'synced',
-                'geo'        => [
+                'id' => $patient->id,
+                'tumour_id' => $tumour->id,
+                'status' => 'synced',
+                'geo' => [
                     'lat' => $patient->geo_lat,
                     'lng' => $patient->geo_lng,
                 ],

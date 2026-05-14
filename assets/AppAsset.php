@@ -30,14 +30,9 @@ class AppAsset extends AssetBundle
     public $js = [
         'js/offline-db.js',
         'js/geo-tag.js',
+        'js/essentialTnmFields.js',
         'js/patientForm.js',
-
     ];
-
-
-    /* public $jsOptions = [
-         'position' => \yii\web\View::POS_READY,
-     ];*/
 
     public $depends = [
         'yii\web\YiiAsset',

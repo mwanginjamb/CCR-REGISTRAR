@@ -2,13 +2,14 @@
 
 use app\library\FormUi;
 use yii\helpers\Html;
-use yii\web\AssetBundle;
 use yii\widgets\ActiveForm;
 use app\library\AuthUi;
 
 /** @var yii\web\View $this */
 /** @var app\models\Patient $model */
 /** @var yii\bootstrap5\ActiveForm $form */
+
+// View attributes of $model
 
 
 
@@ -22,24 +23,25 @@ use app\library\AuthUi;
     <div class="mb-8 md:mb-10 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
 
         <div>
-
             <h1 class="text-2xl md:text-3xl font-extrabold text-primary tracking-tight">
                 REG-2024-KEM-8842
             </h1>
-
             <p class="text-on-surface-variant text-xs md:text-sm mt-1">
                 Manual Abstract Record • Clinical Research Unit
             </p>
-
         </div>
 
-        <div class="flex items-center">
-
-            <span
-                class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-[10px] md:text-xs font-bold">
-                DRAFT MODE
+        <div class="flex items-center gap-3">
+            <!-- Connection Status Indicator -->
+            <span id="connection-status"
+                class="px-3 py-1 rounded-full text-[10px] md:text-xs font-bold bg-surface-container-high text-outline">
+                Checking...
             </span>
 
+            <!-- Mode Indicator - Changes based on online/offline -->
+            <span id="mode-indicator" class="px-3 py-1 rounded-full text-[10px] md:text-xs font-bold">
+                <!-- Content will be set by JavaScript -->
+            </span>
         </div>
 
     </div>
@@ -57,7 +59,11 @@ use app\library\AuthUi;
         <div class="w-full lg:w-3/4 space-y-6 md:space-y-8">
 
 
-            <?php $form = ActiveForm::begin(AuthUi::formConfig('patient-form')); ?>
+            <?php $form = ActiveForm::begin([
+                'id' => 'patient-form',
+                'options' => ['class' => 'patient-form', 'data-api-endpoint' => \Yii::$app->urlManager->createUrl(['patient-api/create'])],
+                'method' => 'post'
+            ]); ?>
 
 
             <!-- SECTION 1 -->
@@ -139,7 +145,8 @@ use app\library\AuthUi;
                                     class="text-[10px] text-on-surface-variant font-medium block mb-1">Latitude</label>
                                 <input id="geo-display-lat" type="text" readonly placeholder="—"
                                     class="<?= \app\library\AuthUi::inputClass() ?> bg-surface-dim cursor-default text-sm" />
-                                <input type="hidden" name="geo_lat" id="geo_lat" />
+
+                                <?= $form->field($model, 'geo_lat')->hiddenInput(['id' => 'geo_lat'])->label(false) ?>
                             </div>
 
                             <div>
@@ -147,7 +154,8 @@ use app\library\AuthUi;
                                     class="text-[10px] text-on-surface-variant font-medium block mb-1">Longitude</label>
                                 <input id="geo-display-lng" type="text" readonly placeholder="—"
                                     class="<?= \app\library\AuthUi::inputClass() ?> bg-surface-dim cursor-default text-sm" />
-                                <input type="hidden" name="geo_lng" id="geo_lng" />
+
+                                <?= $form->field($model, 'geo_lng')->hiddenInput(['id' => 'geo_lng'])->label(false) ?>
                             </div>
 
                             <div>
@@ -155,7 +163,7 @@ use app\library\AuthUi;
                                     (m)</label>
                                 <input id="geo-display-accuracy" type="text" readonly placeholder="—"
                                     class="<?= \app\library\AuthUi::inputClass() ?> bg-surface-dim cursor-default text-sm" />
-                                <input type="hidden" name="geo_accuracy" id="geo_accuracy" />
+                                <?= $form->field($model, 'geo_accuracy')->hiddenInput(['id' => 'geo_accuracy'])->label(false) ?>
                             </div>
 
                             <div>
@@ -163,7 +171,8 @@ use app\library\AuthUi;
                                     At</label>
                                 <input id="geo-display-captured_at" type="text" readonly placeholder="—"
                                     class="<?= \app\library\AuthUi::inputClass() ?> bg-surface-dim cursor-default text-sm" />
-                                <input type="hidden" name="geo_captured_at" id="geo_captured_at" />
+
+                                <?= $form->field($model, 'geo_captured')->hiddenInput(['id' => 'geo_captured_at'])->label(false) ?>
                             </div>
 
                         </div>
@@ -414,29 +423,51 @@ use app\library\AuthUi;
             <!-- ACTIONS -->
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 pt-4 pb-20">
 
-                <button type="button"
-                    class="px-6 py-3 rounded-xl text-primary font-bold hover:bg-surface-container transition-colors flex items-center justify-center sm:justify-start gap-2">
-
-                    <span class="material-symbols-outlined">
-                        drafts
-                    </span>
-
-                    Save as Draft
-
+                <!-- Save as Draft Button - Always visible but behavior changes -->
+                <button type="button" id="save-draft-btn"
+                    class="px-6 py-3 rounded-xl font-bold transition-colors flex items-center justify-center sm:justify-start gap-2"
+                    style="display: flex;">
+                    <span class="material-symbols-outlined">drafts</span>
+                    <span id="save-draft-text">Save as Draft</span>
                 </button>
 
                 <div class="flex gap-4">
-
-                    <button type="button"
+                    <!-- Back Button -->
+                    <button type="button" id="back-btn"
                         class="flex-1 sm:flex-none px-6 md:px-8 py-3 rounded-xl bg-surface-container-high text-outline font-bold hover:bg-surface-dim transition-colors">
                         Back
                     </button>
 
-                    <?= Html::submitButton('Submit', ['class' => AuthUi::buttonClass()])
-                        ?>
+                    <!-- Submit Button - Hidden when offline -->
+                    <button type="button" id="submit-form"
+                        class="flex-1 sm:flex-none px-6 md:px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-[#002d72] text-white font-bold hover:opacity-90 transition-opacity shadow-md"
+                        style="display: flex;">
+                        <span class="flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-lg">cloud_upload</span>
+                            Submit Online
+                        </span>
+                    </button>
 
+                    <!-- Offline Save Button - Visible only when offline -->
+                    <button type="button" id="offline-save-btn"
+                        class="flex-1 sm:flex-none px-6 md:px-8 py-3 rounded-xl bg-secondary-container text-on-secondary-container font-bold hover:opacity-90 transition-opacity shadow-md"
+                        style="display: none;">
+                        <span class="flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-lg">offline_bolt</span>
+                            Save Offline
+                        </span>
+                    </button>
                 </div>
 
+            </div>
+
+            <!-- Sync Queue Indicator (shows pending syncs when offline then online) -->
+            <div id="sync-queue-indicator" style="display: none;"
+                class="fixed bottom-6 left-6 z-50 px-4 py-2 rounded-lg bg-surface-container-high text-on-surface-variant text-sm shadow-lg">
+                <span class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">sync_problem</span>
+                    <span id="sync-queue-count">0</span> pending syncs
+                </span>
             </div>
 
             <?php ActiveForm::end(); ?>
@@ -456,5 +487,5 @@ $this->registerCssFile('@web/css/formPatient.css');
 $this->registerJsFile('@web/js/form.js', ['position' => \yii\web\View::POS_END]);
 
 // add js for essential tnm fields
-$this->registerJsFile('@web/js/essentialTnmFields.js', ['position' => \yii\web\View::POS_END]);
+//$this->registerJsFile('@web/js/essentialTnmFields.js', ['position' => \yii\web\View::POS_END]);
 ?>

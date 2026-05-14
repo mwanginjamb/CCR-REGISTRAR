@@ -49,7 +49,9 @@ class Patient extends \yii\db\ActiveRecord
             [['date_of_birth'], 'safe'],
             [['full_name', 'place_of_birth'], 'string', 'max' => 250],
             [['national_id', 'telephone_no_patient', 'telephone_no_nok'], 'string', 'max' => 30],
-            [['geo_lat', 'geo_lng', 'geo_accuracy', 'geo_captured'], 'safe'],
+            [['geo_lat', 'geo_lng'], 'number', 'min' => -90, 'max' => 90],
+            [['geo_accuracy'], 'number', 'min' => 0],
+            [['geo_captured'], 'safe'],
         ];
     }
 
@@ -99,7 +101,7 @@ class Patient extends \yii\db\ActiveRecord
             5 => 'Other',
         ];
     }
-    
+
     public static function getReligions()
     {
         return [

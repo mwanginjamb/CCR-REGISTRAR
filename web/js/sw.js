@@ -1,26 +1,22 @@
 /**
- * sw.js — Service Worker
- * Responsibilities:
- *   1. Cache shell assets (cache-first)
- *   2. Network-first for navigation / API calls
- *   3. Background Sync: flush pending IndexedDB records on reconnect
+ * sw.js — Service Worker (Complete)
  */
 
-const CACHE_NAME = 'clinical-registry-v1.0.0';
+const CACHE_NAME = 'clinical-registry-v1.0.1';
 const SYNC_TAG = 'sync-patient-records';
-const API_SYNC_URL = '/api/patient/create';
+const API_SYNC_URL = '/patient-api/create';
 
 const SHELL_ASSETS = [
     '/',
     '/patient/create',
-    '/css/app.css',
+    '/css/tailwind.css',
     '/js/offline-db.js',
     '/js/geo-tag.js',
     '/js/patientForm.js',
     '/manifest.json'
 ];
 
-// ── Install: pre-cache shell ──────────────────────────────────────────────────
+// Install: pre-cache shell
 self.addEventListener('install', (e) => {
     e.waitUntil(
         caches.open(CACHE_NAME)
@@ -29,7 +25,7 @@ self.addEventListener('install', (e) => {
     );
 });
 
-// ── Activate: clean stale caches ─────────────────────────────────────────────
+// Activate: clean stale caches
 self.addEventListener('activate', (e) => {
     e.waitUntil(
         caches.keys().then(keys =>
@@ -41,13 +37,13 @@ self.addEventListener('activate', (e) => {
     );
 });
 
-// ── Fetch: network-first for navigation & API, cache-first for assets ────────
+// Fetch: network-first for API, cache-first for assets
 self.addEventListener('fetch', (e) => {
     const { request } = e;
     const url = new URL(request.url);
 
-    // Always network-first for API calls
-    if (url.pathname.startsWith('/api/')) {
+    // Network-first for API calls
+    if (url.pathname.includes('/patient-api/') || url.pathname.includes('/api/')) {
         e.respondWith(networkFirst(request));
         return;
     }
@@ -62,7 +58,7 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(cacheFirst(request));
 });
 
-// ── Background Sync ───────────────────────────────────────────────────────────
+// Background Sync
 self.addEventListener('sync', (e) => {
     if (e.tag === SYNC_TAG) {
         e.waitUntil(syncPendingRecords());
@@ -70,41 +66,66 @@ self.addEventListener('sync', (e) => {
 });
 
 async function syncPendingRecords() {
+    console.log('Background sync started');
     const pending = await idbGetPending();
 
     for (const record of pending) {
         try {
-            const res = await fetch(API_SYNC_URL, {
+            const response = await fetch(API_SYNC_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': record.form_data?._csrf || ''
+                },
                 body: JSON.stringify(record.form_data)
             });
 
-            if (res.status === 422) {
-                // Server rejected the data — mark as error, don't retry endlessly
-                const json = await res.json();
-                await idbMarkError(record.local_id, JSON.stringify(json.errors));
-                notifyClients({ type: 'SYNC_VALIDATION_ERROR', local_id: record.local_id, errors: json });
-                continue;                   // move on to next record
+            if (response.status === 422) {
+                const json = await response.json();
+                await idbMarkError(record.local_id, JSON.stringify(json.errors || json));
+                notifyClients({
+                    type: 'SYNC_VALIDATION_ERROR',
+                    local_id: record.local_id,
+                    errors: json
+                });
+                continue;
             }
 
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);  // 5xx → retry
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-            const json = await res.json();
+            const json = await response.json();
             await idbMarkSynced(record.local_id, json.id);
-            notifyClients({ type: 'SYNC_COMPLETE', server_id: json.id });
+            notifyClients({ type: 'SYNC_COMPLETE', server_id: json.id, patient_id: json.id });
 
         } catch (err) {
-            // Network or 5xx — leave as 'pending' so Background Sync retries
+            console.error('Sync failed for record:', record.local_id, err);
             notifyClients({ type: 'SYNC_FAILED', local_id: record.local_id });
+            // Leave as 'pending' for retry
         }
     }
 }
 
-// ── Minimal IndexedDB helpers (duplicated in SW scope — no shared modules) ───
+// ADD MISSING FUNCTION: idbMarkError
+async function idbMarkError(local_id, reason) {
+    const db = await idbOpen();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(['patient_drafts'], 'readwrite');
+        const store = tx.objectStore('patient_drafts');
+        const get = store.get(local_id);
+        get.onsuccess = () => {
+            const rec = get.result;
+            if (!rec) return resolve();
+            rec.sync_status = 'error';
+            rec.error_msg = reason;
+            store.put(rec).onsuccess = resolve;
+        };
+        get.onerror = () => reject(get.error);
+    });
+}
 
+// IndexedDB helpers
 const DB_NAME = 'ClinicalRegistryDB';
-const STORE = 'patient_drafts';
+const STORE_NAME = 'patient_drafts';
 
 function idbOpen() {
     return new Promise((resolve, reject) => {
@@ -112,10 +133,10 @@ function idbOpen() {
         req.onsuccess = ({ target: { result } }) => resolve(result);
         req.onerror = () => reject(req.error);
         req.onupgradeneeded = ({ target: { result: db } }) => {
-            if (!db.objectStoreNames.contains(STORE)) {
-                const s = db.createObjectStore(STORE, { keyPath: 'local_id', autoIncrement: true });
-                s.createIndex('sync_status', 'sync_status', { unique: false });
-                s.createIndex('server_id', 'server_id', { unique: false });
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                const store = db.createObjectStore(STORE_NAME, { keyPath: 'local_id', autoIncrement: true });
+                store.createIndex('sync_status', 'sync_status', { unique: false });
+                store.createIndex('server_id', 'server_id', { unique: false });
             }
         };
     });
@@ -124,10 +145,10 @@ function idbOpen() {
 async function idbGetPending() {
     const db = await idbOpen();
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE, 'readonly');
-        const idx = tx.objectStore(STORE).index('sync_status');
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const idx = tx.objectStore(STORE_NAME).index('sync_status');
         const req = idx.getAll('pending');
-        req.onsuccess = () => resolve(req.result);
+        req.onsuccess = () => resolve(req.result || []);
         req.onerror = () => reject(req.error);
     });
 }
@@ -135,14 +156,15 @@ async function idbGetPending() {
 async function idbMarkSynced(local_id, server_id) {
     const db = await idbOpen();
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE, 'readwrite');
-        const store = tx.objectStore(STORE);
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
         const get = store.get(local_id);
         get.onsuccess = () => {
             const rec = get.result;
             if (!rec) return resolve();
             rec.sync_status = 'synced';
             rec.server_id = server_id;
+            rec.synced_at = Date.now();
             store.put(rec).onsuccess = resolve;
         };
         get.onerror = () => reject(get.error);
@@ -155,19 +177,20 @@ function notifyClients(msg) {
     );
 }
 
-// ── Fetch strategies ──────────────────────────────────────────────────────────
-
+// Fetch strategies
 async function networkFirst(request, useOfflineFallback = false) {
     try {
         const res = await fetch(request);
         const cache = await caches.open(CACHE_NAME);
         cache.put(request, res.clone());
         return res;
-    } catch {
+    } catch (err) {
         const cached = await caches.match(request);
-        return cached ?? (useOfflineFallback
-            ? caches.match('/offline.html')  // optional offline page
-            : new Response('Network error', { status: 503 }));
+        if (cached) return cached;
+        if (useOfflineFallback) {
+            return caches.match('/offline.html') || new Response('You are offline', { status: 503 });
+        }
+        return new Response('Network error', { status: 503 });
     }
 }
 

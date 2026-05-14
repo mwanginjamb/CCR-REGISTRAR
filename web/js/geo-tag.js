@@ -41,6 +41,11 @@ const GeoTag = (() => {
         }
 
         ['lat', 'lng', 'accuracy', 'captured_at'].forEach(key => {
+            //Normalizae captured_at to mysql datetime format
+            if (key === 'captured_at') {
+                // Convert '2026-05-14T14:12:06.136Z' to '2026-05-14 14:12:06'
+                coords[key] = coords[key].replace('T', ' ').replace('Z', '').replace(/\.\d+/, '').trim();
+            }
             // hidden input for POST
             const hidden = document.getElementById(`geo_${key}`);
             if (hidden) hidden.value = coords[key];

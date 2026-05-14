@@ -72,20 +72,19 @@ class PatientController extends Controller
     {
         $this->layout = 'questionnaire';
         $model = new Patient();
-
-        if ($this->request->isPost) {
-            if ($model->load($this->request->post()) && $model->save()) {
-                return $this->redirect(['view', 'id' => $model->id]);
-            }
-        } else {
-            $model->loadDefaultValues();
-        }
-
         $modelTumour = new Tumour();
         $modelTumour->full_tnm = 0;
         $modelTreatments = [new Treatment()];
         $modelSources = new \app\models\Sources();
         $modelFollowUp = new \app\models\FollowUp();
+
+        if ($this->request->isPost && !$this->request->isAjax) {
+            if ($model->load($this->request->post()) && $model->save()) {
+                return $this->redirect(['view', 'id' => $model->id]);
+            }
+        }
+
+
 
         return $this->render('create', [
             'model' => $model,
