@@ -506,4 +506,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     console.log('Patient form initialized - Dynamic UI mode active');
+
 });

@@ -1,10 +1,15 @@
 <?php
 use app\assets\AppAsset;
+use app\assets\DebugAsset;
 use app\library\AuthUi;
-use app\library\FormUi;
 use yii\helpers\Html;
 
 AppAsset::register($this);
+
+// conditionally register debug assets
+if (YII_DEBUG || isset($_GET['debug'])) {
+    DebugAsset::register($this);
+}
 ?>
 
 <?php $this->beginPage() ?>
