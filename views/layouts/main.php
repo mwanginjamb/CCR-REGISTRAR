@@ -5,6 +5,9 @@
 
 use yii\helpers\Html;
 use app\assets\AppAsset;
+use app\library\AuthUi;
+
+
 AppAsset::register($this);
 
 $this->beginPage();
@@ -89,11 +92,16 @@ $this->beginPage();
         <!-- Bottom Actions -->
         <div
             class="mt-auto pt-6 border-t border-outline-variant/20 space-y-2 flex flex-col items-center lg:items-stretch">
-            <button
-                class="new-analysis-btn w-full bg-primary text-white py-3 px-4 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 flex items-center justify-center gap-2 mb-4 hover:opacity-90 active:scale-95 transition-all">
-                <span class="material-symbols-outlined text-sm">add</span>
-                <span class="nav-label">New Analysis</span>
-            </button>
+
+
+            <?= \yii\helpers\Html::a(
+                '<span class="material-symbols-outlined block lg:hidden" data-icon="add">add</span>' .
+                '<span class="hidden lg:block">New Site</span>',
+                ['patient/create'], // Replace with your actual route
+                [
+                    'class' => AuthUi::buttonClass()
+                ]
+            ) ?>
             <?= Html::a(
                 '<span class="material-symbols-outlined">settings</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Settings</span>',
                 ['/site/settings'],

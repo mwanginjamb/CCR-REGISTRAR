@@ -3,6 +3,7 @@ use app\assets\AppAsset;
 use app\assets\DebugAsset;
 use app\library\AuthUi;
 use yii\helpers\Html;
+use yii\helpers\Url;
 
 AppAsset::register($this);
 
@@ -88,7 +89,7 @@ if (YII_DEBUG || isset($_GET['debug'])) {
 
             <nav class="flex-1 space-y-1">
                 <a class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2 text-[#444651] hover:bg-[#eceef0] transition-colors rounded-lg group"
-                    href="#" title="Registry">
+                    href="<?= Url::toRoute(['patient/index']) ?>" title="Registry">
                     <span class="material-symbols-outlined text-xl" data-icon="clinical_notes">clinical_notes</span>
                     <span class="font-inter text-sm font-medium hidden lg:block">Registry</span>
                 </a>

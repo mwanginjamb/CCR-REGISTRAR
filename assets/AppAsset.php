@@ -32,6 +32,7 @@ class AppAsset extends AssetBundle
         'js/geo-tag.js',
         'js/essentialTnmFields.js',
         'js/patientForm.js',
+
     ];
 
     public $depends = [
