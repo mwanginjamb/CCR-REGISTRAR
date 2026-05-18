@@ -373,14 +373,17 @@ use app\library\AuthUi;
                         Sources
                     </h3>
 
+                    <button type="button" id="add-source" class="px-4 py-2 bg-primary text-white rounded-lg">
+                        + Add Source
+                    </button>
+
                 </div>
 
-                <!-- row with source type and source no  and date -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <?= $form->field($modelSources, 'source_type')->dropDownList(\app\models\Sources::getSourceTypeOptions(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Source Type'])->label(false) ?>
-                    <?= $form->field($modelSources, 'source_no')->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Source No'])->label(false) ?>
-                    <?= $form->field($modelSources, 'source_date')->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Source Date'])->label(false) ?>
-                </div>
+                <!-- row with source type and source no  and date -->   
+                <div id="source-wrapper" class="space-y-4"></div>
+
+                <!-- render template -->
+                <?= $this->render('_template_source', ['form' => $form]) ?>
 
             </section>
 

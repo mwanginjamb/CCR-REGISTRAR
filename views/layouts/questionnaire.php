@@ -11,6 +11,8 @@ AppAsset::register($this);
 if (YII_DEBUG || isset($_GET['debug'])) {
     DebugAsset::register($this);
 }
+
+ $userAvatar = "https://placehold.co/150/cccccc/FFFFFF.webp/?text=" .(Yii::$app->user->identity->username?? 'User');
 ?>
 
 <?php $this->beginPage() ?>
@@ -64,7 +66,7 @@ if (YII_DEBUG || isset($_GET['debug'])) {
             </button>
 
             <div class="h-8 w-8 rounded-full bg-primary-fixed overflow-hidden ml-2">
-                https://lh3.googleusercontent.com/aida-public/AB6AXuBvI0vRNcmqmeDLG0Tb_DpROZNAUFY5Y3N3noNLIUE1Y5MkHozpACU6oeqIy-2ZxkyeZf3r3KegzHmea5gTr_zGHUn3VmqbXOuiItsMmOpqTJCWP42vntdBsxzRibmfRKV9BWgZrMxqq2dBNcdQlu5ZQ0YglPEt2p7o8EkkVzfMrD1QyJaTWdFhHc3wwbwBGDPRUJffAuqbYwLK4VAk5VnBvFVUzz6QzFgEeKgK3SD42IHoBKSjOwhAEwHAR-uu-8GcUSPC-yGFhaI
+                <?= Html::img($userAvatar, ['class' => 'w-full h-full object-cover']) ?>
             </div>
         </div>
     </header>

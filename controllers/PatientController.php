@@ -84,8 +84,6 @@ class PatientController extends Controller
             }
         }
 
-
-
         return $this->render('create', [
             'model' => $model,
             'modelTumour' => $modelTumour,

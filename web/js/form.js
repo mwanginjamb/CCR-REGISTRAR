@@ -133,6 +133,51 @@ document.addEventListener('DOMContentLoaded', async function () {
         addTreatmentRow();
     }
 
+
+    /**
+     * ADD SOURCE Entry
+     */
+
+    const sourceWrapper = document.getElementById('source-wrapper');
+    const sourceTemplate = document.getElementById('source-template').innerHTML;
+    let sourceIndex = sourceWrapper.querySelectorAll('.source-item').length;
+
+    function addSourceRow() {
+        const html = sourceTemplate.replace(/__index__/g, sourceIndex);
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        sourceWrapper.appendChild(div.firstElementChild);
+        sourceIndex++;
+        updateSourceRemoveVisibility();
+    }
+
+    function updateSourceRemoveVisibility() {
+        const rows = sourceWrapper.querySelectorAll('.source-item');
+        const alone = rows.length === 1;
+        rows.forEach(row => {
+            const btn = row.querySelector('.remove-source');
+            if (btn) btn.style.visibility = alone ? 'hidden' : 'visible';
+        });
+    }
+
+    document.getElementById('add-source').addEventListener('click', addSourceRow);
+
+    sourceWrapper.addEventListener('click', function (e) {
+        if (e.target.classList.contains('remove-source')) {
+            if (sourceWrapper.querySelectorAll('.source-item').length > 1) {
+                e.target.closest('.source-item').remove();
+                updateSourceRemoveVisibility();
+            }
+        }
+    });
+
+    // Seed first row if wrapper is empty (JS-owned first row)
+    if (!sourceWrapper.querySelector('.source-item')) {
+        addSourceRow();
+    }
+
+
+
     // Await Geolocation permissions
 
     const _coords = await GeoTag.capture();
