@@ -35,6 +35,10 @@ class Sources extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
+
+            // explicit safe rule for all attributes
+           // [['source_type', 'source_no', 'source_date', 'patient_id', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'safe'],
+            
             [['source_type', 'source_no', 'source_date', 'patient_id', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'default', 'value' => null],
             [['source_type', 'patient_id', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'integer'],
             [['source_date'], 'safe'],

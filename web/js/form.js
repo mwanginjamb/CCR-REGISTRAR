@@ -8,30 +8,20 @@ document.addEventListener('DOMContentLoaded', async function () {
         return;
     }
 
-    /**
-     * ACTIVATE STEP
-     */
     function activateStep(targetId) {
-
         stepButtons.forEach(button => {
             button.classList.remove('active-step');
             button.classList.add('inactive-step');
-
             const number = button.querySelector('.step-number');
             if (number) {
                 number.classList.remove('bg-primary', 'text-white');
                 number.classList.add('bg-surface-container-high', 'text-outline');
             }
         });
-
-        const activeButtons = document.querySelectorAll(
-            `.form-step[data-target="${targetId}"]`
-        );
-
+        const activeButtons = document.querySelectorAll(`.form-step[data-target="${targetId}"]`);
         activeButtons.forEach(button => {
             button.classList.remove('inactive-step');
             button.classList.add('active-step');
-
             const number = button.querySelector('.step-number');
             if (number) {
                 number.classList.remove('bg-surface-container-high', 'text-outline');
@@ -40,31 +30,19 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     }
 
-
-    /**
-     * CLICK STEP -> SCROLL
-     */
     stepButtons.forEach(button => {
         button.addEventListener('click', function () {
-
             const targetId = this.dataset.target;
             const targetSection = document.getElementById(targetId);
-
             if (!targetSection) return;
-
             window.scrollTo({
                 top: targetSection.offsetTop - 120,
                 behavior: 'smooth'
             });
-
             activateStep(targetId);
         });
     });
 
-
-    /**
-     * SCROLL OBSERVER
-     */
     const observer = new IntersectionObserver(
         (entries) => {
             entries.forEach(entry => {
@@ -79,34 +57,52 @@ document.addEventListener('DOMContentLoaded', async function () {
             rootMargin: '-120px 0px -55% 0px'
         }
     );
-
     sections.forEach(section => observer.observe(section));
-
-
-    /**
-     * INITIAL ACTIVE STEP
-     */
     activateStep(sections[0].id);
 
-
-    /**
-     * ADD TREATMENT
-     */
-
+    // ------------------------------------------------------------------
+    // TREATMENT ROWS
+    // ------------------------------------------------------------------
     const wrapper = document.getElementById('treatment-wrapper');
     const template = document.getElementById('treatment-template').innerHTML;
-    let treatmentIndex = wrapper.querySelectorAll('.treatment-item').length;
 
-    function addTreatmentRow() {
-        const html = template.replace(/__index__/g, treatmentIndex);
-        const div = document.createElement('div');
-        div.innerHTML = html;
-        wrapper.appendChild(div.firstElementChild);
-        treatmentIndex++;
-        updateRemoveVisibility();
+    // Helper: get the highest index currently used in the wrapper
+    function getMaxTreatmentIndex() {
+        let max = -1;
+        wrapper.querySelectorAll('.treatment-item').forEach(item => {
+            const idxAttr = item.getAttribute('data-index');
+            if (idxAttr !== null) {
+                max = Math.max(max, parseInt(idxAttr, 10));
+            } else {
+                // fallback: try to extract from input names
+                const input = item.querySelector('input[name*="[treatment]"]');
+                if (input && input.name) {
+                    const match = input.name.match(/Treatment\[(\d+)\]/);
+                    if (match) max = Math.max(max, parseInt(match[1], 10));
+                }
+            }
+        });
+        return max;
     }
 
-    // conditional update of remove button visibility
+    // Get the next available index
+    function getNextTreatmentIndex() {
+        return getMaxTreatmentIndex() + 1;
+    }
+
+    function addTreatmentRow() {
+        const newIndex = getNextTreatmentIndex();
+        const html = template.replace(/__index__/g, newIndex);
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        const newRow = div.firstElementChild;
+        // Enable all inputs inside the new row
+        newRow.querySelectorAll('input, select, textarea').forEach(el => el.removeAttribute('disabled'));
+        // Store the index as a data attribute for easier future indexing
+        newRow.setAttribute('data-index', newIndex);
+        wrapper.appendChild(newRow);
+        updateRemoveVisibility();
+    }
 
     function updateRemoveVisibility() {
         const rows = wrapper.querySelectorAll('.treatment-item');
@@ -128,26 +124,51 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     });
 
-    // Seed first row if wrapper is empty (JS-owned first row)
+    // Only seed a new row if there are NO existing rows (e.g., on create page)
     if (!wrapper.querySelector('.treatment-item')) {
         addTreatmentRow();
+    } else {
+        // Existing rows are already present (update scenario) – just update remove visibility
+        updateRemoveVisibility();
     }
 
-
-    /**
-     * ADD SOURCE Entry
-     */
-
+    // ------------------------------------------------------------------
+    // SOURCE ROWS
+    // ------------------------------------------------------------------
     const sourceWrapper = document.getElementById('source-wrapper');
     const sourceTemplate = document.getElementById('source-template').innerHTML;
-    let sourceIndex = sourceWrapper.querySelectorAll('.source-item').length;
+
+    function getMaxSourceIndex() {
+        let max = -1;
+        sourceWrapper.querySelectorAll('.source-item').forEach(item => {
+            const idxAttr = item.getAttribute('data-index');
+            if (idxAttr !== null) {
+                max = Math.max(max, parseInt(idxAttr, 10));
+            } else {
+                const input = item.querySelector('input[name*="[source_type]"]');
+                if (input && input.name) {
+                    const match = input.name.match(/Sources\[(\d+)\]/);
+                    if (match) max = Math.max(max, parseInt(match[1], 10));
+                }
+            }
+        });
+        return max;
+    }
+
+    function getNextSourceIndex() {
+        return getMaxSourceIndex() + 1;
+    }
 
     function addSourceRow() {
-        const html = sourceTemplate.replace(/__index__/g, sourceIndex);
+        const newIndex = getNextSourceIndex();
+        const html = sourceTemplate.replace(/__index__/g, newIndex);
         const div = document.createElement('div');
         div.innerHTML = html;
-        sourceWrapper.appendChild(div.firstElementChild);
-        sourceIndex++;
+        const newRow = div.firstElementChild;
+        // Enable all inputs inside the new row
+        newRow.querySelectorAll('input, select, textarea').forEach(el => el.removeAttribute('disabled'));
+        newRow.setAttribute('data-index', newIndex);
+        sourceWrapper.appendChild(newRow);
         updateSourceRemoveVisibility();
     }
 
@@ -171,16 +192,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     });
 
-    // Seed first row if wrapper is empty (JS-owned first row)
     if (!sourceWrapper.querySelector('.source-item')) {
         addSourceRow();
+    } else {
+        updateSourceRemoveVisibility();
     }
 
-
-
-    // Await Geolocation permissions
-
+    // Geolocation
     const _coords = await GeoTag.capture();
     GeoTag.fillDisplay(_coords);
-
 });

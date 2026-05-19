@@ -27,19 +27,22 @@ use app\library\AuthUi;
             <?= $form->field(new \app\models\Treatment(), "[__index__]treatment")
                 ->dropDownList(\app\models\Treatment::getTreatment(), [
                     'class' => AuthUi::inputClass(),
-                    'prompt' => 'Select Treatment'
+                    'prompt' => 'Select Treatment',
+                    'disabled' => 'disabled'
                 ]) ?>
 
             <?= $form->field(new \app\models\Treatment(), "[__index__]treatment_status")
                 ->dropDownList(\app\models\Treatment::getTreatmentStatus(), [
                     'class' => AuthUi::inputClass(),
-                    'prompt' => 'Select Status'
+                    'prompt' => 'Select Status',
+                    'disabled' => 'disabled'
                 ]) ?>
 
             <?= $form->field(new \app\models\Treatment(), "[__index__]treatment_date")
                 ->textInput([
                     'type' => 'date',
-                    'class' => AuthUi::inputClass()
+                    'class' => AuthUi::inputClass(),
+                    'disabled' => 'disabled'
                 ]) ?>
 
         </div>

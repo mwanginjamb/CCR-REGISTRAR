@@ -9,6 +9,7 @@ use app\library\AuthUi;
 
 
 AppAsset::register($this);
+$userAvatar = "https://placehold.co/150/cccccc/FFFFFF.webp/?text=" .(Yii::$app->user->identity->username?? 'User');
 
 $this->beginPage();
 ?>
@@ -173,9 +174,7 @@ $this->beginPage();
                             <?= Html::encode(Yii::$app->user->identity->role ?? '') ?>
                         </p>
                     </div>
-                    <img class="w-8 h-8 lg:w-10 lg:h-10 rounded-full border-2 border-white shadow-sm object-cover"
-                        src="<?= Html::encode(Yii::$app->user->identity->avatarUrl ?? '/img/avatar-placeholder.png') ?>"
-                        alt="<?= Html::encode(Yii::$app->user->identity->name ?? 'User') ?>" />
+                    <?= Html::img($userAvatar, ['class' => 'w-8 h-8 lg:w-10 lg:h-10 rounded-full border-2 border-white shadow-sm object-cover']) ?>
                 </div>
             </div>
         </header>

@@ -69,88 +69,189 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Direct Sync Fallback (doesn't require Background Sync API) ────────────
     async function directSyncFallback() {
         console.log('Attempting direct sync fallback...');
-
-        if (!navigator.onLine) {
-            console.log('Cannot direct sync while offline');
-            return false;
-        }
+        if (!navigator.onLine) return false;
 
         try {
             const pending = await PatientDB.getPending();
+            if (pending.length === 0) return true;
 
-            if (pending.length === 0) {
-                console.log('No pending records to sync');
-                return true;
-            }
-
-            console.log(`Found ${pending.length} records to sync directly`);
             showBanner(`Syncing ${pending.length} record(s)...`, 'info');
-
             let synced = 0;
             let failed = 0;
+            let detailedErrors = [];
 
             for (const record of pending) {
-                try {
-                    const response = await fetch(API_ENDPOINT, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-Token': csrfToken || ''
-                        },
-                        body: JSON.stringify(record.form_data)
-                    });
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        await PatientDB.markSynced(record.local_id, result.id);
-                        console.log(`✅ Direct sync success for record ${record.local_id}`);
-                        synced++;
-                    } else if (response.status === 422) {
-                        const errorData = await response.json();
-                        await PatientDB.markError(record.local_id, JSON.stringify(errorData.errors || errorData));
-                        console.error(`❌ Validation error for record ${record.local_id}:`, errorData);
-                        failed++;
-                    } else {
-                        console.error(`❌ HTTP ${response.status} for record ${record.local_id}`);
-                        failed++;
-                    }
-                } catch (err) {
-                    console.error(`❌ Direct sync failed for record ${record.local_id}:`, err);
+                const result = await syncRecordWithRetry(record);
+                if (result.success) {
+                    synced++;
+                } else {
                     failed++;
+                    if (result.errorDetail) detailedErrors.push(result.errorDetail);
                 }
             }
 
-            console.log(`Direct sync complete: ${synced} synced, ${failed} failed`);
-
-            if (synced > 0) {
-                showBanner(`Synced ${synced} record(s) successfully!`, 'success');
-            }
-
+            if (synced > 0) showBanner(`Synced ${synced} record(s) successfully!`, 'success');
             if (failed > 0) {
-                showBanner(`${failed} record(s) failed to sync. Will retry later.`, 'warning');
+                const msg = `${failed} record(s) failed to sync. Check details.`;
+                showBanner(msg, 'warning');
+                if (detailedErrors.length) showDetailedErrors(detailedErrors);
             }
-
-            // Refresh UI
             await checkPendingSyncs();
-
-            // Notify via Service Worker if available
-            if (navigator.serviceWorker.controller) {
-                navigator.serviceWorker.controller.postMessage({
-                    type: 'SYNC_SUMMARY',
-                    synced: synced,
-                    errors: failed,
-                    total: pending.length,
-                    timestamp: Date.now()
-                });
-            }
-
             return synced > 0;
-
         } catch (err) {
             console.error('Direct sync fallback failed:', err);
             return false;
         }
     }
+
+    async function syncRecordWithRetry(record, retriesLeft = 3) {
+        const maxRetries = 3;
+        let currentRetry = 0;
+        let delay = 1000; // initial backoff
+
+        while (currentRetry <= maxRetries) {
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken || ''
+                    },
+                    body: JSON.stringify(record.form_data)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    await PatientDB.markSynced(record.local_id, result.id);
+                    console.log(`✅ Sync success for record ${record.local_id}`);
+                    return { success: true };
+                }
+
+                // Handle HTTP errors
+                const errorData = await response.json().catch(() => ({}));
+                const isTransient = response.status >= 500 || response.status === 429;
+                const errorMsg = `HTTP ${response.status}: ${JSON.stringify(errorData)}`;
+                console.error(`❌ Sync failed for ${record.local_id}: ${errorMsg}`);
+
+                if (response.status === 422) {
+                    // Permanent validation error
+                    await PatientDB.markError(record.local_id, errorMsg, response.status, errorData);
+                    return {
+                        success: false,
+                        errorDetail: {
+                            local_id: record.local_id,
+                            status: response.status,
+                            message: errorMsg,
+                            details: errorData
+                        }
+                    };
+                }
+
+                if (isTransient && currentRetry < maxRetries) {
+                    // Retry with backoff
+                    console.log(`Retrying ${record.local_id} in ${delay}ms (attempt ${currentRetry + 1}/${maxRetries})...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2; // exponential backoff
+                    currentRetry++;
+                    continue;
+                }
+
+                // Permanent or retries exhausted
+                await PatientDB.markError(record.local_id, errorMsg, response.status, errorData);
+                return {
+                    success: false,
+                    errorDetail: {
+                        local_id: record.local_id,
+                        status: response.status,
+                        message: errorMsg,
+                        details: errorData
+                    }
+                };
+            } catch (err) {
+                // Network error or fetch exception
+                console.error(`Network error for ${record.local_id}:`, err);
+                if (currentRetry < maxRetries) {
+                    console.log(`Retrying ${record.local_id} in ${delay}ms (attempt ${currentRetry + 1}/${maxRetries})...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
+                    currentRetry++;
+                    continue;
+                }
+                await PatientDB.markError(record.local_id, err.message, null, null);
+                return {
+                    success: false,
+                    errorDetail: {
+                        local_id: record.local_id,
+                        status: 'network',
+                        message: err.message
+                    }
+                };
+            }
+        }
+        return { success: false };
+    }
+
+    function showDetailedErrors(errors) {
+        // Create a modal or expandable section
+        let modal = document.getElementById('sync-error-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'sync-error-modal';
+            modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden';
+            modal.innerHTML = `
+            <div class="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-auto p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-red-600">Sync Errors</h3>
+                    <button id="close-error-modal" class="text-gray-500 hover:text-gray-700">&times;</button>
+                </div>
+                <div id="error-details-list" class="space-y-3"></div>
+                <div class="mt-4 flex justify-end gap-2">
+                    <button id="retry-all-errors" class="px-4 py-2 bg-primary text-white rounded">Retry All</button>
+                    <button id="close-error-modal-btn" class="px-4 py-2 bg-gray-300 rounded">Close</button>
+                </div>
+            </div>
+        `;
+            document.body.appendChild(modal);
+            document.getElementById('close-error-modal')?.addEventListener('click', () => modal.classList.add('hidden'));
+            document.getElementById('close-error-modal-btn')?.addEventListener('click', () => modal.classList.add('hidden'));
+            document.getElementById('retry-all-errors')?.addEventListener('click', async () => {
+                modal.classList.add('hidden');
+                await retryFailedRecords();
+            });
+        }
+
+        const listContainer = document.getElementById('error-details-list');
+        listContainer.innerHTML = '';
+        errors.forEach(err => {
+            const div = document.createElement('div');
+            div.className = 'border-l-4 border-red-500 bg-red-50 p-3 rounded';
+            div.innerHTML = `
+            <div class="font-mono text-sm">Record #${err.local_id}</div>
+            <div class="text-xs text-gray-600">Status: ${err.status}</div>
+            <div class="text-xs break-all">${err.message}</div>
+            ${err.details && err.details.errors ? `<details class="mt-2"><summary class="cursor-pointer text-xs">Details</summary><pre class="text-xs bg-gray-100 p-2 rounded overflow-auto">${JSON.stringify(err.details.errors, null, 2)}</pre></details>` : ''}
+        `;
+            listContainer.appendChild(div);
+        });
+        modal.classList.remove('hidden');
+    }
+
+    async function retryFailedRecords() {
+        showBanner('Retrying failed records...', 'info');
+        try {
+            const errors = await PatientDB.getErrors();
+            for (const rec of errors) {
+                await PatientDB.resetToPending(rec.local_id);
+            }
+            await directSyncFallback();
+        } catch (err) {
+            console.error('Retry failed:', err);
+            showBanner('Failed to retry records', 'error');
+        }
+    }
+
+    // Expose retry function globally
+    window.retryFailedRecords = retryFailedRecords;
 
     // ── Trigger Background Sync with fallback ─────────────────────────────────
     async function triggerBackgroundSync() {
@@ -507,6 +608,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     sync_status: 'pending',
                     server_id: null,
                     form_data: payload,
+                    retry_count: 0,
                     created_at: Date.now()
                 });
                 showBanner('Saved locally, syncing to server...', 'info');
@@ -565,6 +667,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 server_id: null,
                 form_data: payload,
                 is_offline_save: true,
+                retry_count: 0,
                 created_at: Date.now()
             });
 
@@ -614,6 +717,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 server_id: null,
                 form_data: formData,
                 is_draft: true,
+                retry_count: 0,
                 created_at: Date.now()
             });
 
@@ -629,46 +733,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Build API Payload ────────────────────────────────────────────────────
     function buildApiPayload(formData) {
         const payload = {
-            Patient: {},
-            Tumour: {},
-            Treatment: [],
-            Sources: {},
-            FollowUp: {}
+            Patient: formData.Patient || {},
+            Tumour: formData.Tumour || {},
+            Treatment: formData.Treatment || [],
+            Sources: formData.Sources || [],
+            FollowUp: formData.FollowUp || {},
+            _geo: formData._geo || null,
+            concurrent_illness: formData.concurrent_illness || ''
         };
 
-        Object.keys(formData).forEach(key => {
-            if (key.startsWith('Patient')) {
-                const fieldName = key.replace('Patient', '').toLowerCase();
-                payload.Patient[fieldName] = formData[key];
-            } else if (key.startsWith('Tumour')) {
-                const fieldName = key.replace('Tumour', '').toLowerCase();
-                payload.Tumour[fieldName] = formData[key];
-            } else if (key.startsWith('Treatment')) {
-                const match = key.match(/Treatment\[(\d+)\]\[(\w+)\]/);
-                if (match) {
-                    const idx = parseInt(match[1]);
-                    const field = match[2];
-                    if (!payload.Treatment[idx]) payload.Treatment[idx] = {};
-                    payload.Treatment[idx][field] = formData[key];
-                }
-            } else if (key.startsWith('Sources')) {
-                const fieldName = key.replace('Sources', '').toLowerCase();
-                payload.Sources[fieldName] = formData[key];
-            } else if (key.startsWith('FollowUp')) {
-                const fieldName = key.replace('FollowUp', '').toLowerCase();
-                payload.FollowUp[fieldName] = formData[key];
-            } else if (key === 'concurrent_illness') {
-                payload.concurrent_illness = formData[key];
-            } else if (key === '_geo') {
-                payload._geo = formData[key];
-            }
-        });
-
+        // Remove empty entries
         if (Object.keys(payload.Patient).length === 0) delete payload.Patient;
         if (Object.keys(payload.Tumour).length === 0) delete payload.Tumour;
-        if (payload.Treatment.length === 0) delete payload.Treatment;
-        if (Object.keys(payload.Sources).length === 0) delete payload.Sources;
+        if (!payload.Treatment.length) delete payload.Treatment;
+        if (!payload.Sources.length) delete payload.Sources;
         if (Object.keys(payload.FollowUp).length === 0) delete payload.FollowUp;
+        if (!payload._geo) delete payload._geo;
+        if (!payload.concurrent_illness) delete payload.concurrent_illness;
 
         return payload;
     }
@@ -715,26 +796,45 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData(formElement);
 
         for (let [key, value] of formData.entries()) {
-            const matches = key.match(/^(\w+)\[(\d+)\]\[(\w+)\]$/);
-            if (matches) {
-                const [, model, index, field] = matches;
+            // Skip disabled fields and template placeholders
+            if (key.includes('__index__')) continue;
+
+            // Handle nested array fields: Model[index][field]
+            const arrayMatch = key.match(/^(\w+)\[(\d+)\]\[(\w+)\]$/);
+            if (arrayMatch) {
+                const [, model, index, field] = arrayMatch;
                 const arrayKey = `${model}Array`;
                 if (!data[arrayKey]) data[arrayKey] = [];
                 if (!data[arrayKey][index]) data[arrayKey][index] = {};
                 data[arrayKey][index][field] = value;
-            } else {
-                if (key === 'geo_captured' && value) {
-                    value = value.replace('T', ' ').replace(/\.\d+Z?$/, '').trim();
+            }
+            // Handle simple nested fields: Model[field]
+            else {
+                const nestedMatch = key.match(/^(\w+)\[(\w+)\]$/);
+                if (nestedMatch) {
+                    const [, model, field] = nestedMatch;
+                    if (!data[model]) data[model] = {};
+                    data[model][field] = value;
+                } else {
+                    // Flat fields
+                    data[key] = value;
                 }
-                data[key] = value;
             }
         }
 
+        // Convert TreatmentArray to Treatment array
         if (data.TreatmentArray) {
             data.Treatment = data.TreatmentArray.filter(t => t && Object.keys(t).length > 0);
             delete data.TreatmentArray;
         }
 
+        // Convert SourcesArray to Sources array
+        if (data.SourcesArray) {
+            data.Sources = data.SourcesArray.filter(s => s && Object.keys(s).length > 0);
+            delete data.SourcesArray;
+        }
+
+        // Add geo data
         if (data.geo_lat && data.geo_lng) {
             data._geo = {
                 lat: parseFloat(data.geo_lat),
@@ -742,6 +842,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 accuracy: data.geo_accuracy ? parseFloat(data.geo_accuracy) : 0,
                 captured_at: data.geo_captured || new Date().toISOString().replace('T', ' ').replace(/\.\d+/, '')
             };
+            delete data.geo_lat;
+            delete data.geo_lng;
+            delete data.geo_accuracy;
+            delete data.geo_captured;
         }
 
         return data;
@@ -782,15 +886,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ── Attach Event Listeners ────────────────────────────────────────────────
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (navigator.onLine) {
-            handleFormSubmit(e);
-        } else {
-            handleOfflineSave(e);
-        }
-    });
+    /* form.addEventListener('submit', (e) => {
+         e.preventDefault();
+         if (navigator.onLine) {
+             handleFormSubmit(e);
+         } else {
+             handleOfflineSave(e);
+         }
+     });*/
 
+    // Only attach custom handlers to offline/draft buttons – normal submit goes to server
     if (submitBtn) {
         submitBtn.addEventListener('click', handleFormSubmit);
     }

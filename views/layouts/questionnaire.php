@@ -120,6 +120,7 @@ if (YII_DEBUG || isset($_GET['debug'])) {
         <!-- Page Content -->
         <main class="flex flex-col ml-20 lg:ml-64 flex-1 p-4 md:p-8 bg-background">
             <?= $this->render('_breadcrumbs') ?>
+            <?= $this->render('_flashAlerts') ?>
             <?= $content ?>
         </main>
 
