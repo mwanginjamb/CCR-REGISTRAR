@@ -45,6 +45,7 @@ $config = [
                     'class' => 'yii\log\FileTarget',
                     'levels' => ['info'],
                     'categories' => ['api-debug'],
+                    'logVars' => [],  
                     'logFile' => '@runtime/logs/api-debug.log',
                 ]
             ],

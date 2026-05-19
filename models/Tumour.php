@@ -52,7 +52,7 @@ class Tumour extends \yii\db\ActiveRecord
         return [
             
             // explicit safe rule for all attributes
-            //[['incident_date', 'basis_of_diagnosis', 'primary_site', 'laterality', 'histology', 'behaviour', 'grade', 'stage', 't', 'n', 'm', 'full_tnm', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'safe'],
+            [['incident_date', 'basis_of_diagnosis', 'primary_site', 'laterality', 'histology', 'behaviour', 'grade', 'stage', 't', 'n', 'm', 'full_tnm', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'safe'],
             
             [['incident_date', 'basis_of_diagnosis', 'primary_site', 'laterality', 'histology', 'behaviour', 'grade', 'stage', 't', 'n', 'm', 'full_tnm', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'default', 'value' => null],
             [['patient_id'], 'required'],

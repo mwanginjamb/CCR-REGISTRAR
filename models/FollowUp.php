@@ -38,7 +38,7 @@ class FollowUp extends \yii\db\ActiveRecord
         return [
 
             // explicit safe rule for all attributes
-           // [['present_status', 'cause_of_death', 'last_date_of_contact', 'remarks', 'patient_id', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'safe'],
+           [['present_status', 'cause_of_death', 'last_date_of_contact', 'remarks', 'patient_id', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'safe'],
         
             [['present_status', 'cause_of_death', 'last_date_of_contact', 'remarks', 'patient_id', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'default', 'value' => null],
             [['present_status', 'patient_id', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'integer'],

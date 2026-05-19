@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const maxRetries = 3;
         let currentRetry = 0;
         let delay = 1000; // initial backoff
-
+        console.log('Syncing record payload:', JSON.stringify(record.form_data, null, 2));
         while (currentRetry <= maxRetries) {
             try {
                 const response = await fetch(API_ENDPOINT, {
@@ -733,23 +733,60 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Build API Payload ────────────────────────────────────────────────────
     function buildApiPayload(formData) {
         const payload = {
-            Patient: formData.Patient || {},
-            Tumour: formData.Tumour || {},
-            Treatment: formData.Treatment || [],
-            Sources: formData.Sources || [],
-            FollowUp: formData.FollowUp || {},
-            _geo: formData._geo || null,
-            concurrent_illness: formData.concurrent_illness || ''
+            Patient: {},
+            Tumour: {},
+            Treatment: [],
+            Sources: [],
+            FollowUp: {},
+            concurrent_illness: '',
+            _geo: null
         };
 
-        // Remove empty entries
+        // Extract Patient fields (if they exist as an object)
+        if (formData.Patient && typeof formData.Patient === 'object') {
+            payload.Patient = { ...formData.Patient };
+        }
+
+        // Extract Tumour fields
+        if (formData.Tumour && typeof formData.Tumour === 'object') {
+            payload.Tumour = { ...formData.Tumour };
+        }
+
+        // Extract Treatment array
+        if (formData.Treatment && Array.isArray(formData.Treatment)) {
+            payload.Treatment = formData.Treatment.filter(t => t && Object.keys(t).length > 0);
+        }
+
+        // Extract Sources array
+        if (formData.Sources && Array.isArray(formData.Sources)) {
+            payload.Sources = formData.Sources.filter(s => s && Object.keys(s).length > 0);
+        }
+
+        // Extract FollowUp fields
+        if (formData.FollowUp && typeof formData.FollowUp === 'object') {
+            payload.FollowUp = { ...formData.FollowUp };
+        }
+
+        // Extract concurrent_illness (might be in formData directly or in Treatment object)
+        if (formData.concurrent_illness) {
+            payload.concurrent_illness = formData.concurrent_illness;
+        } else if (formData.Treatment && formData.Treatment.concurrent_illness) {
+            payload.concurrent_illness = formData.Treatment.concurrent_illness;
+        }
+
+        // Extract geo data
+        if (formData._geo) {
+            payload._geo = formData._geo;
+        }
+
+        // Clean up empty entries
         if (Object.keys(payload.Patient).length === 0) delete payload.Patient;
         if (Object.keys(payload.Tumour).length === 0) delete payload.Tumour;
-        if (!payload.Treatment.length) delete payload.Treatment;
-        if (!payload.Sources.length) delete payload.Sources;
+        if (payload.Treatment.length === 0) delete payload.Treatment;
+        if (payload.Sources.length === 0) delete payload.Sources;
         if (Object.keys(payload.FollowUp).length === 0) delete payload.FollowUp;
-        if (!payload._geo) delete payload._geo;
         if (!payload.concurrent_illness) delete payload.concurrent_illness;
+        if (!payload._geo) delete payload._geo;
 
         return payload;
     }

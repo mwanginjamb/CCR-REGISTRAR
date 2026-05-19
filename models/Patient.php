@@ -79,7 +79,7 @@ class Patient extends \yii\db\ActiveRecord
         return [
 
             // Allow mass assignment by assigning an explicit safe rule for all attributes
-           // [['full_name', 'national_id', 'telephone_no_patient', 'telephone_no_nok', 'age', 'date_of_birth', 'place_of_birth', 'ethnic_group', 'religion', 'created_at', 'updated_at', 'created_by', 'updated_by', 'geo_lat', 'geo_lng', 'geo_accuracy', 'geo_captured'], 'safe'],
+            [['full_name', 'national_id', 'telephone_no_patient', 'telephone_no_nok', 'age', 'date_of_birth', 'place_of_birth', 'ethnic_group', 'religion', 'created_at', 'updated_at', 'created_by', 'updated_by', 'geo_lat', 'geo_lng', 'geo_accuracy', 'geo_captured'], 'safe'],
                     
 
 
