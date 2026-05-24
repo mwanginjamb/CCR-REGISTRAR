@@ -488,7 +488,7 @@ use app\library\AuthUi;
                     </button>
 
                     <!-- Submit Button - Hidden when offline -->
-                     <?= Html::submitButton('Submit', ['class' => 'flex-1 sm:flex-none px-6 md:px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-[#002d72] text-white font-bold hover:opacity-90 transition-opacity shadow-md']) ?>
+                     <?= Html::submitButton('Submit', ['class' => 'flex-1 sm:flex-none px-6 md:px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-[#002d72] text-white font-bold hover:opacity-90 transition-opacity shadow-md','id'=>'submit-form-default']) ?>
                     <!-- <button type="button" id="submit-form"
                         class="flex-1 sm:flex-none px-6 md:px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-[#002d72] text-white font-bold hover:opacity-90 transition-opacity shadow-md"
                         style="display: flex;">

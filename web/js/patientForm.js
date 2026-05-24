@@ -6,7 +6,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('patient-form');
     const statusBanner = document.getElementById('sync-status-banner');
-    const submitBtn = document.getElementById('submit-form');
+    const submitBtn = document.getElementById('submit-form-default');
     const offlineSaveBtn = document.getElementById('offline-save-btn');
     const saveDraftBtn = document.getElementById('save-draft-btn');  // Fixed!
     const modeIndicator = document.getElementById('mode-indicator');
