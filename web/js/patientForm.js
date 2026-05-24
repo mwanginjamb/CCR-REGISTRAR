@@ -4,6 +4,8 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+    const API_ENDPOINT = '/patient-api/create';
+    const SYNC_TAG = 'sync-patient-records';
     const form = document.getElementById('patient-form');
     const statusBanner = document.getElementById('sync-status-banner');
     const submitBtn = document.getElementById('submit-form-default');
