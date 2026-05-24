@@ -1,5 +1,6 @@
 /**
- * patientForm.js - Offline-first form handler with dynamic UI and sync fallbacks
+ * patientForm.js - Hardened offline-first form handler
+ * Uses multiple strategies to detect true offline status
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -9,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusBanner = document.getElementById('sync-status-banner');
     const submitBtn = document.getElementById('submit-form');
     const offlineSaveBtn = document.getElementById('offline-save-btn');
-    const saveDraftBtn = document.getElementById('save-draft-btn');
+    const saveDraftBtn = require('draft-js');
     const modeIndicator = document.getElementById('mode-indicator');
     const syncQueueIndicator = document.getElementById('sync-queue-indicator');
     const syncQueueCount = document.getElementById('sync-queue-count');
@@ -27,8 +28,206 @@ document.addEventListener('DOMContentLoaded', () => {
     let pendingSyncCount = 0;
     let syncRetryCount = 0;
     let pollingInterval = null;
+    let healthCheckInterval = null;
+    let isTrulyOnline = true;
+    let lastHealthCheckTime = 0;
+
     const MAX_SYNC_RETRIES = 5;
     const POLLING_INTERVAL = 30000; // 30 seconds
+    const HEALTH_CHECK_INTERVAL = 15000; // 15 seconds
+    const HEALTH_CHECK_TIMEOUT = 5000; // 5 seconds
+    const API_HEALTH_ENDPOINT = '/patient-api/health';
+
+    // ── True Online Detection (Multiple Strategies) ──────────────────────────
+
+    /**
+     * Strategy 1: Actual network request to health endpoint
+     * Most reliable - tests if the API is actually reachable
+     */
+    async function checkReachability() {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), HEALTH_CHECK_TIMEOUT);
+
+            const response = await fetch(API_HEALTH_ENDPOINT, {
+                method: 'HEAD',
+                signal: controller.signal,
+                cache: 'no-cache',
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            });
+
+            clearTimeout(timeoutId);
+            return response.ok;
+        } catch (err) {
+            console.debug('Health check failed:', err.message);
+            return false;
+        }
+    }
+
+    /**
+     * Strategy 2: DNS resolution check via image loading
+     * Tests if DNS is working (works in airplane mode where navigator.onLine may still be true)
+     */
+    function checkDnsViaImage() {
+        return new Promise((resolve) => {
+            const img = new Image();
+            const timeout = setTimeout(() => {
+                img.src = '';
+                resolve(false);
+            }, 3000);
+
+            img.onload = () => {
+                clearTimeout(timeout);
+                resolve(true);
+            };
+
+            img.onerror = () => {
+                clearTimeout(timeout);
+                resolve(false);
+            };
+
+            // Use a reliable, small image from your domain or CDN
+            img.src = '/favicon.ico?t=' + Date.now();
+        });
+    }
+
+    /**
+     * Strategy 3: Navigator connection check (modern browsers)
+     * Checks actual network connectivity state
+     */
+    function checkConnectionAPI() {
+        if ('connection' in navigator) {
+            const conn = navigator.connection;
+            // If offline === true, definitely offline
+            if (conn.offline === true) return false;
+            // If rtt is 0 and downlink is 0, likely offline
+            if (conn.rtt === 0 && conn.downlink === 0) return false;
+            // If save-data is enabled, still might be online but cautious
+            if (conn.saveData === true) {
+                console.log('Save data mode enabled - assuming cautious online');
+            }
+        }
+        return null; // inconclusive
+    }
+
+    /**
+     * Strategy 4: Online status using multiple checks
+     * Combines all strategies for most accurate result
+     */
+    let cachedOnlineStatus = true;
+    let lastStatusCheck = 0;
+    const STATUS_CACHE_DURATION = 5000; // Cache for 5 seconds
+
+    async function getTrueOnlineStatus(forceCheck = false) {
+        const now = Date.now();
+
+        // Return cached status if within duration and not forced
+        if (!forceCheck && (now - lastStatusCheck) < STATUS_CACHE_DURATION) {
+            return cachedOnlineStatus;
+        }
+
+        let isOnline = false;
+
+        // First try navigator.onLine (fast but unreliable)
+        const navOnline = navigator.onLine;
+
+        // Check Connection API
+        const connStatus = checkConnectionAPI();
+        if (connStatus === false) {
+            isOnline = false;
+        } else if (connStatus === true) {
+            isOnline = true;
+        } else {
+            // Inconclusive, do actual reachability tests
+            // Try multiple checks in parallel for speed
+            const [reachable, dnsWorks] = await Promise.all([
+                checkReachability(),
+                checkDnsViaImage()
+            ]);
+
+            isOnline = reachable || dnsWorks;
+
+            // If navOnline says true but reachability says false, we're likely in airplane mode
+            if (navOnline === true && !reachable && !dnsWorks) {
+                console.warn('navigator.onLine reported true but actual network is unavailable (airplane mode detected)');
+                isOnline = false;
+            }
+        }
+
+        // Update cache
+        cachedOnlineStatus = isOnline;
+        lastStatusCheck = now;
+
+        console.log(`True online status: ${isOnline ? 'ONLINE' : 'OFFLINE'} (nav.onLine: ${navOnline})`);
+
+        return isOnline;
+    }
+
+    /**
+     * Continuous health monitoring - periodically checks actual connectivity
+     */
+    function startHealthMonitoring() {
+        if (healthCheckInterval) {
+            clearInterval(healthCheckInterval);
+        }
+
+        healthCheckInterval = setInterval(async () => {
+            const wasOnline = isTrulyOnline;
+            isTrulyOnline = await getTrueOnlineStatus(true);
+
+            // If status changed, trigger UI update
+            if (wasOnline !== isTrulyOnline) {
+                console.log(`Connectivity changed: ${wasOnline ? 'ONLINE' : 'OFFLINE'} -> ${isTrulyOnline ? 'ONLINE' : 'OFFLINE'}`);
+                updateUIMode();
+
+                if (isTrulyOnline) {
+                    showBanner('Connection restored! Syncing pending records...', 'success');
+                    await triggerBackgroundSync();
+                } else {
+                    showBanner('Connection lost. Data will be saved locally.', 'warning');
+                }
+            }
+        }, HEALTH_CHECK_INTERVAL);
+    }
+
+    // ── Enhanced Online/Offline Event Handlers ──────────────────────────────
+    // Don't rely solely on navigator.onLine events - do actual checks
+    window.addEventListener('online', async () => {
+        console.log('Browser online event fired');
+        // Verify with actual check
+        const trulyOnline = await getTrueOnlineStatus(true);
+        if (trulyOnline) {
+            updateUIMode();
+            showBanner('Back online! Syncing pending records...', 'success');
+            await triggerBackgroundSync();
+        } else {
+            console.warn('Browser online event fired but network not actually available');
+        }
+    });
+
+    window.addEventListener('offline', async () => {
+        console.log('Browser offline event fired');
+        isTrulyOnline = false;
+        updateUIMode();
+        showBanner('You are offline. Data will be saved locally and synced when online.', 'warning');
+    });
+
+    // Monitor page visibility - recheck when page becomes visible
+    document.addEventListener('visibilitychange', async () => {
+        if (!document.hidden) {
+            console.log('Page became visible, checking connectivity...');
+            const trulyOnline = await getTrueOnlineStatus(true);
+            if (trulyOnline !== isTrulyOnline) {
+                updateUIMode();
+            }
+            if (trulyOnline) {
+                await checkPendingSyncs();
+            }
+        }
+    });
 
     // ── Helper: Check if Background Sync is supported ─────────────────────────
     async function isBackgroundSyncSupported() {
@@ -69,7 +268,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Direct Sync Fallback (doesn't require Background Sync API) ────────────
     async function directSyncFallback() {
         console.log('Attempting direct sync fallback...');
-        if (!navigator.onLine) return false;
+
+        // Use true online status instead of navigator.onLine
+        const trulyOnline = await getTrueOnlineStatus();
+        if (!trulyOnline) return false;
 
         try {
             const pending = await PatientDB.getPending();
@@ -108,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const maxRetries = 3;
         let currentRetry = 0;
         let delay = 1000; // initial backoff
-        console.log('Syncing record payload:', JSON.stringify(record.form_data, null, 2));
+
         while (currentRetry <= maxRetries) {
             try {
                 const response = await fetch(API_ENDPOINT, {
@@ -148,15 +350,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (isTransient && currentRetry < maxRetries) {
-                    // Retry with backoff
                     console.log(`Retrying ${record.local_id} in ${delay}ms (attempt ${currentRetry + 1}/${maxRetries})...`);
                     await new Promise(resolve => setTimeout(resolve, delay));
-                    delay *= 2; // exponential backoff
+                    delay *= 2;
                     currentRetry++;
                     continue;
                 }
 
-                // Permanent or retries exhausted
                 await PatientDB.markError(record.local_id, errorMsg, response.status, errorData);
                 return {
                     success: false,
@@ -168,7 +368,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 };
             } catch (err) {
-                // Network error or fetch exception
                 console.error(`Network error for ${record.local_id}:`, err);
                 if (currentRetry < maxRetries) {
                     console.log(`Retrying ${record.local_id} in ${delay}ms (attempt ${currentRetry + 1}/${maxRetries})...`);
@@ -192,7 +391,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showDetailedErrors(errors) {
-        // Create a modal or expandable section
         let modal = document.getElementById('sync-error-modal');
         if (!modal) {
             modal = document.createElement('div');
@@ -250,13 +448,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Expose retry function globally
     window.retryFailedRecords = retryFailedRecords;
 
     // ── Trigger Background Sync with fallback ─────────────────────────────────
     async function triggerBackgroundSync() {
-        if (!navigator.onLine) {
-            console.log('Cannot sync while offline');
+        const trulyOnline = await getTrueOnlineStatus();
+        if (!trulyOnline) {
+            console.log('Cannot sync while truly offline');
             return false;
         }
 
@@ -268,14 +466,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // Wait for SW to be ready
             console.log('Waiting for Service Worker to be ready...');
             const registration = await navigator.serviceWorker.ready;
 
             if (!registration.active) {
                 console.log('SW not active yet, waiting for activation...');
 
-                // Wait for SW activation with timeout
                 await new Promise((resolve, reject) => {
                     const timeout = setTimeout(() => reject(new Error('SW activation timeout')), 10000);
 
@@ -301,7 +497,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            // Try to register sync
             console.log('Registering background sync...');
             await registration.sync.register(SYNC_TAG);
             console.log('Background sync registered successfully');
@@ -311,7 +506,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             console.error('Background sync registration failed:', err);
 
-            // Fallback to direct sync on certain errors
             if (err.name === 'NotAllowedError') {
                 console.log('Sync permission denied, falling back to direct sync');
                 return await directSyncFallback();
@@ -330,13 +524,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Setup Polling Sync (fallback for browsers without Background Sync) ────
     function setupPollingSync() {
-        // Clear existing interval
         if (pollingInterval) {
             clearInterval(pollingInterval);
             pollingInterval = null;
         }
 
-        // Only set up polling if Background Sync is not available
         (async () => {
             const syncAvailable = await isBackgroundSyncSupported();
             if (syncAvailable) {
@@ -346,77 +538,68 @@ document.addEventListener('DOMContentLoaded', () => {
 
             console.log('Setting up polling sync fallback (every 30 seconds)');
 
-            // Poll when online
-            const poll = () => {
-                if (navigator.onLine) {
+            const poll = async () => {
+                const trulyOnline = await getTrueOnlineStatus();
+                if (trulyOnline) {
                     console.log('Polling sync check...');
-                    directSyncFallback();
+                    await directSyncFallback();
                 }
             };
 
-            // Start polling
             pollingInterval = setInterval(poll, POLLING_INTERVAL);
 
-            // Also sync when coming online
-            window.addEventListener('online', () => {
-                console.log('Online detected, syncing immediately...');
-                directSyncFallback();
+            window.addEventListener('online', async () => {
+                const trulyOnline = await getTrueOnlineStatus(true);
+                if (trulyOnline) {
+                    console.log('Online detected via event, verifying...');
+                    await directSyncFallback();
+                }
             });
 
-            // Initial sync after delay
             setTimeout(poll, 5000);
         })();
     }
 
     // ── Cleanup polling on page unload ────────────────────────────────────────
     window.addEventListener('beforeunload', () => {
-        if (pollingInterval) {
-            clearInterval(pollingInterval);
-        }
+        if (pollingInterval) clearInterval(pollingInterval);
+        if (healthCheckInterval) clearInterval(healthCheckInterval);
     });
 
-    // ── UI Mode Management ──────────────────────────────────────────────────
-    function updateUIMode() {
-        const isOnline = navigator.onLine;
+    // ── UI Mode Management (Uses true online status) ─────────────────────────
+    async function updateUIMode() {
+        const isOnline = await getTrueOnlineStatus();
+        isTrulyOnline = isOnline;
 
         if (isOnline) {
-            // Online Mode
             document.body.classList.remove('offline-mode');
             document.body.classList.add('online-mode');
 
-            // Update mode indicator
             if (modeIndicator) {
                 modeIndicator.textContent = 'LIVE MODE';
-                modeIndicator.className = 'px-3 py-1 rounded-full text-[10px] md:text-xs font-bold bg-success-container text-on-success-container';
+                modeIndicator.className = 'px-3 py-1 rounded-full text-[10px] md:text-xs font-bold bg-green-100 text-green-800';
             }
 
-            // Show/hide buttons
             if (submitBtn) submitBtn.style.display = 'flex';
             if (offlineSaveBtn) offlineSaveBtn.style.display = 'none';
 
-            // Update draft button text
             const draftText = document.getElementById('save-draft-text');
             if (draftText) draftText.textContent = 'Save as Draft';
 
-            // Check for pending syncs when coming online
-            checkPendingSyncs();
+            await checkPendingSyncs();
 
         } else {
-            // Offline Mode
             document.body.classList.remove('online-mode');
             document.body.classList.add('offline-mode');
 
-            // Update mode indicator
             if (modeIndicator) {
                 modeIndicator.textContent = 'DRAFT MODE (OFFLINE)';
-                modeIndicator.className = 'px-3 py-1 rounded-full text-[10px] md:text-xs font-bold bg-warning-container text-on-warning-container';
+                modeIndicator.className = 'px-3 py-1 rounded-full text-[10px] md:text-xs font-bold bg-yellow-100 text-yellow-800';
             }
 
-            // Show/hide buttons
             if (submitBtn) submitBtn.style.display = 'none';
             if (offlineSaveBtn) offlineSaveBtn.style.display = 'flex';
 
-            // Update draft button text for offline
             const draftText = document.getElementById('save-draft-text');
             if (draftText) draftText.textContent = 'Save Draft Locally';
         }
@@ -437,19 +620,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (syncQueueIndicator && pendingSyncCount > 0) {
                 syncQueueIndicator.style.display = 'block';
                 syncQueueIndicator.classList.add('sync-pending');
-
-                // Make indicator clickable for manual sync
                 syncQueueIndicator.style.cursor = 'pointer';
                 syncQueueIndicator.onclick = async () => {
                     showBanner('Manual sync triggered...', 'info');
                     await triggerBackgroundSync();
                 };
-
-                // Show tooltip on hover
                 syncQueueIndicator.title = `${pendingSyncCount} pending sync(s) - Click to sync now`;
 
-                // If online and have pending syncs, trigger sync
-                if (navigator.onLine && pendingSyncCount > 0) {
+                const trulyOnline = await getTrueOnlineStatus();
+                if (trulyOnline && pendingSyncCount > 0) {
                     showBanner(`${pendingSyncCount} pending syncs found. Syncing...`, 'info');
                     await triggerBackgroundSync();
                 }
@@ -463,15 +642,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Add health check endpoint to API controller (temporary)
+    async function ensureHealthEndpoint() {
+        // This will be added to PatientApiController
+        console.log('Health endpoint should be added to PatientApiController: actionHealth()');
+    }
+
     // ── Register Service Worker ──────────────────────────────────────────────
     if ('serviceWorker' in navigator) {
-        // Wait for page load to register SW
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/sw.js')
                 .then(reg => {
                     console.log('SW registered:', reg.scope);
-
-                    // Check for updates
                     reg.addEventListener('updatefound', () => {
                         console.log('SW update found');
                         const newWorker = reg.installing;
@@ -486,7 +668,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 .catch(err => console.warn('SW registration failed:', err));
         });
 
-        // Handle SW messages
         navigator.serviceWorker.addEventListener('message', ({ data }) => {
             console.log('Message from SW:', data);
 
@@ -513,53 +694,41 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (data?.type === 'SW_READY') {
                 console.log('Service Worker is ready');
-                // Trigger sync if there are pending records
                 checkPendingSyncs();
             }
         });
 
-        // Handle controller change (SW activation)
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             console.log('Service Worker controller changed');
             checkPendingSyncs();
         });
     } else {
         console.warn('Service Worker not supported, using direct sync only');
-        // Setup polling sync as fallback
         setupPollingSync();
     }
 
-    // ── Online / Offline Event Handlers ──────────────────────────────────────
-    const updateOnlineUI = () => {
-        updateUIMode();
-
-        if (navigator.onLine) {
-            showBanner('Back online! Syncing pending records...', 'success');
-            triggerBackgroundSync();
-        } else {
-            showBanner('You are offline. Data will be saved locally and synced when online.', 'warning');
-        }
-    };
-
-    window.addEventListener('online', updateOnlineUI);
-    window.addEventListener('offline', updateOnlineUI);
-
     // Also sync when page becomes visible again
-    document.addEventListener('visibilitychange', () => {
-        if (!document.hidden && navigator.onLine) {
-            console.log('Page visible, checking for pending syncs...');
-            checkPendingSyncs();
+    document.addEventListener('visibilitychange', async () => {
+        if (!document.hidden) {
+            const trulyOnline = await getTrueOnlineStatus();
+            if (trulyOnline) {
+                console.log('Page visible, checking for pending syncs...');
+                await checkPendingSyncs();
+            }
         }
     });
 
-    // Initial UI setup
-    updateUIMode();
+    // Start health monitoring
+    startHealthMonitoring();
 
-    // Initialize sync handling
-    setTimeout(async () => {
-        await checkPendingSyncs();
-        setupPollingSync(); // This will only activate if Background Sync is not available
-    }, 1000);
+    // Initial UI setup
+    (async () => {
+        await updateUIMode();
+        setTimeout(async () => {
+            await checkPendingSyncs();
+            setupPollingSync();
+        }, 1000);
+    })();
 
     // ── Main Form Submit Handler (Online) ─────────────────────────────────────
     const handleFormSubmit = async (event) => {
@@ -568,7 +737,8 @@ document.addEventListener('DOMContentLoaded', () => {
             event.stopPropagation();
         }
 
-        if (!navigator.onLine) {
+        const trulyOnline = await getTrueOnlineStatus();
+        if (!trulyOnline) {
             showBanner('You are offline. Please use "Save Offline" button.', 'warning');
             return;
         }
@@ -601,7 +771,6 @@ document.addEventListener('DOMContentLoaded', () => {
             formData._csrf = csrfToken;
             const payload = buildApiPayload(formData);
 
-            // Save to IndexedDB first
             let localId;
             try {
                 localId = await PatientDB.save({
@@ -618,7 +787,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Sync immediately
             await attemptSync(localId, payload);
 
         } catch (error) {
@@ -672,7 +840,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             showBanner('Saved offline! Will sync when online.', 'success');
-
             await checkPendingSyncs();
 
             setTimeout(() => {
@@ -742,44 +909,36 @@ document.addEventListener('DOMContentLoaded', () => {
             _geo: null
         };
 
-        // Extract Patient fields (if they exist as an object)
         if (formData.Patient && typeof formData.Patient === 'object') {
             payload.Patient = { ...formData.Patient };
         }
 
-        // Extract Tumour fields
         if (formData.Tumour && typeof formData.Tumour === 'object') {
             payload.Tumour = { ...formData.Tumour };
         }
 
-        // Extract Treatment array
         if (formData.Treatment && Array.isArray(formData.Treatment)) {
             payload.Treatment = formData.Treatment.filter(t => t && Object.keys(t).length > 0);
         }
 
-        // Extract Sources array
         if (formData.Sources && Array.isArray(formData.Sources)) {
             payload.Sources = formData.Sources.filter(s => s && Object.keys(s).length > 0);
         }
 
-        // Extract FollowUp fields
         if (formData.FollowUp && typeof formData.FollowUp === 'object') {
             payload.FollowUp = { ...formData.FollowUp };
         }
 
-        // Extract concurrent_illness (might be in formData directly or in Treatment object)
         if (formData.concurrent_illness) {
             payload.concurrent_illness = formData.concurrent_illness;
         } else if (formData.Treatment && formData.Treatment.concurrent_illness) {
             payload.concurrent_illness = formData.Treatment.concurrent_illness;
         }
 
-        // Extract geo data
         if (formData._geo) {
             payload._geo = formData._geo;
         }
 
-        // Clean up empty entries
         if (Object.keys(payload.Patient).length === 0) delete payload.Patient;
         if (Object.keys(payload.Tumour).length === 0) delete payload.Tumour;
         if (payload.Treatment.length === 0) delete payload.Treatment;
@@ -811,7 +970,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
             await PatientDB.markSynced(localId, result.id);
             showBanner('Patient record saved and synced!', 'success');
-
             await checkPendingSyncs();
 
             if (result.id) {
@@ -833,10 +991,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData(formElement);
 
         for (let [key, value] of formData.entries()) {
-            // Skip disabled fields and template placeholders
             if (key.includes('__index__')) continue;
 
-            // Handle nested array fields: Model[index][field]
             const arrayMatch = key.match(/^(\w+)\[(\d+)\]\[(\w+)\]$/);
             if (arrayMatch) {
                 const [, model, index, field] = arrayMatch;
@@ -844,34 +1000,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!data[arrayKey]) data[arrayKey] = [];
                 if (!data[arrayKey][index]) data[arrayKey][index] = {};
                 data[arrayKey][index][field] = value;
-            }
-            // Handle simple nested fields: Model[field]
-            else {
+            } else {
                 const nestedMatch = key.match(/^(\w+)\[(\w+)\]$/);
                 if (nestedMatch) {
                     const [, model, field] = nestedMatch;
                     if (!data[model]) data[model] = {};
                     data[model][field] = value;
                 } else {
-                    // Flat fields
                     data[key] = value;
                 }
             }
         }
 
-        // Convert TreatmentArray to Treatment array
         if (data.TreatmentArray) {
             data.Treatment = data.TreatmentArray.filter(t => t && Object.keys(t).length > 0);
             delete data.TreatmentArray;
         }
 
-        // Convert SourcesArray to Sources array
         if (data.SourcesArray) {
             data.Sources = data.SourcesArray.filter(s => s && Object.keys(s).length > 0);
             delete data.SourcesArray;
         }
 
-        // Add geo data
         if (data.geo_lat && data.geo_lng) {
             data._geo = {
                 lat: parseFloat(data.geo_lat),
@@ -893,14 +1043,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!statusBanner) return;
 
         const colours = {
-            success: 'bg-tertiary-container text-on-tertiary-container',
-            error: 'bg-error-container text-on-error-container',
-            warning: 'bg-warning-container text-on-warning-container',
-            info: 'bg-surface-container text-on-surface-variant'
+            success: 'bg-green-100 text-green-800 border-green-200',
+            error: 'bg-red-100 text-red-800 border-red-200',
+            warning: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+            info: 'bg-blue-100 text-blue-800 border-blue-200'
         };
 
         statusBanner.textContent = msg;
-        statusBanner.className = `fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl font-semibold shadow-lg transition-all ${colours[type] || colours.info}`;
+        statusBanner.className = `fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl font-semibold shadow-lg border ${colours[type] || colours.info}`;
         statusBanner.style.display = 'block';
 
         if (statusBanner._timer) clearTimeout(statusBanner._timer);
@@ -909,30 +1059,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 5000);
     }
 
-    // ── Export debug functions (if debug mode is enabled) ─────────────────────
+    // ── Export debug functions ────────────────────────────────────────────────
     window.syncDebug = {
         triggerSync: triggerBackgroundSync,
         directSync: directSyncFallback,
         checkPending: checkPendingSyncs,
+        checkConnectivity: getTrueOnlineStatus,
         getStatus: async () => ({
-            isOnline: navigator.onLine,
+            isOnline: await getTrueOnlineStatus(),
+            navOnline: navigator.onLine,
             pendingCount: pendingSyncCount,
             syncSupported: await isBackgroundSyncSupported(),
-            pollingActive: pollingInterval !== null
+            pollingActive: pollingInterval !== null,
+            healthCheckActive: healthCheckInterval !== null
         })
     };
 
     // ── Attach Event Listeners ────────────────────────────────────────────────
-    /* form.addEventListener('submit', (e) => {
-         e.preventDefault();
-         if (navigator.onLine) {
-             handleFormSubmit(e);
-         } else {
-             handleOfflineSave(e);
-         }
-     });*/
-
-    // Only attach custom handlers to offline/draft buttons – normal submit goes to server
     if (submitBtn) {
         submitBtn.addEventListener('click', handleFormSubmit);
     }
@@ -945,7 +1088,6 @@ document.addEventListener('DOMContentLoaded', () => {
         saveDraftBtn.addEventListener('click', handleSaveDraft);
     }
 
-    // Back button functionality
     const backBtn = document.getElementById('back-btn');
     if (backBtn) {
         backBtn.addEventListener('click', () => {
@@ -953,5 +1095,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    console.log('Patient form initialized - Dynamic UI mode active with sync fallbacks');
+    console.log('Patient form initialized - Hardened offline detection active');
 });

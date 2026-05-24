@@ -208,4 +208,19 @@ class PatientApiController extends Controller
             return ['error' => $e->getMessage()];
         }
     }
+
+    /**
+     * Health check endpoint for connectivity testing
+     */
+    public function actionHealth()
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        
+        // Return minimal response for quick connectivity check
+        return [
+            'status' => 'ok',
+            'timestamp' => date('Y-m-d H:i:s'),
+            'version' => '1.0'
+        ];
+    }
 }
