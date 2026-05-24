@@ -4,13 +4,11 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    const API_ENDPOINT = '/patient-api/create';
-    const SYNC_TAG = 'sync-patient-records';
     const form = document.getElementById('patient-form');
     const statusBanner = document.getElementById('sync-status-banner');
     const submitBtn = document.getElementById('submit-form');
     const offlineSaveBtn = document.getElementById('offline-save-btn');
-    const saveDraftBtn = require('draft-js');
+    const saveDraftBtn = document.getElementById('save-draft-btn');  // Fixed!
     const modeIndicator = document.getElementById('mode-indicator');
     const syncQueueIndicator = document.getElementById('sync-queue-indicator');
     const syncQueueCount = document.getElementById('sync-queue-count');
