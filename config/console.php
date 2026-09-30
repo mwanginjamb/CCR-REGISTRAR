@@ -1,5 +1,11 @@
 <?php
 
+use services\redcap\ChoiceParser;
+use services\redcap\DictionaryImporter;
+use services\redcap\DictionaryRowParser;
+use services\redcap\IcdoChoiceExtractor;
+use services\redcap\SpreadsheetDictionaryReader;
+
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
 
@@ -10,7 +16,7 @@ $config = [
     'controllerNamespace' => 'app\commands',
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
-        '@npm'   => '@vendor/npm-asset',
+        '@npm' => '@vendor/npm-asset',
         '@tests' => '@app/tests',
     ],
     'components' => [
@@ -26,6 +32,19 @@ $config = [
             ],
         ],
         'db' => $db,
+    ],
+    'container' => [
+        'definitions' => [
+            DictionaryImporter::class => static function () {
+                return new DictionaryImporter(
+                    new SpreadsheetDictionaryReader(),
+                    new DictionaryRowParser(),
+                    new ChoiceParser(),
+                    new IcdoChoiceExtractor(),
+                    \Yii::$app->db
+                );
+            },
+        ],
     ],
     'params' => $params,
     /*
