@@ -62,3 +62,55 @@ html {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+
+/* Mode transitions */
+.mode-transition {
+    transition: all 0.3s ease;
+}
+
+/* Online mode styles */
+.online-mode .online-only {
+    display: flex !important;
+}
+
+.online-mode .offline-only {
+    display: none !important;
+}
+
+/* Offline mode styles */
+.offline-mode .online-only {
+    display: none !important;
+}
+
+.offline-mode .offline-only {
+    display: flex !important;
+}
+
+/* Draft button styling based on mode */
+.online-mode #save-draft-btn {
+    background-color: transparent;
+    color: #001a48;
+    border: 1px solid #e0e3e5;
+}
+
+.offline-mode #save-draft-btn {
+    background-color: #e8f0fe;
+    color: #001a48;
+    border: 1px solid #001a48;
+}
+
+/* Animation for sync indicator */
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.sync-pending {
+    animation: pulse 1s infinite;
+}

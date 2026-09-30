@@ -2,13 +2,14 @@
 
 use app\library\FormUi;
 use yii\helpers\Html;
-use yii\web\AssetBundle;
 use yii\widgets\ActiveForm;
 use app\library\AuthUi;
 
 /** @var yii\web\View $this */
 /** @var app\models\Patient $model */
 /** @var yii\bootstrap5\ActiveForm $form */
+
+// View attributes of $model
 
 
 
@@ -22,24 +23,25 @@ use app\library\AuthUi;
     <div class="mb-8 md:mb-10 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
 
         <div>
-
             <h1 class="text-2xl md:text-3xl font-extrabold text-primary tracking-tight">
                 REG-2024-KEM-8842
             </h1>
-
             <p class="text-on-surface-variant text-xs md:text-sm mt-1">
                 Manual Abstract Record • Clinical Research Unit
             </p>
-
         </div>
 
-        <div class="flex items-center">
-
-            <span
-                class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-[10px] md:text-xs font-bold">
-                DRAFT MODE
+        <div class="flex items-center gap-3">
+            <!-- Connection Status Indicator -->
+            <span id="connection-status"
+                class="px-3 py-1 rounded-full text-[10px] md:text-xs font-bold bg-surface-container-high text-outline">
+                Checking...
             </span>
 
+            <!-- Mode Indicator - Changes based on online/offline -->
+            <span id="mode-indicator" class="px-3 py-1 rounded-full text-[10px] md:text-xs font-bold">
+                <!-- Content will be set by JavaScript -->
+            </span>
         </div>
 
     </div>
@@ -57,8 +59,26 @@ use app\library\AuthUi;
         <div class="w-full lg:w-3/4 space-y-6 md:space-y-8">
 
 
-            <?php $form = ActiveForm::begin(AuthUi::formConfig('patient-form')); ?>
+            <?php $form = ActiveForm::begin([
+                'id' => 'patient-form',
+                'options' => ['class' => 'patient-form'],
+                'method' => 'post'
+            ]); ?>
 
+
+            <!-- Error summary -->
+             <?php if ($model->hasErrors('_form')): ?>
+                <div class="alert alert-danger">
+                    <strong>Validation Errors:</strong>
+                    <ul>
+                        <?php foreach ($model->getErrors('_form') as $error): ?>
+                            <li><?= Html::encode($error) ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
+            <?= $form->errorSummary($model); // still show Patient’s own errors ?>
+            
 
             <!-- SECTION 1 -->
             <section id="patient-information"
@@ -88,29 +108,29 @@ use app\library\AuthUi;
 
                     <div>
 
-                        <?= $form->field($model, 'telephone_no_nok')->textInput(['placeholder' => 'Enter telephone number of next of kin', 'class' => \app\library\AuthUi::inputClass()]) ?>
+                        <?= $form->field($model, 'telephone_no_nok')->textInput(['placeholder' => 'Enter telephone number of next of kin', 'class' => \app\library\AuthUi::inputClass(),'type' => 'tel']) ?>
                     </div>
 
                     <div>
 
-                        <?= $form->field($model, 'date_of_birth')->textInput(['placeholder' => 'Enter date of birth', 'class' => \app\library\AuthUi::inputClass(), 'type' => 'date']) ?>
+                        <?= $form->field($model, 'date_of_birth')->textInput(['type' => 'date', 'class' => \app\library\AuthUi::inputClass()]) ?>
                     </div>
 
                     <div>
 
-                        <?= $form->field($model, 'age')->textInput(['class' => \app\library\AuthUi::inputClass(), 'readonly' => true]) ?>
+                        <?= $form->field($model, 'age')->textInput(['class' => \app\library\AuthUi::inputClass(), 'readonly' => true])->hint('Age will be calculated automatically') ?>
                     </div>
 
                     <div>
-                        <?= $form->field($model, 'place_of_birth')->textInput(['class' => \app\library\AuthUi::inputClass(), 'readonly' => true]) ?>
+                        <?= $form->field($model, 'place_of_birth')->textInput(['class' => \app\library\AuthUi::inputClass()]) ?>
                     </div>
 
                     <div>
-                        <?= $form->field($model, 'ethnic_group')->dropDownList(\app\models\Patient::getEthnicGroups(), ['class' => \app\library\AuthUi::inputClass(), 'readonly' => true]) ?>
+                        <?= $form->field($model, 'ethnic_group')->dropDownList(\app\models\Patient::getEthnicGroups(), ['class' => \app\library\AuthUi::inputClass()]) ?>
                     </div>
 
                     <div>
-                        <?= $form->field($model, 'religion')->dropDownList(\app\models\Patient::getReligions(), ['class' => \app\library\AuthUi::inputClass(), 'readonly' => true]) ?>
+                        <?= $form->field($model, 'religion')->dropDownList(\app\models\Patient::getReligions(), ['class' => \app\library\AuthUi::inputClass()]) ?>
                     </div>
 
 
@@ -139,7 +159,8 @@ use app\library\AuthUi;
                                     class="text-[10px] text-on-surface-variant font-medium block mb-1">Latitude</label>
                                 <input id="geo-display-lat" type="text" readonly placeholder="—"
                                     class="<?= \app\library\AuthUi::inputClass() ?> bg-surface-dim cursor-default text-sm" />
-                                <input type="hidden" name="geo_lat" id="geo_lat" />
+
+                                <?= $form->field($model, 'geo_lat')->hiddenInput(['id' => 'geo_lat'])->label(false) ?>
                             </div>
 
                             <div>
@@ -147,7 +168,8 @@ use app\library\AuthUi;
                                     class="text-[10px] text-on-surface-variant font-medium block mb-1">Longitude</label>
                                 <input id="geo-display-lng" type="text" readonly placeholder="—"
                                     class="<?= \app\library\AuthUi::inputClass() ?> bg-surface-dim cursor-default text-sm" />
-                                <input type="hidden" name="geo_lng" id="geo_lng" />
+
+                                <?= $form->field($model, 'geo_lng')->hiddenInput(['id' => 'geo_lng'])->label(false) ?>
                             </div>
 
                             <div>
@@ -155,7 +177,7 @@ use app\library\AuthUi;
                                     (m)</label>
                                 <input id="geo-display-accuracy" type="text" readonly placeholder="—"
                                     class="<?= \app\library\AuthUi::inputClass() ?> bg-surface-dim cursor-default text-sm" />
-                                <input type="hidden" name="geo_accuracy" id="geo_accuracy" />
+                                <?= $form->field($model, 'geo_accuracy')->hiddenInput(['id' => 'geo_accuracy'])->label(false) ?>
                             </div>
 
                             <div>
@@ -163,7 +185,8 @@ use app\library\AuthUi;
                                     At</label>
                                 <input id="geo-display-captured_at" type="text" readonly placeholder="—"
                                     class="<?= \app\library\AuthUi::inputClass() ?> bg-surface-dim cursor-default text-sm" />
-                                <input type="hidden" name="geo_captured_at" id="geo_captured_at" />
+
+                                <?= $form->field($model, 'geo_captured')->hiddenInput(['id' => 'geo_captured_at'])->label(false) ?>
                             </div>
 
                         </div>
@@ -318,7 +341,22 @@ use app\library\AuthUi;
                 <!-- A row with treatment checkbox with a value(surgery), treatment_status (1 - No, 2 - Yes, 3 - unknown), treatment_date input -->
 
                 <!-- Treatment Row -->
-                <div id="treatment-wrapper" class="space-y-4"></div>
+                <div id="treatment-wrapper" class="space-y-4">
+                        <?php foreach ($modelTreatments as $index => $treatment): ?>
+                            <div class="treatment-item border p-4 rounded-lg bg-white" data-index="<?= $index ?>">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="text-sm font-semibold text-on-surface-variant">Treatment Entry</span>
+                                    <button type="button" class="remove-treatment flex items-center justify-center w-8 h-8 rounded-md hover:bg-red-50 text-red-500 transition">✕</button>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                                    <?= $form->field($treatment, "[$index]treatment")->dropDownList(\app\models\Treatment::getTreatment(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Treatment'])->label(false) ?>
+                                    <?= $form->field($treatment, "[$index]treatment_status")->dropDownList(\app\models\Treatment::getTreatmentStatus(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Status'])->label(false) ?>
+                                    <?= $form->field($treatment, "[$index]treatment_date")->textInput(['type' => 'date', 'class' => AuthUi::inputClass()])->label(false) ?>
+                                    <?= Html::activeHiddenInput($treatment, "[$index]id") ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                </div>
 
                 <!-- render template -->
                 <?= $this->render('_template_treatment', ['form' => $form]) ?>
@@ -364,14 +402,34 @@ use app\library\AuthUi;
                         Sources
                     </h3>
 
+                    <button type="button" id="add-source" class="px-4 py-2 bg-primary text-white rounded-lg">
+                        + Add Source
+                    </button>
+
                 </div>
 
-                <!-- row with source type and source no  and date -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <?= $form->field($modelSources, 'source_type')->dropDownList(\app\models\Sources::getSourceTypeOptions(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Source Type'])->label(false) ?>
-                    <?= $form->field($modelSources, 'source_no')->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Source No'])->label(false) ?>
-                    <?= $form->field($modelSources, 'source_date')->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Source Date'])->label(false) ?>
+                <!-- row with source type and source no  and date -->   
+                <div id="source-wrapper" class="space-y-4">
+
+                        <?php foreach ($modelSources as $index => $source): ?>
+                                <div class="source-item border p-4 rounded-lg bg-white" data-index="<?= $index ?>">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <span class="text-sm font-semibold text-on-surface-variant">Source Entry</span>
+                                        <button type="button" class="remove-source flex items-center justify-center w-8 h-8 rounded-md hover:bg-red-50 text-red-500 transition">✕</button>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <?= $form->field($source, "[$index]source_type")->dropDownList(\app\models\Sources::getSourceTypeOptions(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Source Type'])->label(false) ?>
+                                        <?= $form->field($source, "[$index]source_no")->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Source No'])->label(false) ?>
+                                        <?= $form->field($source, "[$index]source_date")->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Source Date'])->label(false) ?>
+                                        <?= Html::activeHiddenInput($source, "[$index]id") ?>
+                                    </div>
+                                </div>
+                        <?php endforeach; ?>
+
                 </div>
+
+                <!-- render template -->
+                <?= $this->render('_template_source', ['form' => $form]) ?>
 
             </section>
 
@@ -398,7 +456,7 @@ use app\library\AuthUi;
                     <?= $form->field($modelFollowUp, 'cause_of_death')->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Cause of Death'])->label(false) ?>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 mb-4">
-                    <?= $form->field($modelFollowUp, 'last_date_of_contact')->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Last Date of Contact'])->label(false) ?>
+                    <?= $form->field($modelFollowUp, 'last_date_of_contact')->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Last Date of Contact','type'=>'date'])->label(false) ?>
                     <?= $form->field($modelFollowUp, 'remarks')->textarea(['class' => AuthUi::inputClass(), 'placeholder' => 'Remarks'])->label(false) ?>
                 </div>
 
@@ -414,31 +472,52 @@ use app\library\AuthUi;
             <!-- ACTIONS -->
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 pt-4 pb-20">
 
-                <button type="button"
-                    class="px-6 py-3 rounded-xl text-primary font-bold hover:bg-surface-container transition-colors flex items-center justify-center sm:justify-start gap-2">
-
-                    <span class="material-symbols-outlined">
-                        drafts
-                    </span>
-
-                    Save as Draft
-
+                <!-- Save as Draft Button - Always visible but behavior changes -->
+                <button type="button" id="save-draft-btn"
+                    class="px-6 py-3 rounded-xl font-bold transition-colors flex items-center justify-center sm:justify-start gap-2"
+                    style="display: flex;">
+                    <span class="material-symbols-outlined">drafts</span>
+                    <span id="save-draft-text">Save as Draft</span>
                 </button>
 
                 <div class="flex gap-4">
-
-                    <button type="button"
+                    <!-- Back Button -->
+                    <button type="button" id="back-btn"
                         class="flex-1 sm:flex-none px-6 md:px-8 py-3 rounded-xl bg-surface-container-high text-outline font-bold hover:bg-surface-dim transition-colors">
                         Back
                     </button>
 
-                    <button type="submit"
-                        class="flex-1 sm:flex-none px-6 md:px-10 py-3 rounded-xl bg-gradient-to-r from-primary to-primary-container text-white font-bold shadow-[0_8px_24px_rgba(0,26,72,0.2)] hover:scale-105 transition-transform">
-                        Finalize Abstract
-                    </button>
+                    <!-- Submit Button - Hidden when offline -->
+                     <?= Html::submitButton('Submit', ['class' => 'flex-1 sm:flex-none px-6 md:px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-[#002d72] text-white font-bold hover:opacity-90 transition-opacity shadow-md','id'=>'submit-form-default']) ?>
+                    <!-- <button type="button" id="submit-form"
+                        class="flex-1 sm:flex-none px-6 md:px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-[#002d72] text-white font-bold hover:opacity-90 transition-opacity shadow-md"
+                        style="display: flex;">
+                        <span class="flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-lg">cloud_upload</span>
+                            Submit Online
+                        </span>
+                    </button> -->
 
+                    <!-- Offline Save Button - Visible only when offline -->
+                    <button type="button" id="offline-save-btn"
+                        class="flex-1 sm:flex-none px-6 md:px-8 py-3 rounded-xl bg-secondary-container text-on-secondary-container font-bold hover:opacity-90 transition-opacity shadow-md"
+                        style="display: none;">
+                        <span class="flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-lg">offline_bolt</span>
+                            Save Offline
+                        </span>
+                    </button>
                 </div>
 
+            </div>
+
+            <!-- Sync Queue Indicator (shows pending syncs when offline then online) -->
+            <div id="sync-queue-indicator" style="display: none;"
+                class="fixed bottom-6 left-6 z-50 px-4 py-2 rounded-lg bg-surface-container-high text-on-surface-variant text-sm shadow-lg">
+                <span class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">sync_problem</span>
+                    <span id="sync-queue-count">0</span> pending syncs
+                </span>
             </div>
 
             <?php ActiveForm::end(); ?>
@@ -458,5 +537,5 @@ $this->registerCssFile('@web/css/formPatient.css');
 $this->registerJsFile('@web/js/form.js', ['position' => \yii\web\View::POS_END]);
 
 // add js for essential tnm fields
-$this->registerJsFile('@web/js/essentialTnmFields.js', ['position' => \yii\web\View::POS_END]);
+//$this->registerJsFile('@web/js/essentialTnmFields.js', ['position' => \yii\web\View::POS_END]);
 ?>

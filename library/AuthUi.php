@@ -43,29 +43,7 @@ class AuthUi
     public static function buttonClass(): string
     {
         return '
-        w-full
-        py-3.5
-        md:py-4.5
-        px-4
-        bg-gradient-to-br
-        from-primary
-        to-primary-container
-        text-on-primary
-        font-headline
-        font-bold
-        text-base
-        md:text-lg
-        rounded-lg
-        shadow-[0_8px_20px_rgba(0,26,72,0.15)]
-        hover:shadow-[0_12px_24px_rgba(0,26,72,0.25)]
-        hover:scale-[1.01]
-        active:scale-95
-        transition-all
-        duration-150
-        flex
-        items-center
-        justify-center
-        gap-2
+       w-full mt-4 bg-primary text-white p-2.5 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center
     ';
     }
 

@@ -6,7 +6,7 @@
  *   3. Background Sync: flush pending IndexedDB records on reconnect
  */
 
-const CACHE_NAME = 'clinical-registry-v1.0.0';
+const CACHE_NAME = 'clinical-registry-v1.0.8';
 const SYNC_TAG = 'sync-patient-records';
 const API_SYNC_URL = '/api/patient/create';
 
@@ -17,6 +17,7 @@ const SHELL_ASSETS = [
     '/js/offline-db.js',
     '/js/geo-tag.js',
     '/js/patientForm.js',
+    '/js/form.js',
     '/manifest.json'
 ];
 

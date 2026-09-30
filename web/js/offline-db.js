@@ -3,9 +3,9 @@
  * Schema: patient_drafts store
  */
 const PatientDB = (() => {
-    const DB_NAME = 'ClinicalRegistryDB';
+    const DB_NAME = 'ClinicalRegistryDB-v1';
     const DB_VERSION = 1;
-    const STORE = 'patient_drafts';
+    const STORE = 'patient_drafts-v1';
     let _db = null;
 
     /** Open (or reuse) the DB connection */
@@ -71,8 +71,9 @@ const PatientDB = (() => {
         });
     };
 
-    /** Mark a record as errored with a reason */
-    const markError = async (local_id, reason) => {
+    /** Mark a record as errored with a reasons */
+
+    const markError = async (local_id, reason, statusCode = null, responseBody = null) => {
         const db = await open();
         return new Promise((resolve, reject) => {
             const tx = db.transaction(STORE, 'readwrite');
@@ -83,11 +84,48 @@ const PatientDB = (() => {
                 if (!rec) return resolve();
                 rec.sync_status = 'error';
                 rec.error_msg = reason;
-                store.put(rec).onsuccess = resolve;
+                rec.error_status = statusCode;
+                rec.error_response = responseBody;
+                rec.updated_at = Date.now();
+                store.put(rec).onsuccess = () => resolve();
             };
             get.onerror = () => reject(get.error);
         });
     };
 
-    return { open, save, getPending, markSynced, markError };
+    const getErrors = async () => {
+        const db = await open();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE, 'readonly');
+            const index = tx.objectStore(STORE).index('sync_status');
+            const req = index.getAll('error');
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+    };
+
+    const resetToPending = async (local_id) => {
+        const db = await open();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE, 'readwrite');
+            const store = tx.objectStore(STORE);
+            const get = store.get(local_id);
+            get.onsuccess = () => {
+                const rec = get.result;
+                if (!rec) return resolve();
+                rec.sync_status = 'pending';
+                rec.error_msg = null;
+                rec.retry_count = 0;
+                store.put(rec).onsuccess = () => resolve();
+            };
+            get.onerror = () => reject(get.error);
+        });
+    };
+
+
+
+
+
+
+    return { open, save, getPending, markSynced, markError, getErrors, resetToPending };
 })();

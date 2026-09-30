@@ -1,20 +1,92 @@
 {
-    "name": "Clinical Cancer Registry",
-    "short_name": "ClinReg",
-    "start_url": "/patient/create",
+    "name": "KEMRI Cancer Registry Case Registration Form",
+    "short_name": "OncoReg",
+    "description": "Official Kenya Medical Research Institute (KEMRI) platform for secure, reliable cancer population-based case registration and clinical data tracking.",
+    "lang": "en-US",
+    "start_url": "/patient/create/?utm_source=pwa",
+    "id": "/oncoreg-kcr-app",
     "display": "standalone",
+    "orientation": "portrait-primary",
     "background_color": "#ffffff",
     "theme_color": "#001A48",
+    "categories": [
+        "medical",
+        "productivity"
+    ],
     "icons": [
         {
-            "src": "/icons/icon-192x192-maskable.png",
+            "src": "/icons/icon-192.png",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any"
         },
         {
-            "src": "/icons/icon-512x512-maskable.png",
+            "src": "/icons/icon-192-maskable.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/icons/icon-512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-512-maskable.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
         }
-    ]
+    ],
+    "screenshots": [
+        {
+            "src": "/images/narrow-ss3.png",
+            "sizes": "750x1334",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Patient Registration Dashboard on Mobile"
+        },
+        {
+            "src": "/images/ss2.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Comprehensive Oncology Case Entry on Desktop"
+        },
+        {
+            "src": "/images/ss1.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Analytics and Pathology Report Tracking"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "New Case Registration",
+            "short_name": "New Case",
+            "description": "Open a blank form to register a new oncology case",
+            "url": "/patient/create",
+            "icons": [
+                {
+                    "src": "/icons/icon-192-maskable.png",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Offline Queue",
+            "short_name": "Offline Data",
+            "description": "View case files pending synchronization",
+            "url": "/patient/offline",
+            "icons": [
+                {
+                    "src": "/icons/icon-192-maskable.png",
+                    "sizes": "96x96"
+                }
+            ]
+        }
+    ],
+    "prefer_related_applications": false
 }

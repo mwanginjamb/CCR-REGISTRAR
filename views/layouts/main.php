@@ -5,7 +5,11 @@
 
 use yii\helpers\Html;
 use app\assets\AppAsset;
+use app\library\AuthUi;
+
+
 AppAsset::register($this);
+$userAvatar = "https://placehold.co/150/cccccc/FFFFFF.webp/?text=" .(Yii::$app->user->identity->username?? 'User');
 
 $this->beginPage();
 ?>
@@ -67,34 +71,21 @@ $this->beginPage();
             ) ?>
             <?= Html::a(
                 '<span class="material-symbols-outlined">query_stats</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Incidence</span>',
-                ['/incidence/index'],
+                ['/patient/index'],
                 [
                     'class' => 'nav-link flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-white/50 transition-transform duration-200 hover:translate-x-1',
                     'encode' => false,
+                    'title' => 'Cancer Sites Incidence'
                 ]
             ) ?>
-            <?= Html::a(
-                '<span class="material-symbols-outlined">analytics</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Stage Data</span>',
-                ['/stage/index'],
-                [
-                    'class' => 'nav-link flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-white/50 transition-transform duration-200 hover:translate-x-1',
-                    'encode' => false,
-                ]
-            ) ?>
-            <?= Html::a(
-                '<span class="material-symbols-outlined">speed</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Registry Performance</span>',
-                ['/performance/index'],
-                [
-                    'class' => 'nav-link flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-white/50 transition-transform duration-200 hover:translate-x-1',
-                    'encode' => false,
-                ]
-            ) ?>
+
             <?= Html::a(
                 '<span class="material-symbols-outlined">assessment</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Reports</span>',
                 ['/report/index'],
                 [
                     'class' => 'nav-link flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-white/50 transition-transform duration-200 hover:translate-x-1',
                     'encode' => false,
+                    'title' => 'Power BI Reports'
                 ]
             ) ?>
         </nav>
@@ -102,11 +93,16 @@ $this->beginPage();
         <!-- Bottom Actions -->
         <div
             class="mt-auto pt-6 border-t border-outline-variant/20 space-y-2 flex flex-col items-center lg:items-stretch">
-            <button
-                class="new-analysis-btn w-full bg-primary text-white py-3 px-4 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 flex items-center justify-center gap-2 mb-4 hover:opacity-90 active:scale-95 transition-all">
-                <span class="material-symbols-outlined text-sm">add</span>
-                <span class="nav-label">New Analysis</span>
-            </button>
+
+
+            <?= \yii\helpers\Html::a(
+                '<span class="material-symbols-outlined block lg:hidden" data-icon="add">add</span>' .
+                '<span class="hidden lg:block">New Site</span>',
+                ['patient/create'], // Replace with your actual route
+                [
+                    'class' => AuthUi::buttonClass()
+                ]
+            ) ?>
             <?= Html::a(
                 '<span class="material-symbols-outlined">settings</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Settings</span>',
                 ['/site/settings'],
@@ -178,9 +174,7 @@ $this->beginPage();
                             <?= Html::encode(Yii::$app->user->identity->role ?? '') ?>
                         </p>
                     </div>
-                    <img class="w-8 h-8 lg:w-10 lg:h-10 rounded-full border-2 border-white shadow-sm object-cover"
-                        src="<?= Html::encode(Yii::$app->user->identity->avatarUrl ?? '/img/avatar-placeholder.png') ?>"
-                        alt="<?= Html::encode(Yii::$app->user->identity->name ?? 'User') ?>" />
+                    <?= Html::img($userAvatar, ['class' => 'w-8 h-8 lg:w-10 lg:h-10 rounded-full border-2 border-white shadow-sm object-cover']) ?>
                 </div>
             </div>
         </header>

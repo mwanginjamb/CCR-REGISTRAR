@@ -45,6 +45,33 @@
         backdrop-filter: blur(20px);
     }
 
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+
+    h1,
+    h2,
+    h3 {
+        font-family: 'Manrope', sans-serif;
+    }
+
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        /* IE and Edge */
+        scrollbar-width: none;
+        /* Firefox */
+    }
+
     /* Mobile/Tablet Menu logic */
     @media (max-width: 1024px) {
         .nav-label {

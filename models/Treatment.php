@@ -36,6 +36,10 @@ class Treatment extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
+
+            // explicit safe rule for all attributes
+            [['treatment', 'treatment_status', 'treatment_date', 'patient_id', 'concurrent_illness', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'safe'],
+            
             [['treatment', 'treatment_status', 'treatment_date', 'patient_id', 'concurrent_illness', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'default', 'value' => null],
             [['treatment_status', 'patient_id', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'integer'],
             [['treatment_date'], 'safe'],

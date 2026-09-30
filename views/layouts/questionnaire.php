@@ -1,8 +1,18 @@
 <?php
 use app\assets\AppAsset;
+use app\assets\DebugAsset;
+use app\library\AuthUi;
 use yii\helpers\Html;
+use yii\helpers\Url;
 
 AppAsset::register($this);
+
+// conditionally register debug assets
+if (YII_DEBUG || isset($_GET['debug'])) {
+    DebugAsset::register($this);
+}
+
+ $userAvatar = "https://placehold.co/150/cccccc/FFFFFF.webp/?text=" .(Yii::$app->user->identity->username?? 'User');
 ?>
 
 <?php $this->beginPage() ?>
@@ -56,7 +66,7 @@ AppAsset::register($this);
             </button>
 
             <div class="h-8 w-8 rounded-full bg-primary-fixed overflow-hidden ml-2">
-                https://lh3.googleusercontent.com/aida-public/AB6AXuBvI0vRNcmqmeDLG0Tb_DpROZNAUFY5Y3N3noNLIUE1Y5MkHozpACU6oeqIy-2ZxkyeZf3r3KegzHmea5gTr_zGHUn3VmqbXOuiItsMmOpqTJCWP42vntdBsxzRibmfRKV9BWgZrMxqq2dBNcdQlu5ZQ0YglPEt2p7o8EkkVzfMrD1QyJaTWdFhHc3wwbwBGDPRUJffAuqbYwLK4VAk5VnBvFVUzz6QzFgEeKgK3SD42IHoBKSjOwhAEwHAR-uu-8GcUSPC-yGFhaI
+                <?= Html::img($userAvatar, ['class' => 'w-full h-full object-cover']) ?>
             </div>
         </div>
     </header>
@@ -81,7 +91,7 @@ AppAsset::register($this);
 
             <nav class="flex-1 space-y-1">
                 <a class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2 text-[#444651] hover:bg-[#eceef0] transition-colors rounded-lg group"
-                    href="#" title="Registry">
+                    href="<?= Url::toRoute(['patient/index']) ?>" title="Registry">
                     <span class="material-symbols-outlined text-xl" data-icon="clinical_notes">clinical_notes</span>
                     <span class="font-inter text-sm font-medium hidden lg:block">Registry List</span>
                 </a>
@@ -92,16 +102,20 @@ AppAsset::register($this);
                 </a>
             </nav>
 
-            <div class="pt-4 border-t border-surface-container-high">
-                <button class="w-full bg-primary text-white p-2.5 rounded-xl font-semibold">
-                    New Abstract
-                </button>
-            </div>
+            <?= \yii\helpers\Html::a(
+                '<span class="material-symbols-outlined block lg:hidden" data-icon="add">add</span>' .
+                '<span class="hidden lg:block">New Site</span>',
+                ['patient/create'], // Replace with your actual route
+                [
+                    'class' => AuthUi::buttonClass()
+                ]
+            ) ?>
         </aside>
 
         <!-- Page Content -->
         <main class="flex flex-col ml-20 lg:ml-64 flex-1 p-4 md:p-8 bg-background">
             <?= $this->render('_breadcrumbs') ?>
+            <?= $this->render('_flashAlerts') ?>
             <?= $content ?>
         </main>
 

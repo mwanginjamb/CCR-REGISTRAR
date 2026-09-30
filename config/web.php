@@ -19,6 +19,7 @@ $config = [
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
+            'cachePath' => '@runtime/cache',
         ],
         'user' => [
             'identityClass' => 'app\models\User',
@@ -40,6 +41,13 @@ $config = [
                     'class' => 'yii\log\FileTarget',
                     'levels' => ['error', 'warning'],
                 ],
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'levels' => ['info'],
+                    'categories' => ['api-debug'],
+                    'logVars' => [],  
+                    'logFile' => '@runtime/logs/api-debug.log',
+                ]
             ],
         ],
         'db' => $db,
