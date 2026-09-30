@@ -24,29 +24,29 @@ $this->title = 'Patients';
  *   see the controller note in your previous session.
  */
 $dataProvider->pagination = false;
-$models      = $dataProvider->getModels();
-$totalCount  = count($models);
+$models = $dataProvider->getModels();
+$totalCount = count($models);
 
 // Decode maps — resolved once, used in both desktop and mobile loops
 $ethnicGroups = Patient::getEthnicGroups();
-$religions    = Patient::getReligions();
+$religions = Patient::getReligions();
 
 /*
  * Badge variant per ethnic_group integer key.
  * Extend the map as new groups are added to Patient::getEthnicGroups().
  */
 $ethnicVariant = [
-    1 => 'secondary',   // African   — blue-teal
-    2 => 'tertiary',    // Asian     — warm sand
-    3 => 'default',     // Caucasian — neutral
-    4 => 'warning',     // Hispanic  — amber
-    5 => 'default',     // Other     — neutral
+  1 => 'secondary',   // African   — blue-teal
+  2 => 'tertiary',    // Asian     — warm sand
+  3 => 'default',     // Caucasian — neutral
+  4 => 'warning',     // Hispanic  — amber
+  5 => 'default',     // Other     — neutral
 ];
 
 $religionVariant = [
-    1 => 'secondary',   // Christian
-    2 => 'tertiary',    // Muslim
-    3 => 'default',     // Other
+  1 => 'secondary',   // Christian
+  2 => 'tertiary',    // Muslim
+  3 => 'default',     // Other
 ];
 
 // Export title baked into the JS via PHP string interpolation
@@ -69,11 +69,14 @@ $exportTitle = Html::encode(Yii::$app->name . ' — Patient Registry');
 
 <?php /* ─── Stat chips ──────────────────────────────────────────────────── */ ?>
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-  <?= FormUi::statChip('group',           'Total Patients',  number_format($totalCount)) ?>
+  <?= FormUi::statChip('group', 'Total Patients', number_format($totalCount)) ?>
   <?= FormUi::statChip(
-        'pending_actions', 'Pending Review', '—',
-        'bg-tertiary-fixed', 'text-on-tertiary-fixed-variant'
-      ) ?>
+    'pending_actions',
+    'Pending Review',
+    '—',
+    'bg-tertiary-fixed',
+    'text-on-tertiary-fixed-variant'
+  ) ?>
 </div>
 
 <?php /* ─── Grid container ──────────────────────────────────────────────── */ ?>
@@ -89,12 +92,8 @@ $exportTitle = Html::encode(Yii::$app->name . ' — Patient Registry');
       <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">
         search
       </span>
-      <input
-        id="dt-custom-search"
-        type="text"
-        placeholder="Search patients…"
-        class="<?= FormUi::gridSearchClass() ?>"
-      />
+      <input id="dt-custom-search" type="text" placeholder="Search patients…"
+        class="<?= FormUi::gridSearchClass() ?>" />
     </div>
   </div>
 
@@ -119,85 +118,85 @@ $exportTitle = Html::encode(Yii::$app->name . ' — Patient Registry');
       <tbody class="divide-y divide-surface-variant/30">
         <?php foreach ($models as $model): ?>
 
-        <?php
+          <?php
           // Resolve display values once per row
-          $ethnicLabel   = $ethnicGroups[$model->ethnic_group]   ?? '—';
-          $ethnicVar     = $ethnicVariant[$model->ethnic_group]   ?? 'default';
-          $dob           = $model->date_of_birth
-                             ? Yii::$app->formatter->asDate($model->date_of_birth, 'd M Y')
-                             : '—';
-          $registered    = $model->created_at
-                             ? Yii::$app->formatter->asDate($model->created_at, 'd M Y')
-                             : '—';
-          $patientId     = sprintf('PT-%05d', $model->id);
-        ?>
+          $ethnicLabel = $ethnicGroups[$model->ethnic_group] ?? '—';
+          $ethnicVar = $ethnicVariant[$model->ethnic_group] ?? 'default';
+          $dob = $model->date_of_birth
+            ? Yii::$app->formatter->asDate($model->date_of_birth, 'd M Y')
+            : '—';
+          $registered = $model->created_at
+            ? Yii::$app->formatter->asDate($model->created_at, 'd M Y')
+            : '—';
+          $patientId = sprintf('PT-%05d', $model->id);
+          ?>
 
-        <tr class="<?= FormUi::trClass() ?>">
+          <tr class="<?= FormUi::trClass() ?>">
 
-          <?php /* Patient ID */ ?>
-          <td class="<?= FormUi::tdClass('primary') ?>"><?= Html::encode($patientId) ?></td>
+            <?php /* Patient ID */ ?>
+            <td class="<?= FormUi::tdClass('primary') ?>"><?= Html::encode($patientId) ?></td>
 
-          <?php /* Full Name + National ID as subtext */ ?>
-          <td class="<?= FormUi::tdClass() ?>">
-            <div class="flex flex-col">
-              <span class="text-on-surface font-semibold text-sm">
-                <?= Html::encode($model->full_name ?? '—') ?>
-              </span>
-              <span class="text-xs text-outline">
-                ID: <?= Html::encode($model->id) ?>
-              </span>
-            </div>
-          </td>
+            <?php /* Full Name + National ID as subtext */ ?>
+            <td class="<?= FormUi::tdClass() ?>">
+              <div class="flex flex-col">
+                <span class="text-on-surface font-semibold text-sm">
+                  <?= Html::encode($model->full_name ?? '—') ?>
+                </span>
+                <span class="text-xs text-outline">
+                  ID: <?= Html::encode($model->id) ?>
+                </span>
+              </div>
+            </td>
 
-          <?php /* National ID */ ?>
-          <td class="<?= FormUi::tdClass('muted') ?>">
-            <?= Html::encode($model->national_id ?? '—') ?>
-          </td>
+            <?php /* National ID */ ?>
+            <td class="<?= FormUi::tdClass('muted') ?>">
+              <?= Html::encode($model->national_id ?? '—') ?>
+            </td>
 
-          <?php /* Age / Date of Birth */ ?>
-          <td class="<?= FormUi::tdClass() ?>">
-            <div class="flex flex-col">
-              <?php if ($model->age): ?>
-              <span class="text-on-surface font-semibold text-sm">
-                <?= Html::encode($model->age) ?> yrs
-              </span>
+            <?php /* Age / Date of Birth */ ?>
+            <td class="<?= FormUi::tdClass() ?>">
+              <div class="flex flex-col">
+                <?php if ($model->age): ?>
+                  <span class="text-on-surface font-semibold text-sm">
+                    <?= Html::encode($model->age) ?> yrs
+                  </span>
+                <?php endif ?>
+                <span class="text-xs text-outline"><?= Html::encode($dob) ?></span>
+              </div>
+            </td>
+
+            <?php /* Telephone */ ?>
+            <td class="<?= FormUi::tdClass('muted') ?>">
+              <?= Html::encode($model->telephone_no_patient ?? '—') ?>
+            </td>
+
+            <?php /* Ethnic Group badge */ ?>
+            <td class="<?= FormUi::tdClass() ?>">
+              <?= FormUi::badge($ethnicLabel, $ethnicVar) ?>
+            </td>
+
+            <?php /* Place of Birth chip */ ?>
+            <td class="<?= FormUi::tdClass() ?>">
+              <?php if ($model->place_of_birth): ?>
+                <?= FormUi::chip($model->place_of_birth) ?>
+              <?php else: ?>
+                <span class="text-outline text-sm">—</span>
               <?php endif ?>
-              <span class="text-xs text-outline"><?= Html::encode($dob) ?></span>
-            </div>
-          </td>
+            </td>
 
-          <?php /* Telephone */ ?>
-          <td class="<?= FormUi::tdClass('muted') ?>">
-            <?= Html::encode($model->telephone_no_patient ?? '—') ?>
-          </td>
+            <?php /* Registered date */ ?>
+            <td class="<?= FormUi::tdClass('muted') ?>"><?= Html::encode($registered) ?></td>
 
-          <?php /* Ethnic Group badge */ ?>
-          <td class="<?= FormUi::tdClass() ?>">
-            <?= FormUi::badge($ethnicLabel, $ethnicVar) ?>
-          </td>
+            <?php /* Row actions */ ?>
+            <td class="<?= FormUi::tdClass() ?> text-right">
+              <div class="flex items-center justify-end gap-1">
+                <?= FormUi::actionBtn('visibility', ['view', 'id' => $model->id], 'view', ['title' => 'View']) ?>
+                <?= FormUi::actionBtn('edit_square', ['update', 'id' => $model->id], 'edit', ['title' => 'Edit']) ?>
+                <?= FormUi::actionBtn('delete', ['delete', 'id' => $model->id], 'delete', ['title' => 'Delete']) ?>
+              </div>
+            </td>
 
-          <?php /* Place of Birth chip */ ?>
-          <td class="<?= FormUi::tdClass() ?>">
-            <?php if ($model->place_of_birth): ?>
-              <?= FormUi::chip($model->place_of_birth) ?>
-            <?php else: ?>
-              <span class="text-outline text-sm">—</span>
-            <?php endif ?>
-          </td>
-
-          <?php /* Registered date */ ?>
-          <td class="<?= FormUi::tdClass('muted') ?>"><?= Html::encode($registered) ?></td>
-
-          <?php /* Row actions */ ?>
-          <td class="<?= FormUi::tdClass() ?> text-right">
-            <div class="flex items-center justify-end gap-1">
-              <?= FormUi::actionBtn('visibility', ['view',   'id' => $model->id], 'view',   ['title' => 'View'])   ?>
-              <?= FormUi::actionBtn('edit_square',['update', 'id' => $model->id], 'edit',   ['title' => 'Edit'])   ?>
-              <?= FormUi::actionBtn('delete',     ['delete', 'id' => $model->id], 'delete', ['title' => 'Delete']) ?>
-            </div>
-          </td>
-
-        </tr>
+          </tr>
         <?php endforeach ?>
       </tbody>
 
@@ -210,56 +209,56 @@ $exportTitle = Html::encode(Yii::$app->name . ' — Patient Registry');
 
     <?php foreach ($models as $model): ?>
 
-    <?php
+      <?php
       $ethnicLabel = $ethnicGroups[$model->ethnic_group] ?? '—';
-      $ethnicVar   = $ethnicVariant[$model->ethnic_group] ?? 'default';
-      $registered  = $model->created_at
-                       ? Yii::$app->formatter->asDate($model->created_at, 'd M Y')
-                       : '—';
-      $patientId   = sprintf('PT-%05d', $model->id);
-    ?>
+      $ethnicVar = $ethnicVariant[$model->ethnic_group] ?? 'default';
+      $registered = $model->created_at
+        ? Yii::$app->formatter->asDate($model->created_at, 'd M Y')
+        : '—';
+      $patientId = sprintf('PT-%05d', $model->id);
+      ?>
 
-    <div class="p-4 bg-surface-container-lowest">
+      <div class="p-4 bg-surface-container-lowest">
 
-      <div class="flex justify-between items-start mb-3">
-        <div>
-          <p class="text-[10px] font-bold text-outline-variant uppercase tracking-widest mb-1">
-            <?= Html::encode($patientId) ?>
-          </p>
-          <h4 class="font-bold text-primary text-sm">
-            <?= Html::encode($model->full_name ?? '—') ?>
-          </h4>
-          <p class="text-xs text-outline">
-            NID: <?= Html::encode($model->national_id ?? '—') ?>
-          </p>
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <p class="text-[10px] font-bold text-outline-variant uppercase tracking-widest mb-1">
+              <?= Html::encode($patientId) ?>
+            </p>
+            <h4 class="font-bold text-primary text-sm">
+              <?= Html::encode($model->full_name ?? '—') ?>
+            </h4>
+            <p class="text-xs text-outline">
+              NID: <?= Html::encode($model->national_id ?? '—') ?>
+            </p>
+          </div>
+          <?= FormUi::badge($ethnicLabel, $ethnicVar) ?>
         </div>
-        <?= FormUi::badge($ethnicLabel, $ethnicVar) ?>
-      </div>
 
-      <div class="flex flex-wrap gap-2 mb-3">
-        <?php if ($model->telephone_no_patient): ?>
-          <?= FormUi::chip($model->telephone_no_patient) ?>
-        <?php endif ?>
-        <?php if ($model->place_of_birth): ?>
-          <?= FormUi::chip($model->place_of_birth, 'secondary') ?>
-        <?php endif ?>
-        <?php if ($model->age): ?>
-          <?= FormUi::chip($model->age . ' yrs', 'default') ?>
-        <?php endif ?>
-      </div>
-
-      <div class="flex items-center justify-between">
-        <span class="text-xs text-on-surface-variant">
-          Registered: <?= Html::encode($registered) ?>
-        </span>
-        <div class="flex gap-1">
-          <?= FormUi::actionBtnSm('visibility', ['view',   'id' => $model->id], 'view')   ?>
-          <?= FormUi::actionBtnSm('edit_square',['update', 'id' => $model->id], 'edit')   ?>
-          <?= FormUi::actionBtnSm('delete',     ['delete', 'id' => $model->id], 'delete') ?>
+        <div class="flex flex-wrap gap-2 mb-3">
+          <?php if ($model->telephone_no_patient): ?>
+            <?= FormUi::chip($model->telephone_no_patient) ?>
+          <?php endif ?>
+          <?php if ($model->place_of_birth): ?>
+            <?= FormUi::chip($model->place_of_birth, 'secondary') ?>
+          <?php endif ?>
+          <?php if ($model->age): ?>
+            <?= FormUi::chip($model->age . ' yrs', 'default') ?>
+          <?php endif ?>
         </div>
-      </div>
 
-    </div>
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-on-surface-variant">
+            Registered: <?= Html::encode($registered) ?>
+          </span>
+          <div class="flex gap-1">
+            <?= FormUi::actionBtnSm('visibility', ['view', 'id' => $model->id], 'view') ?>
+            <?= FormUi::actionBtnSm('edit_square', ['update', 'id' => $model->id], 'edit') ?>
+            <?= FormUi::actionBtnSm('delete', ['delete', 'id' => $model->id], 'delete') ?>
+          </div>
+        </div>
+
+      </div>
 
     <?php endforeach ?>
 
@@ -268,102 +267,253 @@ $exportTitle = Html::encode(Yii::$app->name . ' — Patient Registry');
 </div><?php /* /grid container */ ?>
 
 
-<?php /* ─── Scoped CSS for DataTables chrome overrides ───────────────────── */ ?>
-<style>
-  /* ── Kill DataTables default borders / wrapper backgrounds ── */
-  table.dataTable thead th,
-  table.dataTable thead td        { border-bottom: none !important; }
-  table.dataTable.no-footer       { border-bottom: none !important; }
-  div.dt-container                { font-family: 'Inter', sans-serif; }
+<?php
+$style = <<<CSS
+/* ── Kill DataTables default borders / wrapper backgrounds ── */
+table.dataTable thead th,
+table.dataTable thead td { 
+    border-bottom: none !important; 
+    background: transparent !important;
+}
 
-  /* ── Export buttons ── */
-  .dt-buttons                     { display: flex; gap: 0.375rem; flex-wrap: wrap; }
-  .dt-button {
-    display:       inline-flex !important;
-    align-items:   center;
-    gap:           0.375rem;
-    padding:       0.375rem 0.75rem !important;
+table.dataTable.no-footer { 
+    border-bottom: none !important; 
+}
+
+div.dt-container { 
+    font-family: 'Inter', sans-serif; 
+}
+
+/* ── Wrapper spacing ── */
+div.dt-container {
+    padding: 0 !important;
+}
+
+/* ── Search input styling ── */
+div.dt-search {
+    margin-bottom: 1rem !important;
+}
+
+div.dt-search label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    color: #6b7280 !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+div.dt-search input {
+    padding: 0.5rem 1rem !important;
     border-radius: 0.5rem !important;
-    border:        1px solid #c4c6d2 !important;
-    background:    #ffffff !important;
-    color:         #444651 !important;
-    font-size:     0.75rem !important;
-    font-weight:   600 !important;
-    font-family:   'Inter', sans-serif !important;
-    box-shadow:    none !important;
-    transition:    background 0.15s, border-color 0.15s;
-  }
-  .dt-button:hover {
-    background:    #eceef0 !important;
-    border-color:  #747782 !important;
-    color:         #001a48 !important;
-  }
-  .dt-button:active { transform: scale(0.97); }
+    border: 1px solid #e2e8f0 !important;
+    font-size: 0.875rem !important;
+    color: #1f2937 !important;
+    font-family: 'Inter', sans-serif !important;
+    background: #ffffff !important;
+    transition: all 0.2s ease !important;
+    width: auto !important;
+    min-width: 200px !important;
+}
 
-  /* ── Length selector / info ── */
-  div.dt-length select {
-    padding:       0.375rem 2rem 0.375rem 0.75rem;
-    border:        1px solid #c4c6d2;
-    border-radius: 0.5rem;
-    background:    #ffffff;
-    font-size:     0.8125rem;
-    color:         #191c1e;
-    font-family:   'Inter', sans-serif;
-  }
-  div.dt-length label,
-  div.dt-info {
-    font-size:   0.875rem;
-    color:       #444651;
-    font-family: 'Inter', sans-serif;
-  }
+div.dt-search input:focus {
+    outline: none !important;
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+}
 
-  /* ── Pagination buttons ── */
-  div.dt-paging .dt-paging-button {
-    display:         inline-flex;
-    align-items:     center;
-    justify-content: center;
-    height:          2.25rem;
-    min-width:       2.25rem;
-    padding:         0 0.5rem;
-    border-radius:   0.5rem;
-    border:          1px solid transparent;
-    font-size:       0.875rem;
-    font-weight:     500;
-    font-family:     'Inter', sans-serif;
-    cursor:          pointer;
-    background:      #ffffff;
-    color:           #191c1e;
-    transition:      background 0.15s, border-color 0.15s;
-  }
-  div.dt-paging .dt-paging-button:hover:not(.disabled) {
-    background:   #eceef0 !important;
-    border-color: #c4c6d2 !important;
-    color:        #001a48 !important;
-  }
-  div.dt-paging .dt-paging-button.current,
-  div.dt-paging .dt-paging-button.current:hover {
-    background:   #001a48 !important;
-    color:        #ffffff !important;
-    border-color: #001a48 !important;
-    font-weight:  700;
-  }
-  div.dt-paging .dt-paging-button.disabled { opacity: 0.4; cursor: not-allowed; }
+div.dt-search input::placeholder {
+    color: #9ca3af !important;
+}
 
-  /* ── Sortable header arrows ── */
-  table.dataTable thead th.dt-orderable-asc,
-  table.dataTable thead th.dt-orderable-desc { cursor: pointer; }
-  table.dataTable thead th.dt-orderable-asc:hover,
-  table.dataTable thead th.dt-orderable-desc:hover { background: rgba(218,226,255,0.13); }
+/* ── Length selector / info ── */
+div.dt-length {
+    margin-bottom: 1rem !important;
+}
 
-  /* ── Responsive breakpoint for desktop/mobile switch ── */
-  @media (max-width: 1024px) {
-    #desktop-table-wrap { display: none;  }
-    #mobile-cards       { display: flex;  }
-  }
-  @media (min-width: 1025px) {
-    #mobile-cards { display: none; }
-  }
-</style>
+div.dt-length label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    color: #6b7280 !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+div.dt-length select {
+    padding: 0.5rem 2.25rem 0.5rem 1rem !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 0.5rem !important;
+    background: #ffffff !important;
+    font-size: 0.875rem !important;
+    color: #1f2937 !important;
+    font-family: 'Inter', sans-serif !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    appearance: auto !important;
+    -webkit-appearance: auto !important;
+}
+
+div.dt-length select:focus {
+    outline: none !important;
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+}
+
+div.dt-info {
+    padding-top: 1rem !important;
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    color: #6b7280 !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* ── Pagination buttons ── */
+div.dt-paging {
+    padding-top: 1rem !important;
+}
+
+div.dt-paging .dt-paging-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 2.25rem !important;
+    min-width: 2.25rem !important;
+    padding: 0 0.75rem !important;
+    margin: 0 0.125rem !important;
+    border-radius: 0.5rem !important;
+    border: none !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    font-family: 'Inter', sans-serif !important;
+    cursor: pointer !important;
+    background: transparent !important;
+    color: #6b7280 !important;
+    transition: all 0.2s ease !important;
+}
+
+div.dt-paging .dt-paging-button:hover:not(.disabled):not(.current) {
+    background: #f3f4f6 !important;
+    color: #1f2937 !important;
+}
+
+div.dt-paging .dt-paging-button.current,
+div.dt-paging .dt-paging-button.current:hover {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+div.dt-paging .dt-paging-button.disabled {
+    opacity: 0.4 !important;
+    cursor: not-allowed !important;
+}
+
+div.dt-paging .dt-paging-button.disabled:hover {
+    background: transparent !important;
+    color: #6b7280 !important;
+}
+
+/* ── Sortable header arrows ── */
+table.dataTable thead th.dt-orderable-asc,
+table.dataTable thead th.dt-orderable-desc {
+    cursor: pointer !important;
+    position: relative !important;
+}
+
+table.dataTable thead th.dt-orderable-asc:hover,
+table.dataTable thead th.dt-orderable-desc:hover {
+    background: rgba(37, 99, 235, 0.05) !important;
+}
+
+/* ── DataTable container background ── */
+div.dt-container {
+    background: transparent !important;
+}
+
+/* ── Table row hover ── */
+table.dataTable tbody tr:hover {
+    background: rgba(0, 0, 0, 0.02) !important;
+}
+
+/* ── Responsive breakpoints ── */
+@media (max-width: 1024px) {
+    #desktop-table-wrap { 
+        display: none !important; 
+    }
+    #mobile-cards { 
+        display: flex !important; 
+    }
+}
+
+@media (min-width: 1025px) {
+    #mobile-cards { 
+        display: none !important; 
+    }
+}
+
+/* ── Mobile responsive for DataTables controls ── */
+@media (max-width: 640px) {
+    div.dt-search {
+        float: none !important;
+        text-align: center !important;
+        width: 100% !important;
+    }
+    
+    div.dt-search label {
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+    
+    div.dt-search input {
+        width: 100% !important;
+        min-width: unset !important;
+    }
+    
+    div.dt-length {
+        float: none !important;
+        text-align: center !important;
+        width: 100% !important;
+    }
+    
+    div.dt-length label {
+        justify-content: center !important;
+    }
+    
+    div.dt-info {
+        float: none !important;
+        text-align: center !important;
+        width: 100% !important;
+    }
+    
+    div.dt-paging {
+        float: none !important;
+        text-align: center !important;
+        width: 100% !important;
+    }
+}
+
+/* ── Zebra striping (optional) ── */
+table.dataTable tbody tr:nth-child(even) {
+    background: rgba(0, 0, 0, 0.01) !important;
+}
+
+/* ── Custom scroll for table wrapper ── */
+div.dt-scroll {
+    overflow-x: auto !important;
+}
+
+/* ── Ensure table header stays sticky ── */
+table.dataTable thead th {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+}
+CSS;
+$this->registerCss($style);
+?>
 
 
 <?php /* ─── DataTables initialisation ───────────────────────────────────── */ ?>
@@ -460,4 +610,74 @@ $js = <<<JS
 JS;
 
 $this->registerJs($js, \yii\web\View::POS_END);
+
+
+$cleanup = <<<CSS
+/* ── Additional cleanup ── */
+table.dataTable {
+    width: 100% !important;
+    margin: 0 !important;
+    clear: none !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
+
+table.dataTable thead th,
+table.dataTable thead td {
+    padding: 1rem 1.5rem !important;
+    background: #f8fafc !important;
+    color: #64748b !important;
+    font-size: 0.625rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+}
+
+table.dataTable tbody td {
+    padding: 1.25rem 1.5rem !important;
+}
+
+table.dataTable tbody tr {
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+/* ── Remove DataTables default sorting icons ── */
+table.dataTable thead .dt-orderable-asc,
+table.dataTable thead .dt-orderable-desc {
+    background-image: none !important;
+}
+
+/* ── Custom sorting icons using CSS ── */
+table.dataTable thead .dt-orderable-asc::after {
+    content: '▲' !important;
+    font-size: 0.5rem !important;
+    margin-left: 0.25rem !important;
+    opacity: 0.4 !important;
+}
+
+table.dataTable thead .dt-orderable-desc::after {
+    content: '▼' !important;
+    font-size: 0.5rem !important;
+    margin-left: 0.25rem !important;
+    opacity: 0.4 !important;
+}
+
+table.dataTable thead .dt-ordering-asc::after {
+    content: '▲' !important;
+    font-size: 0.5rem !important;
+    margin-left: 0.25rem !important;
+    opacity: 1 !important;
+    color: #2563eb !important;
+}
+
+table.dataTable thead .dt-ordering-desc::after {
+    content: '▼' !important;
+    font-size: 0.5rem !important;
+    margin-left: 0.25rem !important;
+    opacity: 1 !important;
+    color: #2563eb !important;
+}
+CSS;
+$this->registerCss($cleanup);
+
 ?>
