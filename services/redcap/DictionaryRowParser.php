@@ -1,8 +1,8 @@
 <?php
 
-namespace services\redcap;
+namespace app\services\redcap;
 
-use services\redcap\dto\DictionaryField;
+use app\services\redcap\dto\DictionaryField;
 use RuntimeException;
 
 final class DictionaryRowParser

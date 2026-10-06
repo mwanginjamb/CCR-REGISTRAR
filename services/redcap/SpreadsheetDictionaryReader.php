@@ -1,13 +1,13 @@
 <?php
 
-namespace services\redcap;
+namespace app\services\redcap;
 
 use Generator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use RuntimeException;
 
-final class SpreadsheetDictionaryReader
+class SpreadsheetDictionaryReader
 {
     public function read(string $file): Generator
     {

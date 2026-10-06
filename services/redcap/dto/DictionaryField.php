@@ -1,6 +1,6 @@
 <?php
 
-namespace services\redcap\dto;
+namespace app\services\redcap\dto;
 
 final readonly class DictionaryField
 {

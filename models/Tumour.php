@@ -50,12 +50,12 @@ class Tumour extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            
+
             // explicit safe rule for all attributes
             [['incident_date', 'basis_of_diagnosis', 'primary_site', 'laterality', 'histology', 'behaviour', 'grade', 'stage', 't', 'n', 'm', 'full_tnm', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'safe'],
-            
+
             [['incident_date', 'basis_of_diagnosis', 'primary_site', 'laterality', 'histology', 'behaviour', 'grade', 'stage', 't', 'n', 'm', 'full_tnm', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'default', 'value' => null],
-            [['patient_id'], 'required'],
+            [['patient_id', 'incident_date', 'basis_of_diagnosis', 'topography'], 'required'],
             [['patient_id', 'basis_of_diagnosis', 'laterality', 'histology', 'behaviour', 'grade', 'stage', 'full_tnm', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'integer'],
             [['incident_date'], 'safe'],
             [['primary_site', 't', 'n', 'm'], 'string', 'max' => 255],
@@ -73,12 +73,12 @@ class Tumour extends \yii\db\ActiveRecord
             'patient_id' => 'Patient ID',
             'incident_date' => 'Incident Date',
             'basis_of_diagnosis' => 'Basis Of Diagnosis',
-            'primary_site' => 'Primary Site',
+            'primary_site' => 'Primary Site (Topography Code)',
             'laterality' => 'Laterality',
-            'histology' => 'Histology',
-            'behaviour' => 'Behaviour',
-            'grade' => 'Grade',
-            'stage' => 'Stage',
+            'histology' => 'Histology (Morphology Code)',
+            'behaviour' => 'Behaviour (Behavior Code)',
+            'grade' => 'Grade (Grade Code)',
+            'stage' => 'Stage (Stage Code)',
             't' => 'T',
             'n' => 'N',
             'm' => 'M',
@@ -112,7 +112,7 @@ class Tumour extends \yii\db\ActiveRecord
     {
         return new \app\models\queries\TumourQuery(get_called_class());
     }
-    
+
     public static function getBasisOfDiagnosis()
     {
         return [

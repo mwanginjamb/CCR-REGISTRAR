@@ -1,14 +1,13 @@
 <?php
 
-namespace services\redcap;
+namespace app\services\redcap;
 
-use common\services\redcap\dto\DictionaryField;
-use services\redcap\SpreadsheetDictionaryReader;
+use app\services\redcap\dto\DictionaryField;
+use app\services\redcap\SpreadsheetDictionaryReader;
 use Throwable;
-use Yii;
 use yii\db\Connection;
 
-final class DictionaryImporter
+class DictionaryImporter
 {
     public function __construct(
         private readonly SpreadsheetDictionaryReader $reader,

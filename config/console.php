@@ -1,10 +1,10 @@
 <?php
 
-use services\redcap\ChoiceParser;
-use services\redcap\DictionaryImporter;
-use services\redcap\DictionaryRowParser;
-use services\redcap\IcdoChoiceExtractor;
-use services\redcap\SpreadsheetDictionaryReader;
+use app\services\redcap\ChoiceParser;
+use app\services\redcap\DictionaryImporter;
+use app\services\redcap\DictionaryRowParser;
+use app\services\redcap\IcdoChoiceExtractor;
+use app\services\redcap\SpreadsheetDictionaryReader;
 
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';

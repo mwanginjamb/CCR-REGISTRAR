@@ -1,6 +1,6 @@
 <?php
 
-namespace services\redcap;
+namespace app\services\redcap;
 
 use RuntimeException;
 
