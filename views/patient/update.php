@@ -22,6 +22,7 @@ $this->params['breadcrumbs'][] = Yii::t('app', 'Update');
         'modelTreatments' => $modelTreatments,
         'modelSources' => $modelSources,
         'modelFollowUp' => $modelFollowUp,
+        'topographies' => $topographies,
     ]) ?>
 
 </div>

@@ -201,4 +201,90 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Geolocation
     const _coords = await GeoTag.capture();
     GeoTag.fillDisplay(_coords);
+
+
+    // make behavior field readonly based on morphology option
+    $("#tumour-behaviour").prop("readonly", true);
+
+    function toggleGradeByBehaviour() {
+        let behaviour = $('#tumour-behaviour').val();
+
+        let gradeField = $('#tumour-grade');
+
+        let helpBlock = $('#grade-help');
+
+        switch (behaviour) {
+
+            case '0': // Benign
+
+                gradeField
+                    .val('')
+                    .prop('disabled', true);
+
+                helpBlock.html(
+                    'Grade not applicable for benign tumours.'
+                );
+
+                break;
+
+            case '1': // Uncertain
+
+                gradeField
+                    .val('')
+                    .prop('disabled', true);
+
+                helpBlock.html(
+                    'Grade not routinely captured for uncertain behaviour.'
+                );
+
+                break;
+
+            case '2': // In Situ
+
+                gradeField
+                    .prop('disabled', false);
+
+                helpBlock.html(
+                    'Grade may be recorded if available.'
+                );
+
+                break;
+
+            case '3': // Malignant
+
+                gradeField
+                    .prop('disabled', false);
+
+                helpBlock.html(
+                    'Grade is required for malignant tumours.'
+                );
+
+                break;
+
+            default:
+
+                gradeField
+                    .prop('disabled', true);
+
+                helpBlock.html('');
+
+                break;
+        }
+    }
+
+    // initial page load - handling behavior applicability
+
+    toggleGradeByBehaviour();
+
+    // Manual behaviour selection
+
+    $('#tumour-behaviour').change(function () {
+
+        toggleGradeByBehaviour();
+
+    });
+
+
+
+
 });

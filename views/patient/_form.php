@@ -1,9 +1,11 @@
 <?php
 
-use app\library\FormUi;
-use yii\helpers\Html;
-use yii\widgets\ActiveForm;
 use app\library\AuthUi;
+use app\library\FormUi;
+use app\services\Lookup;
+use yii\helpers\Html;
+use yii\helpers\Url;
+use yii\widgets\ActiveForm;
 
 /** @var yii\web\View $this */
 /** @var app\models\Patient $model */
@@ -11,7 +13,9 @@ use app\library\AuthUi;
 
 // View attributes of $model
 
-
+// print "<pre>";
+// print_r(Lookup::fieldOptions('behaviour'));
+// print "</pre>";
 
 ?>
 
@@ -24,7 +28,7 @@ use app\library\AuthUi;
 
         <div>
             <h1 class="text-2xl md:text-3xl font-extrabold text-primary tracking-tight">
-                REG-2024-KEM-8842
+                <?= 'CRF - ' . $model->id ?>
             </h1>
             <p class="text-on-surface-variant text-xs md:text-sm mt-1">
                 Manual Abstract Record • Clinical Research Unit
@@ -67,7 +71,7 @@ use app\library\AuthUi;
 
 
             <!-- Error summary -->
-             <?php if ($model->hasErrors('_form')): ?>
+            <?php if ($model->hasErrors('_form')): ?>
                 <div class="alert alert-danger">
                     <strong>Validation Errors:</strong>
                     <ul>
@@ -78,7 +82,7 @@ use app\library\AuthUi;
                 </div>
             <?php endif; ?>
             <?= $form->errorSummary($model); // still show Patient’s own errors ?>
-            
+
 
             <!-- SECTION 1 -->
             <section id="patient-information"
@@ -108,7 +112,7 @@ use app\library\AuthUi;
 
                     <div>
 
-                        <?= $form->field($model, 'telephone_no_nok')->textInput(['placeholder' => 'Enter telephone number of next of kin', 'class' => \app\library\AuthUi::inputClass(),'type' => 'tel']) ?>
+                        <?= $form->field($model, 'telephone_no_nok')->textInput(['placeholder' => 'Enter telephone number of next of kin', 'class' => \app\library\AuthUi::inputClass(), 'type' => 'tel']) ?>
                     </div>
 
                     <div>
@@ -229,7 +233,25 @@ use app\library\AuthUi;
                     </div>
 
                     <div>
-                        <?= $form->field($modelTumour, 'primary_site')->dropDownList(\app\models\Tumour::getPrimarySites(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Primary Site']) ?>
+                        <?= $form->field($modelTumour, 'primary_site')->dropDownList($topographies, [
+                            'class' => AuthUi::inputClass(),
+                            'prompt' => 'Select Primary Site / Topography',
+                            'onchange' => '
+                                $.post(
+                                "' . \Yii::$app->urlManager->createUrl(['patient/morphology-options']) . '?topographyCode=" + $(this).val(),
+                                    function(data){
+                                    $("select#tumour-histology").html(data);
+                                    });
+
+
+                                    $.post(
+                                    "' . Url::to(['patient/laterality-options']) . '?topographyCode=" + $(this).val(),
+                                    function(data){
+                                    $("select#tumour-laterality").html(data);
+                                    }
+                                    );
+                                '
+                        ]) ?>
                     </div>
 
                     <!-- Laterality -->
@@ -239,16 +261,30 @@ use app\library\AuthUi;
 
                     <!-- Histology -->
                     <div>
-                        <?= $form->field($modelTumour, 'histology')->dropDownList(\app\models\Tumour::getHistology(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Histology']) ?>
+                        <?= $form->field($modelTumour, 'histology')->dropDownList(\app\models\Tumour::getHistology(), [
+                            'class' => AuthUi::inputClass(),
+                            'prompt' => 'Select Histology',
+                            'onchange' => '
+                                $.post(
+                                    "' . \Yii::$app->urlManager->createUrl(['patient/morphology-behaviour']) . '?code=" + $(this).val(),
+                                    function(data){
+                                        $("select#tumour-behaviour").val(data);
+                                        toggleGradeByBehaviour();
+                                    },
+                                    "json"
+                                );
+                            '
+                        ]) ?>
                     </div>
                     <!-- Behaviour -->
                     <div>
-                        <?= $form->field($modelTumour, 'behaviour')->dropDownList(\app\models\Tumour::getBehaviour(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Behaviour']) ?>
+                        <?= $form->field($modelTumour, 'behaviour')->dropDownList(Lookup::fieldOptions('behaviour'), ['class' => AuthUi::inputClass(), 'prompt' => 'Auto Selected']) ?>
                     </div>
 
                     <!-- Grade -->
                     <div>
                         <?= $form->field($modelTumour, 'grade')->dropDownList(\app\models\Tumour::getGrade(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Grade']) ?>
+                        <div id="grade-help" class="text-muted small"></div>
                     </div>
 
                     <!-- Stage -->
@@ -342,20 +378,21 @@ use app\library\AuthUi;
 
                 <!-- Treatment Row -->
                 <div id="treatment-wrapper" class="space-y-4">
-                        <?php foreach ($modelTreatments as $index => $treatment): ?>
-                            <div class="treatment-item border p-4 rounded-lg bg-white" data-index="<?= $index ?>">
-                                <div class="flex items-center justify-between mb-3">
-                                    <span class="text-sm font-semibold text-on-surface-variant">Treatment Entry</span>
-                                    <button type="button" class="remove-treatment flex items-center justify-center w-8 h-8 rounded-md hover:bg-red-50 text-red-500 transition">✕</button>
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                                    <?= $form->field($treatment, "[$index]treatment")->dropDownList(\app\models\Treatment::getTreatment(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Treatment'])->label(false) ?>
-                                    <?= $form->field($treatment, "[$index]treatment_status")->dropDownList(\app\models\Treatment::getTreatmentStatus(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Status'])->label(false) ?>
-                                    <?= $form->field($treatment, "[$index]treatment_date")->textInput(['type' => 'date', 'class' => AuthUi::inputClass()])->label(false) ?>
-                                    <?= Html::activeHiddenInput($treatment, "[$index]id") ?>
-                                </div>
+                    <?php foreach ($modelTreatments as $index => $treatment): ?>
+                        <div class="treatment-item border p-4 rounded-lg bg-white" data-index="<?= $index ?>">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-sm font-semibold text-on-surface-variant">Treatment Entry</span>
+                                <button type="button"
+                                    class="remove-treatment flex items-center justify-center w-8 h-8 rounded-md hover:bg-red-50 text-red-500 transition">✕</button>
                             </div>
-                        <?php endforeach; ?>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                                <?= $form->field($treatment, "[$index]treatment")->dropDownList(\app\models\Treatment::getTreatment(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Treatment'])->label(false) ?>
+                                <?= $form->field($treatment, "[$index]treatment_status")->dropDownList(\app\models\Treatment::getTreatmentStatus(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Status'])->label(false) ?>
+                                <?= $form->field($treatment, "[$index]treatment_date")->textInput(['type' => 'date', 'class' => AuthUi::inputClass()])->label(false) ?>
+                                <?= Html::activeHiddenInput($treatment, "[$index]id") ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
 
                 <!-- render template -->
@@ -408,23 +445,24 @@ use app\library\AuthUi;
 
                 </div>
 
-                <!-- row with source type and source no  and date -->   
+                <!-- row with source type and source no  and date -->
                 <div id="source-wrapper" class="space-y-4">
 
-                        <?php foreach ($modelSources as $index => $source): ?>
-                                <div class="source-item border p-4 rounded-lg bg-white" data-index="<?= $index ?>">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <span class="text-sm font-semibold text-on-surface-variant">Source Entry</span>
-                                        <button type="button" class="remove-source flex items-center justify-center w-8 h-8 rounded-md hover:bg-red-50 text-red-500 transition">✕</button>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <?= $form->field($source, "[$index]source_type")->dropDownList(\app\models\Sources::getSourceTypeOptions(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Source Type'])->label(false) ?>
-                                        <?= $form->field($source, "[$index]source_no")->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Source No'])->label(false) ?>
-                                        <?= $form->field($source, "[$index]source_date")->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Source Date'])->label(false) ?>
-                                        <?= Html::activeHiddenInput($source, "[$index]id") ?>
-                                    </div>
-                                </div>
-                        <?php endforeach; ?>
+                    <?php foreach ($modelSources as $index => $source): ?>
+                        <div class="source-item border p-4 rounded-lg bg-white" data-index="<?= $index ?>">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-sm font-semibold text-on-surface-variant">Source Entry</span>
+                                <button type="button"
+                                    class="remove-source flex items-center justify-center w-8 h-8 rounded-md hover:bg-red-50 text-red-500 transition">✕</button>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <?= $form->field($source, "[$index]source_type")->dropDownList(\app\models\Sources::getSourceTypeOptions(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Source Type'])->label(false) ?>
+                                <?= $form->field($source, "[$index]source_no")->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Source No'])->label(false) ?>
+                                <?= $form->field($source, "[$index]source_date")->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Source Date'])->label(false) ?>
+                                <?= Html::activeHiddenInput($source, "[$index]id") ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
 
                 </div>
 
@@ -456,7 +494,7 @@ use app\library\AuthUi;
                     <?= $form->field($modelFollowUp, 'cause_of_death')->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Cause of Death'])->label(false) ?>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 mb-4">
-                    <?= $form->field($modelFollowUp, 'last_date_of_contact')->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Last Date of Contact','type'=>'date'])->label(false) ?>
+                    <?= $form->field($modelFollowUp, 'last_date_of_contact')->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Last Date of Contact', 'type' => 'date'])->label(false) ?>
                     <?= $form->field($modelFollowUp, 'remarks')->textarea(['class' => AuthUi::inputClass(), 'placeholder' => 'Remarks'])->label(false) ?>
                 </div>
 
@@ -488,7 +526,7 @@ use app\library\AuthUi;
                     </button>
 
                     <!-- Submit Button - Hidden when offline -->
-                     <?= Html::submitButton('Submit', ['class' => 'flex-1 sm:flex-none px-6 md:px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-[#002d72] text-white font-bold hover:opacity-90 transition-opacity shadow-md','id'=>'submit-form-default']) ?>
+                    <?= Html::submitButton('Submit', ['class' => 'flex-1 sm:flex-none px-6 md:px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-[#002d72] text-white font-bold hover:opacity-90 transition-opacity shadow-md', 'id' => 'submit-form-default']) ?>
                     <!-- <button type="button" id="submit-form"
                         class="flex-1 sm:flex-none px-6 md:px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-[#002d72] text-white font-bold hover:opacity-90 transition-opacity shadow-md"
                         style="display: flex;">

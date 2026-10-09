@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use app\services\Lookup;
 use Yii;
 
 /**
@@ -52,14 +53,59 @@ class Tumour extends \yii\db\ActiveRecord
         return [
 
             // explicit safe rule for all attributes
-            [['incident_date', 'basis_of_diagnosis', 'primary_site', 'laterality', 'histology', 'behaviour', 'grade', 'stage', 't', 'n', 'm', 'full_tnm', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'safe'],
+            [['basis_of_diagnosis', 'primary_site', 'histology', 'behaviour', 'grade', 'stage', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'safe'],
 
-            [['incident_date', 'basis_of_diagnosis', 'primary_site', 'laterality', 'histology', 'behaviour', 'grade', 'stage', 't', 'n', 'm', 'full_tnm', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'default', 'value' => null],
-            [['patient_id', 'incident_date', 'basis_of_diagnosis', 'topography'], 'required'],
+            [['incident_date', 'basis_of_diagnosis', 'primary_site', 'histology', 'behaviour', 'grade', 'stage', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by', 'full_tnm'], 'default', 'value' => null],
+            [['patient_id', 'incident_date', 'basis_of_diagnosis', 'primary_site'], 'required'],
             [['patient_id', 'basis_of_diagnosis', 'laterality', 'histology', 'behaviour', 'grade', 'stage', 'full_tnm', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'integer'],
             [['incident_date'], 'safe'],
             [['primary_site', 't', 'n', 'm'], 'string', 'max' => 255],
             [['patient_id'], 'exist', 'skipOnError' => true, 'targetClass' => Patient::class, 'targetAttribute' => ['patient_id' => 'id']],
+            ['incident_date', 'date', 'format' => 'php:Y-m-d'],
+            [
+                'incident_date',
+                'compare',
+                'compareValue' => date('Y-m-d'),
+                'operator' => '<=',
+                'type' => 'date',
+                'message' => 'Incident date cannot be in the future.'
+            ],
+
+            ['laterality', 'validateLaterality'],
+            ['histology', 'validateMorphology'],
+            ['full_tnm', 'validateEssentialTNMFields'],
+
+            [
+                ['t', 'n', 'm'],
+                'required',
+                'when' => function ($model) {
+                    return (int) $model->full_tnm === 1;
+                },
+                'whenClient' => "function (attribute, value) {
+                    return $('#tumour-full_tnm').val() == '1';
+                }",
+            ],
+
+            [
+                ['t', 'n', 'm'],
+                'required',
+                'when' => fn($model) =>
+                    (int) $model->full_tnm === 1
+            ],
+
+            ['grade', 'validateGradeApplicability'],
+            [
+                'grade',
+                'required',
+                'when' => function ($model) {
+                    return (int) $model->behaviour === 3; // malignant
+                }
+            ]
+
+            // ['t', 'validateCompleteTnm'],
+            // ['n', 'validateCompleteTnm'],
+            // ['m', 'validateCompleteTnm'],
+
         ];
     }
 
@@ -113,6 +159,143 @@ class Tumour extends \yii\db\ActiveRecord
         return new \app\models\queries\TumourQuery(get_called_class());
     }
 
+    // Validate Laterality based on Topography Code
+    public function validateLaterality($attribute, $params)
+    {
+        if (empty($this->primary_site)) {
+            return;
+        }
+        $pattern = substr($this->primary_site, 0, 3) . '.*';
+
+        $rule = IcdoSiteRule::find()
+            ->where(['topography_pattern' => $pattern])
+            ->one();
+
+        if (!$rule) {
+            return;
+        }
+
+        // Not applicable site check
+        if (!$rule->laterality_allowed && $this->laterality != 4) {
+            $this->addError($attribute, 'Laterality is not applicable for the selected primary site.');
+        }
+
+        // Required site check
+        if ($rule->laterality_required && empty($this->laterality)) {
+            $this->addError($attribute, 'Laterality is required for this topography code.');
+        }
+
+
+    }
+
+    // Validate Morphology based on Topography Code
+    public function validateMorphology($attribute)
+    {
+        if (
+            empty($this->primary_site) ||
+            empty($this->histology)
+        ) {
+            return;
+        }
+
+        $pattern = substr(
+            $this->primary_site,
+            0,
+            3
+        ) . '.*';
+
+        $allowed = IcdoSiteMorphologyRule::find()
+            ->where([
+                'morphology_code' => $this->histology,
+                'rule_type' => 'allowed'
+            ])
+            ->andWhere([
+                'or',
+                ['topography_pattern' => $this->primary_site],
+                ['topography_pattern' => $pattern]
+            ])
+            ->exists();
+
+        if (!$allowed) {
+
+            $this->addError(
+                $attribute,
+                'Selected histology is not valid for the selected primary site / Topography.'
+            );
+        }
+    }
+
+    // Validate Ensential TNM Fields based on full TNM value
+    public function validateEssentialTNMFields($attribute, $params)
+    {
+        if ((int) $this->full_tnm !== 1) {
+            return;
+        }
+
+        $fields = [
+            $this->metastasis,
+            $this->regional_nodes_involvement,
+            $this->localized_advanced,
+            $this->localized_limited
+        ];
+
+        foreach ($fields as $field) {
+            if (!empty($field)) {
+                $this->addError(
+                    $attribute,
+                    'Essential TNM fields should not be used when Full TNM is available.'
+                );
+                break;
+            }
+        }
+    }
+
+    // Validate TNM fields completeness based on full TNM value
+    public function validateCompleteTnm($attribute, $params)
+    {
+        if ((int) $this->full_tnm !== 1) {
+            return;
+        }
+
+        $values = [
+            $this->t,
+            $this->n,
+            $this->m
+        ];
+
+        $filled = count(array_filter($values));
+
+        if ($filled > 0 && $filled < 3) {
+            $this->addError(
+                $attribute,
+                'All TNM fields (T, N, M) must be filled when Full TNM is available.'
+            );
+
+        }
+    }
+
+    // Grade Applicability Validity
+
+    public function validateGradeApplicability($attribute)
+    {
+        if (
+            in_array(
+                (int) $this->behaviour,
+                [0, 1], // Benign and Uncertain behaviour codes
+                true
+            )
+            &&
+            !empty($this->grade)
+        ) {
+
+            $this->addError(
+                $attribute,
+                'Grade is not applicable for the selected behaviour.'
+            );
+        }
+    }
+
+
     public static function getBasisOfDiagnosis()
     {
         return [
@@ -163,12 +346,7 @@ class Tumour extends \yii\db\ActiveRecord
     // Get Tumor Behavior: Benign, Malignant, In Situ, Uncertain
     public static function getBehaviour()
     {
-        return [
-            1 => 'Benign',
-            2 => 'Malignant',
-            3 => 'In Situ',
-            4 => 'Uncertain'
-        ];
+        return Lookup::fieldOptions('behaviour');
     }
 
     // Get Grade: Well Differentiated, Moderately Differentiated, Poorly Differentiated, Undifferentiated, T-cells
@@ -179,7 +357,8 @@ class Tumour extends \yii\db\ActiveRecord
             2 => 'Moderately Differentiated',
             3 => 'Poorly Differentiated',
             4 => 'Undifferentiated',
-            5 => 'T-cells'
+            5 => 'T-cells',
+            6 => 'metastatic'
         ];
     }
 
@@ -232,5 +411,29 @@ class Tumour extends \yii\db\ActiveRecord
         ];
     }
 
+
+
+    // before validate event
+
+    public function beforeValidate()
+    {
+        if (!parent::beforeValidate()) {
+            return false;
+        }
+
+        if (!empty($this->histology)) {
+
+            $morphology = IcdoMorphology::findOne([
+                'code' => $this->histology
+            ]);
+
+            if ($morphology) {
+
+                $this->behaviour = $morphology->behaviour;
+            }
+        }
+
+        return true;
+    }
 
 }

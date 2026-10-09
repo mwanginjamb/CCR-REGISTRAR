@@ -57,6 +57,12 @@ class IcdoSiteMorphologyRule extends \yii\db\ActiveRecord
         ];
     }
 
+
+    public function getMorphology()
+    {
+        return $this->hasOne(IcdoMorphology::class, ['code' => 'morphology_code']);
+    }
+
     /**
      * {@inheritdoc}
      * @return \app\models\query\IcdoSiteMorphologyRuleQuery the active query used by this AR class.
