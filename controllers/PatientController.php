@@ -254,6 +254,7 @@ class PatientController extends Controller
             'modelTreatments' => $modelTreatments,
             'modelSources' => $modelSources,
             'modelFollowUp' => $modelFollowUp,
+            'topographies' => $this->getTopographyOptions(),
         ]);
     }
 
