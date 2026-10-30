@@ -102,6 +102,7 @@ class Tumour extends \yii\db\ActiveRecord
             ['grade', 'in', 'range' => fn() => array_keys(self::getGrade()), 'message' => '{attribute} must be selected from the list.'],
             ['stage', 'in', 'range' => fn() => array_keys(self::getStage()), 'message' => '{attribute} must be selected from the list.'],
 
+            ['primary_site', 'filter', 'filter' => fn($v) => $v === null ? null : strtoupper(trim($v))],
             ['primary_site', 'in', 'range' => fn() => array_keys(IcdoTopography::primarySiteOptions()), 'message' => '{attribute} must be selected from the list.'],
             ['topography_code', 'filter', 'filter' => fn($v) => $v === null ? null : strtoupper(trim($v))],
             ['topography_code', 'validateTopographyCode'],

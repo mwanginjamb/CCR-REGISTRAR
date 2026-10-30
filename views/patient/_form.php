@@ -233,25 +233,21 @@ use yii\widgets\ActiveForm;
                     </div>
 
                     <div>
-                        <?= $form->field($modelTumour, 'primary_site')->dropDownList($topographies, [
+                        <?php /* Typeable primary site: suggestions come from the datalist below;
+                                 web/js/topographyCode.js refreshes histology, laterality and C. */ ?>
+                        <?= $form->field($modelTumour, 'primary_site')->textInput([
                             'class' => AuthUi::inputClass(),
-                            'prompt' => 'Select Primary Site / Topography',
-                            'onchange' => '
-                                $.post(
-                                "' . \Yii::$app->urlManager->createUrl(['patient/morphology-options']) . '?topographyCode=" + $(this).val(),
-                                    function(data){
-                                    $("select#tumour-histology").html(data);
-                                    });
-
-
-                                    $.post(
-                                    "' . Url::to(['patient/laterality-options']) . '?topographyCode=" + $(this).val(),
-                                    function(data){
-                                    $("select#tumour-laterality").html(data);
-                                    }
-                                    );
-                                '
+                            'list' => 'primary-site-options',
+                            'autocomplete' => 'off',
+                            'placeholder' => 'Type code or site, e.g. C50.9 or breast',
+                            'data-morphology-url' => Url::to(['patient/morphology-options']),
+                            'data-laterality-url' => Url::to(['patient/laterality-options']),
                         ]) ?>
+                        <datalist id="primary-site-options">
+                            <?php foreach ($topographies as $code => $description): ?>
+                                <option value="<?= Html::encode($code) ?>"><?= Html::encode($description) ?></option>
+                            <?php endforeach; ?>
+                        </datalist>
                     </div>
 
                     <!-- Topography code ("C"): sub-site of the primary site, suggested via datalist -->
