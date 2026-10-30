@@ -28,6 +28,7 @@ use app\library\AuthUi;
                 ->dropDownList(\app\models\Treatment::getTreatment(), [
                     'class' => AuthUi::inputClass(),
                     'prompt' => 'Select Treatment',
+                    'showKeys' => false,
                     'disabled' => 'disabled'
                 ]) ?>
 

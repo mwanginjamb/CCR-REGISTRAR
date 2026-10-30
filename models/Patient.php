@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use app\services\Lookup;
 use Yii;
 
 /**
@@ -130,40 +131,21 @@ class Patient extends \yii\db\ActiveRecord
         return new \app\models\queries\PatientQuery(get_called_class());
     }
 
-    // Kenya Ethnic Groups - 42 ethnic groups in Kenya
+    // Ethnicity from the REDCap dictionary (field "ethnicity").
+    // Dictionary codes are zero-padded ("021" = LUO) but ethnic_group is an integer
+    // column, so keys are cast to int to keep the saved value selected on edit.
     public static function getEthnicGroups()
     {
-        return [
-        1 => 'Luo',
-        2 => 'Kikuyu',
-        3 => 'Kamba',
-        4 => 'Luhya',
-        5 => 'Kalenjin',
-        6 => 'Meru',
-        7 => 'Samburu',
-        8 => 'Maasai',
-        9 => 'Somali',
-        10 => 'Taita',
-        11 => 'Bajuni',
-        12 => 'Giriama',
-        13 => 'Rendille',
-        14 => 'Teso',
-        15 => 'Kuria',
-        16 => 'Borana',
-        17 => 'Digo',
-        18 => 'Gusii',
-        19 => 'Tachoni',
-        20 => 'Others',
-        ];
+        $groups = [];
+        foreach (Lookup::fieldOptions('ethnicity') as $code => $label) {
+            $groups[(int) $code] = $label;
+        }
+        return $groups;
     }
 
+    // Religion from the REDCap dictionary: 1 Christian, 2 Muslim, 3 Hindu, 8 Other, 99 Unknown
     public static function getReligions()
     {
-        return [
-            1 => 'Christian',
-            2 => 'Muslim',
-            3 => 'Other',
-        ];
+        return Lookup::fieldOptions('religion');
     }
-
 }

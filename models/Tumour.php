@@ -4,6 +4,7 @@ namespace app\models;
 
 use app\services\Lookup;
 use Yii;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "tumour".
@@ -35,7 +36,29 @@ use Yii;
  */
 class Tumour extends \yii\db\ActiveRecord
 {
+    /**
+     * Non-blocking validation findings, keyed by attribute. Unlike errors these
+     * do not stop save(); controllers show them to the user afterwards.
+     */
+    private array $_warnings = [];
 
+    public function addWarning(string $attribute, string $message): void
+    {
+        $this->_warnings[$attribute][] = $message;
+    }
+
+    public function hasWarnings(): bool
+    {
+        return $this->_warnings !== [];
+    }
+
+    /**
+     * @return string[] flat list of warning messages
+     */
+    public function getWarningMessages(): array
+    {
+        return array_merge(...array_values($this->_warnings));
+    }
 
     /**
      * {@inheritdoc}
@@ -70,6 +93,12 @@ class Tumour extends \yii\db\ActiveRecord
                 'type' => 'date',
                 'message' => 'Incident date cannot be in the future.'
             ],
+
+            // Coded fields must hold a value from their REDCap dictionary list
+            ['basis_of_diagnosis', 'in', 'range' => fn() => array_keys(self::getBasisOfDiagnosis()), 'message' => '{attribute} must be selected from the list.'],
+            ['laterality', 'in', 'range' => fn() => array_keys(self::getLaterality()), 'message' => '{attribute} must be selected from the list.'],
+            ['grade', 'in', 'range' => fn() => array_keys(self::getGrade()), 'message' => '{attribute} must be selected from the list.'],
+            ['stage', 'in', 'range' => fn() => array_keys(self::getStage()), 'message' => '{attribute} must be selected from the list.'],
 
             ['laterality', 'validateLaterality'],
             ['histology', 'validateMorphology'],
@@ -204,10 +233,10 @@ class Tumour extends \yii\db\ActiveRecord
             3
         ) . '.*';
 
-        $allowed = IcdoSiteMorphologyRule::find()
+        $known = IcdoSiteMorphologyRule::find()
             ->where([
                 'morphology_code' => $this->histology,
-                'rule_type' => 'allowed'
+                'rule_type' => ['allowed', 'common'],
             ])
             ->andWhere([
                 'or',
@@ -216,11 +245,14 @@ class Tumour extends \yii\db\ActiveRecord
             ])
             ->exists();
 
-        if (!$allowed) {
+        // The rule table is a partial starter list, so an unlisted combination
+        // may still be valid: warn and let the record save for later review.
+        if (!$known) {
 
-            $this->addError(
+            $this->addWarning(
                 $attribute,
-                'Selected histology is not valid for the selected primary site / Topography.'
+                "Histology {$this->histology} is not a recognised combination for primary site {$this->primary_site}. "
+                . 'The record was saved; please confirm the coding.'
             );
         }
     }
@@ -279,6 +311,8 @@ class Tumour extends \yii\db\ActiveRecord
     public function validateGradeApplicability($attribute)
     {
         if (
+            $this->behaviour !== null && $this->behaviour !== ''
+            &&
             in_array(
                 (int) $this->behaviour,
                 [0, 1], // Benign and Uncertain behaviour codes
@@ -296,51 +330,32 @@ class Tumour extends \yii\db\ActiveRecord
     }
 
 
+    // Get Basis of Diagnosis from the REDCap dictionary: 0 Death Certificate Only ... 7 Histology of primary
     public static function getBasisOfDiagnosis()
     {
-        return [
-            1 => 'Clinical',
-            2 => 'Histopathological',
-            3 => 'Imaging',
-            4 => 'Other'
-        ];
+        return Lookup::fieldOptions('basis_of_diagnosis');
     }
 
-    // Get Possible Primary Sites
-    public static function getPrimarySites()
-    {
-        return [
-            1 => 'Breast',
-            2 => 'Lung',
-            3 => 'Prostate',
-            4 => 'Colorectal',
-            5 => 'Other'
-        ];
-    }
-
-    // Get Laterality: Right, Left, Bilateral, Not Applicable,Unk
+    // Get Laterality from the REDCap dictionary: 1 Right, 2 Left, 3 Bilateral, 4 Not Applicable, 99 Unknown
     public static function getLaterality()
     {
-        return [
-            1 => 'Right',
-            2 => 'Left',
-            3 => 'Bilateral',
-            4 => 'Not Applicable',
-            5 => 'Unknown'
-
-        ];
+        return Lookup::fieldOptions('laterality');
     }
 
-    // Get Histology: Carcinoma, Sarcoma, Lymphoma, Melanoma, Other
+    // Get Histology from the ICD-O morphology reference table, keyed by morphology code.
+    // The form narrows this list per primary site via patient/morphology-options.
     public static function getHistology()
     {
-        return [
-            1 => 'Carcinoma',
-            2 => 'Sarcoma',
-            3 => 'Lymphoma',
-            4 => 'Melanoma',
-            5 => 'Other'
-        ];
+        return ArrayHelper::map(
+            IcdoMorphology::find()
+                ->select(['code', 'description'])
+                ->where(['is_active' => 1])
+                ->orderBy(['code' => SORT_ASC])
+                ->asArray()
+                ->all(),
+            'code',
+            'description'
+        );
     }
 
     // Get Tumor Behavior: Benign, Malignant, In Situ, Uncertain
@@ -349,30 +364,16 @@ class Tumour extends \yii\db\ActiveRecord
         return Lookup::fieldOptions('behaviour');
     }
 
-    // Get Grade: Well Differentiated, Moderately Differentiated, Poorly Differentiated, Undifferentiated, T-cells
+    // Get Grade from the REDCap dictionary (field "tumour_grade"): 1 Well differentiated ... 8 Killer cell, 99 Unknown
     public static function getGrade()
     {
-        return [
-            1 => 'Well Differentiated',
-            2 => 'Moderately Differentiated',
-            3 => 'Poorly Differentiated',
-            4 => 'Undifferentiated',
-            5 => 'T-cells',
-            6 => 'metastatic'
-        ];
+        return Lookup::fieldOptions('tumour_grade');
     }
 
-    // Get Stage: In Situ, Stage I, Stage II, Stage III, Stage IV, Stage Unknown
+    // Get Stage from the REDCap dictionary: 0 In Situ, 1-4 Stage I-IV, 99 Unknown
     public static function getStage()
     {
-        return [
-            1 => 'In Situ',
-            2 => 'Stage I',
-            3 => 'Stage II',
-            4 => 'Stage III',
-            5 => 'Stage IV',
-            6 => 'Stage Unknown'
-        ];
+        return Lookup::fieldOptions('stage');
     }
 
     // Get Metastasis: M- (absence of  regional/ distance metastasis), M+ (presence of regional/ distance metastasis)
@@ -421,15 +422,18 @@ class Tumour extends \yii\db\ActiveRecord
             return false;
         }
 
+        $this->_warnings = [];
+
         if (!empty($this->histology)) {
 
             $morphology = IcdoMorphology::findOne([
                 'code' => $this->histology
             ]);
 
-            if ($morphology) {
+            // Most imported morphologies carry no behaviour code; keep the user's selection then
+            if ($morphology && $morphology->behaviour_code !== null) {
 
-                $this->behaviour = $morphology->behaviour;
+                $this->behaviour = $morphology->behaviour_code;
             }
         }
 

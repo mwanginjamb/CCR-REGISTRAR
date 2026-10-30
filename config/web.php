@@ -32,7 +32,15 @@ $config = [
             'class' => \yii\symfonymailer\Mailer::class,
             'viewPath' => '@app/mail',
             // send all mails to a file by default.
-            'useFileTransport' => true,
+            'useFileTransport' => false,
+            'transport' => [
+                'scheme' => 'smtp',
+                'host' => env('SMTP_HOST'),
+                'username' => env('SMTP_USERNAME'),
+                'password' => env('SMTP_PASSWORD'),
+                'port' => env('SMTP_PORT', 587),
+                // 'dsn' => 'native://default',
+            ],
         ],
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
@@ -45,7 +53,7 @@ $config = [
                     'class' => 'yii\log\FileTarget',
                     'levels' => ['info'],
                     'categories' => ['api-debug'],
-                    'logVars' => [],  
+                    'logVars' => [],
                     'logFile' => '@runtime/logs/api-debug.log',
                 ]
             ],
@@ -61,6 +69,12 @@ $config = [
         // Add a timestamp on assets to force reload when changed
         'assetManager' => [
             'appendTimestamp' => true,
+        ],
+    ],
+    'container' => [
+        'definitions' => [
+            // Show "key - label" in every ActiveForm dropdown; see app\widgets\ActiveField
+            \yii\widgets\ActiveField::class => \app\widgets\ActiveField::class,
         ],
     ],
     'params' => $params,

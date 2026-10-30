@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use app\services\Lookup;
 use Yii;
 
 /**
@@ -88,14 +89,12 @@ class Treatment extends \yii\db\ActiveRecord
         ];
     }
 
-    // Get Treatment Status
+    // Get Treatment Status from the REDCap dictionary: 1 No, 2 Yes, 9 Unknown.
+    // REDCap has one status field per therapy; chemotherapy, immuno, radiotherapy and
+    // hormone_therapy share this list (surgery alone codes Unknown as 99).
     public static function getTreatmentStatus()
     {
-        return [
-            1 => 'No',
-            2 => 'Yes',
-            3 => 'Unknown',
-        ];
+        return Lookup::fieldOptions('chemotherapy');
     }
 
 }

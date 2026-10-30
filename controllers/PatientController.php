@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\library\OptionLabel;
 use app\models\FollowUp;
 use app\models\IcdoMorphology;
 use app\models\IcdoSiteMorphologyRule;
@@ -12,10 +13,10 @@ use app\models\PatientSearch;
 use app\models\Sources;
 use app\models\Treatment;
 use app\models\Tumour;
-use app\services\Lookup;
 use Yii;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Html;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -81,8 +82,29 @@ class PatientController extends Controller
      */
     public function actionView($id)
     {
+        $model = $this->findModel($id);
+
+        $modelTumour = Tumour::findOne(['patient_id' => $id]);
+        $modelFollowUp = FollowUp::findOne(['patient_id' => $id]);
+        $modelTreatments = Treatment::find()->where(['patient_id' => $id])->orderBy(['treatment_date' => SORT_ASC])->all();
+        $modelSources = Sources::find()->where(['patient_id' => $id])->orderBy(['source_date' => SORT_ASC])->all();
+
+        // Resolve ICD-O codes stored on the tumour to their descriptions
+        $topography = $modelTumour && $modelTumour->primary_site
+            ? IcdoTopography::findOne(['code' => $modelTumour->primary_site])
+            : null;
+        $morphology = $modelTumour && $modelTumour->histology
+            ? IcdoMorphology::findOne(['code' => $modelTumour->histology])
+            : null;
+
         return $this->render('view', [
-            'model' => $this->findModel($id),
+            'model' => $model,
+            'modelTumour' => $modelTumour,
+            'modelFollowUp' => $modelFollowUp,
+            'modelTreatments' => $modelTreatments,
+            'modelSources' => $modelSources,
+            'topography' => $topography,
+            'morphology' => $morphology,
         ]);
     }
 
@@ -202,6 +224,7 @@ class PatientController extends Controller
                 }
 
                 $transaction->commit();
+                $this->flashTumourWarnings($modelTumour);
                 return $this->redirect(['view', 'id' => $model->id]);
 
             } catch (\Exception $e) {
@@ -422,6 +445,7 @@ class PatientController extends Controller
                 }
 
                 $transaction->commit();
+                $this->flashTumourWarnings($modelTumour);
                 return $this->redirect(['view', 'id' => $model->id]);
 
             } catch (\Exception $e) {
@@ -472,6 +496,16 @@ class PatientController extends Controller
     }
 
 
+    /**
+     * Shows the tumour's non-blocking validation warnings on the next page.
+     */
+    private function flashTumourWarnings(Tumour $modelTumour): void
+    {
+        foreach ($modelTumour->getWarningMessages() as $message) {
+            Yii::$app->session->addFlash('warning', $message);
+        }
+    }
+
     private function getTopographyOptions(): array
     {
         return ArrayHelper::map(
@@ -482,9 +516,7 @@ class PatientController extends Controller
                 ->asArray()
                 ->all(),
             'code',
-            static function (array $row): string {
-                return $row['code'] . ' - ' . $row['description'];
-            }
+            'description' // the form's ActiveField prefixes the code
         );
     }
     /**
@@ -606,21 +638,11 @@ class PatientController extends Controller
     private function renderMorphologyOption(
         IcdoMorphology $morphology
     ): void {
-        $code = htmlspecialchars(
-            (string) $morphology->code,
-            ENT_QUOTES,
-            'UTF-8'
+        echo Html::tag(
+            'option',
+            Html::encode(OptionLabel::label($morphology->code, (string) $morphology->description)),
+            ['value' => $morphology->code]
         );
-
-        $description = htmlspecialchars(
-            (string) $morphology->description,
-            ENT_QUOTES,
-            'UTF-8'
-        );
-
-        echo "<option value=\"{$code}\">";
-        echo "{$code} - {$description}";
-        echo '</option>';
     }
 
     // Laterality options for the form
@@ -653,17 +675,24 @@ class PatientController extends Controller
             ])
             ->one();
 
+        $options = Tumour::getLaterality();
+
         /*
-         * Default to Not Applicable if no rule exists.
+         * Default to Not Applicable if no rule exists. Submit the real code (4),
+         * since Tumour::validateLaterality() rejects anything else for these sites.
          */
         if (!$rule || !$rule->laterality_allowed) {
+            $notApplicable = array_filter(
+                $options,
+                static fn($label) => stripos($label, 'Not Applicable') !== false
+            );
 
-            echo '<option value="">Not Applicable</option>';
+            foreach ($notApplicable as $value => $label) {
+                echo Html::tag('option', Html::encode(OptionLabel::label($value, $label)), ['value' => $value]);
+            }
 
             Yii::$app->end();
         }
-
-        $options = Lookup::fieldOptions('laterality');
 
         echo '<option value="">Select Laterality</option>';
 
@@ -677,7 +706,7 @@ class PatientController extends Controller
                 continue;
             }
 
-            echo "<option value='{$value}'>{$label}</option>";
+            echo Html::tag('option', Html::encode(OptionLabel::label($value, $label)), ['value' => $value]);
         }
 
         Yii::$app->end();
@@ -698,7 +727,7 @@ class PatientController extends Controller
             Yii::$app->end();
         }
 
-        $behaviour = Lookup::fieldOptions('behaviour');
+        $behaviour = Tumour::getBehaviour();
 
         $value = null;
 

@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use app\services\Lookup;
 use Yii;
 
 /**
@@ -75,13 +76,10 @@ class FollowUp extends \yii\db\ActiveRecord
         return new \app\models\queries\FollowUpQuery(get_called_class());
     }
 
-    // present status options
+    // Present status from the REDCap dictionary: 1 Alive, 2 Dead
     public static function getPresentStatusOptions()
     {
-        return [
-            1 => 'Alive',
-            2 => 'Deceased',
-        ];
+        return Lookup::fieldOptions('present_status');
     }
 
 }

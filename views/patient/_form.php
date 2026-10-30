@@ -130,11 +130,11 @@ use yii\widgets\ActiveForm;
                     </div>
 
                     <div>
-                        <?= $form->field($model, 'ethnic_group')->dropDownList(\app\models\Patient::getEthnicGroups(), ['class' => \app\library\AuthUi::inputClass()]) ?>
+                        <?= $form->field($model, 'ethnic_group')->dropDownList(\app\models\Patient::getEthnicGroups(), ['class' => \app\library\AuthUi::inputClass(), 'prompt' => 'Select Ethnic Group']) ?>
                     </div>
 
                     <div>
-                        <?= $form->field($model, 'religion')->dropDownList(\app\models\Patient::getReligions(), ['class' => \app\library\AuthUi::inputClass()]) ?>
+                        <?= $form->field($model, 'religion')->dropDownList(\app\models\Patient::getReligions(), ['class' => \app\library\AuthUi::inputClass(), 'prompt' => 'Select Religion']) ?>
                     </div>
 
 
@@ -278,7 +278,7 @@ use yii\widgets\ActiveForm;
                     </div>
                     <!-- Behaviour -->
                     <div>
-                        <?= $form->field($modelTumour, 'behaviour')->dropDownList(Lookup::fieldOptions('behaviour'), ['class' => AuthUi::inputClass(), 'prompt' => 'Auto Selected']) ?>
+                        <?= $form->field($modelTumour, 'behaviour')->dropDownList(\app\models\Tumour::getBehaviour(), ['class' => AuthUi::inputClass(), 'prompt' => 'Auto Selected']) ?>
                     </div>
 
                     <!-- Grade -->
@@ -386,7 +386,7 @@ use yii\widgets\ActiveForm;
                                     class="remove-treatment flex items-center justify-center w-8 h-8 rounded-md hover:bg-red-50 text-red-500 transition">✕</button>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                                <?= $form->field($treatment, "[$index]treatment")->dropDownList(\app\models\Treatment::getTreatment(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Treatment'])->label(false) ?>
+                                <?= $form->field($treatment, "[$index]treatment")->dropDownList(\app\models\Treatment::getTreatment(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Treatment', 'showKeys' => false])->label(false) ?>
                                 <?= $form->field($treatment, "[$index]treatment_status")->dropDownList(\app\models\Treatment::getTreatmentStatus(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Status'])->label(false) ?>
                                 <?= $form->field($treatment, "[$index]treatment_date")->textInput(['type' => 'date', 'class' => AuthUi::inputClass()])->label(false) ?>
                                 <?= Html::activeHiddenInput($treatment, "[$index]id") ?>

@@ -12,8 +12,12 @@ class Lookup
 {
     public static function fieldOptions(string $fieldName): array
     {
+        // Several dictionary imports can define the same field; use the newest completed one
         $field = RedcapDictionaryField::find()
-            ->where(['field_name' => $fieldName])
+            ->alias('f')
+            ->innerJoin('{{%redcap_import_run}} r', 'r.id = f.import_run_id')
+            ->where(['f.field_name' => $fieldName, 'r.status' => 'completed'])
+            ->orderBy(['f.import_run_id' => SORT_DESC])
             ->one();
 
         if (!$field) {
@@ -31,7 +35,8 @@ class Lookup
         return ArrayHelper::map(
             ReferenceOption::find()
                 ->where([
-                    'reference_set_id' => $mapping->reference_set_id
+                    'reference_set_id' => $mapping->reference_set_id,
+                    'is_active' => 1,
                 ])
                 ->orderBy(['sort_order' => SORT_ASC])
                 ->all(),

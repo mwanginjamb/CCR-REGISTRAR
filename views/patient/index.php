@@ -32,21 +32,19 @@ $ethnicGroups = Patient::getEthnicGroups();
 $religions = Patient::getReligions();
 
 /*
- * Badge variant per ethnic_group integer key.
- * Extend the map as new groups are added to Patient::getEthnicGroups().
+ * Badge variant per ethnic_group key. Ethnicity now comes from the REDCap
+ * dictionary (~50 groups), so all groups share one neutral badge; add keys
+ * here only to highlight specific groups.
  */
-$ethnicVariant = [
-  1 => 'secondary',   // African   — blue-teal
-  2 => 'tertiary',    // Asian     — warm sand
-  3 => 'default',     // Caucasian — neutral
-  4 => 'warning',     // Hispanic  — amber
-  5 => 'default',     // Other     — neutral
-];
+$ethnicVariant = [];
 
+// Religion codes from the REDCap dictionary
 $religionVariant = [
   1 => 'secondary',   // Christian
   2 => 'tertiary',    // Muslim
-  3 => 'default',     // Other
+  3 => 'warning',     // Hindu
+  8 => 'default',     // Other
+  99 => 'default',    // Unknown
 ];
 
 // Export title baked into the JS via PHP string interpolation

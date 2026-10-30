@@ -195,6 +195,7 @@ class PatientApiController extends Controller
                 'id' => $patient->id,
                 'tumour_id' => $tumour->id,
                 'status' => 'synced',
+                'warnings' => $tumour->getWarningMessages(),
                 'geo' => [
                     'lat' => $patient->geo_lat,
                     'lng' => $patient->geo_lng,
