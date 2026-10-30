@@ -254,6 +254,18 @@ use yii\widgets\ActiveForm;
                         ]) ?>
                     </div>
 
+                    <!-- Topography code ("C"): sub-site of the primary site, suggested via datalist -->
+                    <div>
+                        <?= $form->field($modelTumour, 'topography_code')->textInput([
+                            'class' => AuthUi::inputClass(),
+                            'list' => 'topography-code-options',
+                            'autocomplete' => 'off',
+                            'placeholder' => 'Select primary site first',
+                            'data-url' => Url::to(['patient/topography-codes']),
+                        ])->hint('Sub-site within the primary site, e.g. C00.1') ?>
+                        <datalist id="topography-code-options"></datalist>
+                    </div>
+
                     <!-- Laterality -->
                     <div>
                         <?= $form->field($modelTumour, 'laterality')->dropDownList(\app\models\Tumour::getLaterality(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Laterality']) ?>
@@ -455,10 +467,16 @@ use yii\widgets\ActiveForm;
                                 <button type="button"
                                     class="remove-source flex items-center justify-center w-8 h-8 rounded-md hover:bg-red-50 text-red-500 transition">✕</button>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                                 <?= $form->field($source, "[$index]source_type")->dropDownList(\app\models\Sources::getSourceTypeOptions(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Source Type'])->label(false) ?>
-                                <?= $form->field($source, "[$index]source_no")->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Source No'])->label(false) ?>
-                                <?= $form->field($source, "[$index]source_date")->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Source Date'])->label(false) ?>
+                                <?= $form->field($source, "[$index]source_no")->textInput([
+                                    'class' => AuthUi::inputClass() . ' source-no-input',
+                                    'placeholder' => 'Source No',
+                                    'autocomplete' => 'off',
+                                    'list' => $source->source_type ? 'source-no-options-' . $source->source_type : null,
+                                ])->label(false) ?>
+                                <?= $form->field($source, "[$index]record_no")->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Record No (patient file no.)'])->label(false) ?>
+                                <?= $form->field($source, "[$index]source_date")->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Source Date', 'type' => 'date'])->label(false) ?>
                                 <?= Html::activeHiddenInput($source, "[$index]id") ?>
                             </div>
                         </div>
@@ -468,6 +486,16 @@ use yii\widgets\ActiveForm;
 
                 <!-- render template -->
                 <?= $this->render('_template_source', ['form' => $form]) ?>
+
+                <!-- "Source No" suggestions per source type, from the source_reference setup table.
+                     Embedded in the page so suggestions also work offline. -->
+                <?php foreach (\app\models\SourceReference::optionsByType() as $sourceType => $entries): ?>
+                    <datalist id="source-no-options-<?= (int) $sourceType ?>">
+                        <?php foreach ($entries as $sourceNo => $name): ?>
+                            <option value="<?= Html::encode($sourceNo) ?>"><?= Html::encode($name) ?></option>
+                        <?php endforeach; ?>
+                    </datalist>
+                <?php endforeach; ?>
 
             </section>
 
@@ -573,6 +601,10 @@ use yii\widgets\ActiveForm;
 $this->registerCssFile('@web/css/formPatient.css');
 // import form js
 $this->registerJsFile('@web/js/form.js', ['position' => \yii\web\View::POS_END]);
+// "C" sub-site autocomplete driven by the primary site
+$this->registerJsFile('@web/js/topographyCode.js', ['depends' => [\yii\web\JqueryAsset::class]]);
+// "Source No" suggestions per source type
+$this->registerJsFile('@web/js/sourceNo.js', ['position' => \yii\web\View::POS_END]);
 
 // add js for essential tnm fields
 //$this->registerJsFile('@web/js/essentialTnmFields.js', ['position' => \yii\web\View::POS_END]);

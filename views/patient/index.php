@@ -71,7 +71,7 @@ $exportTitle = Html::encode(Yii::$app->name . ' — Patient Registry');
   <?= FormUi::statChip(
     'pending_actions',
     'Pending Review',
-    '—',
+    number_format(count(array_filter($models, static fn($m) => (bool) $m->needs_review))),
     'bg-tertiary-fixed',
     'text-on-tertiary-fixed-variant'
   ) ?>
@@ -143,6 +143,9 @@ $exportTitle = Html::encode(Yii::$app->name . ' — Patient Registry');
                 <span class="text-xs text-outline">
                   ID: <?= Html::encode($model->id) ?>
                 </span>
+                <?php if ($model->needs_review): ?>
+                  <span class="mt-1"><?= FormUi::badge('Needs review', 'warning') ?></span>
+                <?php endif ?>
               </div>
             </td>
 
@@ -226,6 +229,9 @@ $exportTitle = Html::encode(Yii::$app->name . ' — Patient Registry');
             <h4 class="font-bold text-primary text-sm">
               <?= Html::encode($model->full_name ?? '—') ?>
             </h4>
+            <?php if ($model->needs_review): ?>
+              <?= FormUi::badge('Needs review', 'warning') ?>
+            <?php endif ?>
             <p class="text-xs text-outline">
               NID: <?= Html::encode($model->national_id ?? '—') ?>
             </p>

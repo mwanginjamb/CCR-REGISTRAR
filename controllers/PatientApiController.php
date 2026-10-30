@@ -152,7 +152,7 @@ class PatientApiController extends Controller
             // 4. Sources
             $sourceRows = $body['Sources'] ?? [];
             foreach ($sourceRows as $rowData) {
-                if (empty($rowData['source_type']) && empty($rowData['source_no'])) {
+                if (empty($rowData['source_type']) && empty($rowData['source_no']) && empty($rowData['record_no'])) {
                     continue;
                 }
                 
@@ -188,6 +188,8 @@ class PatientApiController extends Controller
                 Yii::$app->response->statusCode = 422;
                 return ['model' => 'FollowUp', 'errors' => $followUp->getErrors()];
             }
+
+            $patient->syncReviewFlag($tumour->getWarningMessages());
 
             $tx->commit();
 

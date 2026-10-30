@@ -26,6 +26,8 @@ use Yii;
  * @property string|null $geo_lng
  * @property string|null $geo_accuracy
  * @property string|null $geo_captured
+ * @property int $needs_review
+ * @property string|null $review_note
  */
 class Patient extends \yii\db\ActiveRecord
 {
@@ -119,6 +121,8 @@ class Patient extends \yii\db\ActiveRecord
             'geo_lng' => Yii::t('app', 'Geo Lng'),
             'geo_accuracy' => Yii::t('app', 'Geo Accuracy'),
             'geo_captured' => Yii::t('app', 'Geo Captured'),
+            'needs_review' => Yii::t('app', 'Needs Review'),
+            'review_note' => Yii::t('app', 'Review Note'),
         ];
     }
 
@@ -129,6 +133,25 @@ class Patient extends \yii\db\ActiveRecord
     public static function find()
     {
         return new \app\models\queries\PatientQuery(get_called_class());
+    }
+
+    /**
+     * Raises or clears the review flag from a save's non-blocking warnings.
+     * Deliberately not in rules(), so forms and the sync API cannot set it.
+     *
+     * @param string[] $warnings
+     */
+    public function syncReviewFlag(array $warnings): void
+    {
+        $this->updateAttributes([
+            'needs_review' => $warnings ? 1 : 0,
+            'review_note' => $warnings ? implode("\n", $warnings) : null,
+        ]);
+    }
+
+    public function markReviewed(): void
+    {
+        $this->updateAttributes(['needs_review' => 0, 'review_note' => null]);
     }
 
     // Ethnicity from the REDCap dictionary (field "ethnicity").

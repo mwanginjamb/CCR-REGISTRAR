@@ -88,6 +88,16 @@ $this->beginPage();
                     'title' => 'Power BI Reports'
                 ]
             ) ?>
+
+            <?= Html::a(
+                '<span class="material-symbols-outlined">local_hospital</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Sources</span>',
+                ['/source-reference/index'],
+                [
+                    'class' => 'nav-link flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-white/50 transition-transform duration-200 hover:translate-x-1',
+                    'encode' => false,
+                    'title' => 'Sources Setup'
+                ]
+            ) ?>
         </nav>
 
         <!-- Bottom Actions -->

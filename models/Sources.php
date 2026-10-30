@@ -10,6 +10,7 @@ use Yii;
  * @property int $id
  * @property int|null $source_type
  * @property string|null $source_no
+ * @property string|null $record_no
  * @property string|null $source_date
  * @property int|null $patient_id
  * @property int|null $created_at
@@ -37,12 +38,14 @@ class Sources extends \yii\db\ActiveRecord
         return [
 
             // explicit safe rule for all attributes
-           [['source_type', 'source_no', 'source_date', 'patient_id', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'safe'],
+           [['source_type', 'source_no', 'record_no', 'source_date', 'patient_id', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'safe'],
             
-            [['source_type', 'source_no', 'source_date', 'patient_id', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'default', 'value' => null],
+            [['source_type', 'source_no', 'record_no', 'source_date', 'patient_id', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'default', 'value' => null],
             [['source_type', 'patient_id', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'integer'],
             [['source_date'], 'safe'],
             [['source_no'], 'string', 'max' => 255],
+            [['record_no'], 'trim'],
+            [['record_no'], 'string', 'max' => 50],
         ];
     }
 
@@ -55,6 +58,7 @@ class Sources extends \yii\db\ActiveRecord
             'id' => 'ID',
             'source_type' => 'Source Type',
             'source_no' => 'Source No',
+            'record_no' => 'Record No',
             'source_date' => 'Source Date',
             'patient_id' => 'Patient ID',
             'created_at' => 'Created At',

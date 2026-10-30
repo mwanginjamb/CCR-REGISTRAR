@@ -15,7 +15,6 @@ use app\models\Treatment;
 use app\models\Tumour;
 use Yii;
 use yii\filters\VerbFilter;
-use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -38,6 +37,7 @@ class PatientController extends Controller
                     'class' => VerbFilter::className(),
                     'actions' => [
                         'delete' => ['POST'],
+                        'mark-reviewed' => ['POST'],
                     ],
                 ],
             ]
@@ -93,6 +93,9 @@ class PatientController extends Controller
         $topography = $modelTumour && $modelTumour->primary_site
             ? IcdoTopography::findOne(['code' => $modelTumour->primary_site])
             : null;
+        $subsite = $modelTumour && $modelTumour->topography_code
+            ? IcdoTopography::findOne(['code' => $modelTumour->topography_code])
+            : null;
         $morphology = $modelTumour && $modelTumour->histology
             ? IcdoMorphology::findOne(['code' => $modelTumour->histology])
             : null;
@@ -104,6 +107,7 @@ class PatientController extends Controller
             'modelTreatments' => $modelTreatments,
             'modelSources' => $modelSources,
             'topography' => $topography,
+            'subsite' => $subsite,
             'morphology' => $morphology,
         ]);
     }
@@ -166,7 +170,7 @@ class PatientController extends Controller
             foreach ($sourcesRaw as $idx => $srcData) {
                 if (!is_numeric($idx))
                     continue;
-                if (empty($srcData['source_type']) && empty($srcData['source_no']))
+                if (empty($srcData['source_type']) && empty($srcData['source_no']) && empty($srcData['record_no']))
                     continue; // skip empty
                 $source = new Sources();
                 $source->load($srcData, '');
@@ -222,6 +226,8 @@ class PatientController extends Controller
                 if (!$modelFollowUp->save()) {
                     throw new \Exception('FollowUp errors: ' . json_encode($modelFollowUp->getErrors()));
                 }
+
+                $model->syncReviewFlag($modelTumour->getWarningMessages());
 
                 $transaction->commit();
                 $this->flashTumourWarnings($modelTumour);
@@ -354,7 +360,7 @@ class PatientController extends Controller
             foreach ($sourcesRaw as $idx => $srcData) {
                 if (!is_numeric($idx))
                     continue;
-                if (empty($srcData['source_type']) && empty($srcData['source_no']) && empty($srcData['source_date'])) {
+                if (empty($srcData['source_type']) && empty($srcData['source_no']) && empty($srcData['record_no']) && empty($srcData['source_date'])) {
                     continue;
                 }
                 $sourceId = $srcData['id'] ?? null;
@@ -444,6 +450,8 @@ class PatientController extends Controller
                     throw new \Exception('FollowUp validation failed');
                 }
 
+                $model->syncReviewFlag($modelTumour->getWarningMessages());
+
                 $transaction->commit();
                 $this->flashTumourWarnings($modelTumour);
                 return $this->redirect(['view', 'id' => $model->id]);
@@ -508,16 +516,34 @@ class PatientController extends Controller
 
     private function getTopographyOptions(): array
     {
-        return ArrayHelper::map(
-            IcdoTopography::find()
-                ->select(['code', 'description'])
-                ->where(['is_active' => 1])
-                ->orderBy(['code' => SORT_ASC])
-                ->asArray()
-                ->all(),
-            'code',
-            'description' // the form's ActiveField prefixes the code
-        );
+        return IcdoTopography::primarySiteOptions();
+    }
+
+    /**
+     * Sub-sites ("C" field) of a primary site, for the form's autocomplete.
+     * GET patient/topography-codes?primarySite=C00.9
+     */
+    public function actionTopographyCodes($primarySite = null)
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        $items = [];
+        foreach (IcdoTopography::subsiteOptions($primarySite) as $code => $description) {
+            $items[] = ['code' => $code, 'description' => $description];
+        }
+
+        return $items;
+    }
+
+    /**
+     * Clears the review flag once someone has checked the record.
+     */
+    public function actionMarkReviewed($id)
+    {
+        $this->findModel($id)->markReviewed();
+        Yii::$app->session->setFlash('success', 'Record marked as reviewed.');
+
+        return $this->redirect(['view', 'id' => $id]);
     }
     /**
      * Deletes an existing Patient model.

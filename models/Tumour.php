@@ -14,6 +14,7 @@ use yii\helpers\ArrayHelper;
  * @property string|null $incident_date
  * @property int|null $basis_of_diagnosis
  * @property string|null $primary_site
+ * @property string|null $topography_code
  * @property int|null $laterality
  * @property int|null $histology
  * @property int|null $behaviour
@@ -76,13 +77,14 @@ class Tumour extends \yii\db\ActiveRecord
         return [
 
             // explicit safe rule for all attributes
-            [['basis_of_diagnosis', 'primary_site', 'histology', 'behaviour', 'grade', 'stage', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'safe'],
+            [['basis_of_diagnosis', 'primary_site', 'topography_code', 'histology', 'behaviour', 'grade', 'stage', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'safe'],
 
-            [['incident_date', 'basis_of_diagnosis', 'primary_site', 'histology', 'behaviour', 'grade', 'stage', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by', 'full_tnm'], 'default', 'value' => null],
+            [['incident_date', 'basis_of_diagnosis', 'primary_site', 'topography_code', 'histology', 'behaviour', 'grade', 'stage', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by', 'full_tnm'], 'default', 'value' => null],
             [['patient_id', 'incident_date', 'basis_of_diagnosis', 'primary_site'], 'required'],
             [['patient_id', 'basis_of_diagnosis', 'laterality', 'histology', 'behaviour', 'grade', 'stage', 'full_tnm', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'integer'],
             [['incident_date'], 'safe'],
             [['primary_site', 't', 'n', 'm'], 'string', 'max' => 255],
+            [['topography_code'], 'string', 'max' => 10],
             [['patient_id'], 'exist', 'skipOnError' => true, 'targetClass' => Patient::class, 'targetAttribute' => ['patient_id' => 'id']],
             ['incident_date', 'date', 'format' => 'php:Y-m-d'],
             [
@@ -99,6 +101,10 @@ class Tumour extends \yii\db\ActiveRecord
             ['laterality', 'in', 'range' => fn() => array_keys(self::getLaterality()), 'message' => '{attribute} must be selected from the list.'],
             ['grade', 'in', 'range' => fn() => array_keys(self::getGrade()), 'message' => '{attribute} must be selected from the list.'],
             ['stage', 'in', 'range' => fn() => array_keys(self::getStage()), 'message' => '{attribute} must be selected from the list.'],
+
+            ['primary_site', 'in', 'range' => fn() => array_keys(IcdoTopography::primarySiteOptions()), 'message' => '{attribute} must be selected from the list.'],
+            ['topography_code', 'filter', 'filter' => fn($v) => $v === null ? null : strtoupper(trim($v))],
+            ['topography_code', 'validateTopographyCode'],
 
             ['laterality', 'validateLaterality'],
             ['histology', 'validateMorphology'],
@@ -149,6 +155,7 @@ class Tumour extends \yii\db\ActiveRecord
             'incident_date' => 'Incident Date',
             'basis_of_diagnosis' => 'Basis Of Diagnosis',
             'primary_site' => 'Primary Site (Topography Code)',
+            'topography_code' => 'C',
             'laterality' => 'Laterality',
             'histology' => 'Histology (Morphology Code)',
             'behaviour' => 'Behaviour (Behavior Code)',
@@ -215,6 +222,29 @@ class Tumour extends \yii\db\ActiveRecord
         }
 
 
+    }
+
+    // Topography code (sub-site) must belong to the selected primary site category
+    public function validateTopographyCode($attribute)
+    {
+        if ($this->topography_code === null || $this->topography_code === '') {
+            return;
+        }
+
+        $subsites = IcdoTopography::subsiteOptions($this->primary_site);
+
+        if ($subsites === []) {
+            $this->addError($attribute, 'The selected primary site has no sub-sites; leave C empty.');
+            return;
+        }
+
+        if (!isset($subsites[$this->topography_code])) {
+            $this->addError(
+                $attribute,
+                "C must be a sub-site of {$this->primary_site}: "
+                . array_key_first($subsites) . ' to ' . array_key_last($subsites) . '.'
+            );
+        }
     }
 
     // Validate Morphology based on Topography Code

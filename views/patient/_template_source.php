@@ -22,9 +22,10 @@ use app\library\AuthUi;
         </div>
 
         <!-- FORM ROW -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             <?= $form->field(new \app\models\Sources(), "[__index__]source_type")->dropDownList(\app\models\Sources::getSourceTypeOptions(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Source Type', 'disabled' => 'disabled'])->label(false)->hint('Source Type') ?>
-            <?= $form->field(new \app\models\Sources(), "[__index__]source_no")->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Source No', 'disabled' => 'disabled'])->label(false)->hint('Source Number') ?>
+            <?= $form->field(new \app\models\Sources(), "[__index__]source_no")->textInput(['class' => AuthUi::inputClass() . ' source-no-input', 'placeholder' => 'Source No', 'autocomplete' => 'off', 'disabled' => 'disabled'])->label(false)->hint('Source Number') ?>
+            <?= $form->field(new \app\models\Sources(), "[__index__]record_no")->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Record No (patient file no.)', 'disabled' => 'disabled'])->label(false)->hint('Record Number') ?>
             <?= $form->field(new \app\models\Sources(), "[__index__]source_date")->textInput(['class' => AuthUi::inputClass(), 'placeholder' => 'Source Date','type' => 'date', 'disabled' => 'disabled'])->label(false)->hint('Source Date')->hint('Source Date') ?>
         </div>
 

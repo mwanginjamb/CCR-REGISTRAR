@@ -3,6 +3,7 @@
 use app\library\FormUi;
 use app\models\FollowUp;
 use app\models\Patient;
+use app\models\SourceReference;
 use app\models\Sources;
 use app\models\Treatment;
 use app\models\Tumour;
@@ -16,6 +17,7 @@ use yii\helpers\Html;
 /** @var app\models\Treatment[] $modelTreatments */
 /** @var app\models\Sources[] $modelSources */
 /** @var app\models\IcdoTopography|null $topography */
+/** @var app\models\IcdoTopography|null $subsite */
 /** @var app\models\IcdoMorphology|null $morphology */
 
 $patientId = sprintf('PT-%05d', $model->id);
@@ -121,9 +123,10 @@ $treatmentStatuses = Treatment::getTreatmentStatus();
 $treatmentStatusVariant = [1 => 'default', 2 => 'secondary', 3 => 'warning'];
 
 $sourceTypes = Sources::getSourceTypeOptions();
+$sourceReferences = SourceReference::optionsByType();
 $modelSources = array_values(array_filter(
     $modelSources,
-    static fn(Sources $s): bool => !empty($s->source_type) || !empty($s->source_no) || !empty($s->source_date)
+    static fn(Sources $s): bool => !empty($s->source_type) || !empty($s->source_no) || !empty($s->record_no) || !empty($s->source_date)
 ));
 
 // Follow-up
@@ -161,6 +164,9 @@ $usernames = $userIds
                     <?php if ($presentStatus): ?>
                         <?= FormUi::badge($presentStatus, $presentStatusVariant) ?>
                     <?php endif; ?>
+                    <?php if ($model->needs_review): ?>
+                        <?= FormUi::badge('Needs review', 'warning') ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -190,6 +196,30 @@ $usernames = $userIds
         </div>
 
     </div>
+
+    <?php /* ─── Review banner ───────────────────────────────────────────── */ ?>
+    <?php if ($model->needs_review): ?>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-8 px-5 py-4 rounded-2xl bg-[#fff3cd] text-[#7a5c00]">
+            <span class="material-symbols-outlined shrink-0">rule</span>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold">This record needs review</p>
+                <?php if ($model->review_note): ?>
+                    <p class="text-sm mt-1 whitespace-pre-line"><?= Html::encode($model->review_note) ?></p>
+                <?php endif; ?>
+            </div>
+            <?= Html::a(
+                '<span class="material-symbols-outlined text-[20px]">task_alt</span><span>Mark as reviewed</span>',
+                ['mark-reviewed', 'id' => $model->id],
+                [
+                    'class' => 'inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/70 font-bold hover:bg-white transition-colors shrink-0',
+                    'data' => [
+                        'confirm' => 'Confirm that the coding on this record has been checked?',
+                        'method' => 'post',
+                    ],
+                ]
+            ) ?>
+        </div>
+    <?php endif; ?>
 
     <?php /* ─── Clinical summary strip ──────────────────────────────────── */ ?>
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -236,6 +266,14 @@ $usernames = $userIds
                             $t->primary_site
                                 ? '<span class="font-bold text-primary">' . Html::encode($t->primary_site) . '</span>'
                                     . ($topography ? ' <span class="text-on-surface-variant">— ' . Html::encode($topography->description) . '</span>' : '')
+                                : $dash,
+                            'sm:col-span-2'
+                        ) ?>
+                        <?= $item(
+                            $t->getAttributeLabel('topography_code'),
+                            $t->topography_code
+                                ? '<span class="font-bold text-primary">' . Html::encode($t->topography_code) . '</span>'
+                                    . ($subsite ? ' <span class="text-on-surface-variant">— ' . Html::encode($subsite->description) . '</span>' : '')
                                 : $dash,
                             'sm:col-span-2'
                         ) ?>
@@ -334,18 +372,27 @@ $usernames = $userIds
                 <?php if (!$modelSources): ?>
                     <p class="text-sm text-on-surface-variant">No sources have been recorded.</p>
                 <?php else: ?>
-                    <div class="hidden sm:grid grid-cols-3 gap-4 px-4 pb-2 text-[10px] uppercase font-bold text-outline tracking-wider">
-                        <span>Source Type</span><span>Source No.</span><span>Date</span>
+                    <div class="hidden sm:grid grid-cols-4 gap-4 px-4 pb-2 text-[10px] uppercase font-bold text-outline tracking-wider">
+                        <span>Source Type</span><span>Source No.</span><span>Record No.</span><span>Date</span>
                     </div>
                     <ul class="divide-y divide-surface-container-high rounded-xl border border-surface-container-high">
                         <?php foreach ($modelSources as $source): ?>
                             <?php $sourceType = $decode($sourceTypes, $source->source_type); ?>
-                            <li class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 items-center px-4 py-3">
+                            <li class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 items-center px-4 py-3">
                                 <span class="col-span-2 sm:col-span-1">
                                     <?= $sourceType ? FormUi::chip($sourceType, 'secondary') : $dash ?>
                                 </span>
-                                <span class="text-sm font-medium text-on-surface"><?= $text($source->source_no) ?></span>
-                                <span class="text-sm text-on-surface-variant text-right sm:text-left"><?= $date($source->source_date) ?></span>
+                                <?php $sourceName = SourceReference::nameFor($source->source_type, $source->source_no, $sourceReferences); ?>
+                                <span class="text-sm font-medium text-on-surface">
+                                    <?= $text($source->source_no) ?>
+                                    <?php if ($sourceName): ?>
+                                        <span class="block text-xs text-on-surface-variant"><?= Html::encode($sourceName) ?></span>
+                                    <?php endif; ?>
+                                </span>
+                                <span class="text-sm font-medium text-on-surface text-right sm:text-left">
+                                    <span class="sm:hidden text-[10px] uppercase font-bold text-outline">Record </span><?= $text($source->record_no) ?>
+                                </span>
+                                <span class="col-span-2 sm:col-span-1 text-sm text-on-surface-variant sm:text-left"><?= $date($source->source_date) ?></span>
                             </li>
                         <?php endforeach; ?>
                     </ul>
