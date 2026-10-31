@@ -3,6 +3,7 @@ module.exports = {
     content: [
         './views/**/*.php',
         './widgets/**/*.php',
+        './library/**/*.php', // AuthUi / FormUi helpers emit class strings used by the views
         './web/js/**/*.js',
     ],
     darkMode: "class",

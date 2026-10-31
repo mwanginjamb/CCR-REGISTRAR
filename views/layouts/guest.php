@@ -28,7 +28,11 @@
 /** @var yii\web\View $this */
 /** @var string $content */
 
+use app\assets\AuthAsset;
 use yii\helpers\Html;
+
+// Compiled Tailwind build (npm run build); see AuthAsset
+AuthAsset::register($this);
 
 // ── Layout-level defaults ────────────────────────────────────────────────────
 $brandIcon = $this->params['brand_icon'] ?? 'clinical_notes';
@@ -58,78 +62,6 @@ $this->beginPage();
         rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
-
-    <!-- Tailwind CDN (development) — swap for compiled build in prod ── -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "on-tertiary-container": "#e17f5d",
-                        "surface-tint": "#3d5ca2",
-                        "outline": "#747782",
-                        "on-secondary-container": "#056380",
-                        "on-primary-fixed-variant": "#224489",
-                        "on-error-container": "#93000a",
-                        "tertiary-container": "#5d1b02",
-                        "on-tertiary-fixed": "#390c00",
-                        "secondary-fixed": "#bee9ff",
-                        "surface-variant": "#e0e3e5",
-                        "on-surface": "#191c1e",
-                        "secondary-container": "#98deff",
-                        "primary-container": "#002d72",
-                        "tertiary-fixed": "#ffdbd0",
-                        "on-secondary-fixed": "#001f2a",
-                        "on-tertiary": "#ffffff",
-                        "primary": "#001a48",
-                        "background": "#f7f9fb",
-                        "error-container": "#ffdad6",
-                        "on-secondary": "#ffffff",
-                        "on-background": "#191c1e",
-                        "secondary-fixed-dim": "#8ad0f1",
-                        "surface-container": "#eceef0",
-                        "surface": "#f7f9fb",
-                        "on-primary-container": "#7a97e2",
-                        "surface-container-high": "#e6e8ea",
-                        "outline-variant": "#c4c6d2",
-                        "inverse-primary": "#b1c5ff",
-                        "primary-fixed-dim": "#b1c5ff",
-                        "surface-container-low": "#f2f4f6",
-                        "surface-bright": "#f7f9fb",
-                        "tertiary": "#3b0d00",
-                        "error": "#ba1a1a",
-                        "secondary": "#0d6683",
-                        "on-primary": "#ffffff",
-                        "surface-container-lowest": "#ffffff",
-                        "on-surface-variant": "#444651",
-                        "on-secondary-fixed-variant": "#004d65",
-                        "on-tertiary-fixed-variant": "#7a3014",
-                        "on-error": "#ffffff",
-                        "inverse-on-surface": "#eff1f3",
-                        "tertiary-fixed-dim": "#ffb59c",
-                        "primary-fixed": "#dae2ff",
-                        "inverse-surface": "#2d3133",
-                        "surface-dim": "#d8dadc",
-                        "surface-container-highest": "#e0e3e5",
-                        "on-primary-fixed": "#001946",
-                    },
-                    borderRadius: {
-                        DEFAULT: "0.125rem",
-                        lg: "0.25rem",
-                        xl: "0.5rem",
-                        full: "0.75rem",
-                    },
-                    fontFamily: {
-                        headline: ["Manrope"],
-                        body: ["Inter"],
-                        label: ["Inter"],
-                    },
-                },
-            },
-        };
-    </script>
 
     <style>
         /* Icon rendering */
