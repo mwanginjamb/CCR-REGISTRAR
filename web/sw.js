@@ -4,7 +4,7 @@
  */
 
 // Define constants
-const CACHE_NAME = 'clinical-registry-v1.0.4';
+const CACHE_NAME = 'clinical-registry-v1.0.5';
 const SYNC_TAG = 'sync-patient-records';
 const API_SYNC_URL = '/patient-api/create';
 
@@ -128,6 +128,11 @@ self.addEventListener('fetch', (event) => {
 
     // Skip non-GET requests
     if (event.request.method !== 'GET') return;
+
+    // Leave cross-origin requests (map tiles, Google Fonts, CDN scripts) to the
+    // browser: re-fetching them from here can alter headers such as Referer, and
+    // nothing cross-origin is precached
+    if (url.origin !== self.location.origin) return;
 
     // API calls - network first
     if (url.pathname.startsWith('/patient-api/')) {
