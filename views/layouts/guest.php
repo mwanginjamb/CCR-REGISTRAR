@@ -52,6 +52,7 @@ $this->beginPage();
 
     <title><?= Html::encode($this->title . ' — ' . $appName) ?></title>
 
+    <?= Html::csrfMetaTags() ?>
     <?php $this->head() ?>
 
     <!-- Typefaces ─────────────────────────────────────────────── -->

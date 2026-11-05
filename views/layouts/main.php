@@ -32,6 +32,8 @@ $this->beginPage();
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
 
+    <?php // yii.js reads the token from these for data-method="post" links (logout, delete, …) ?>
+    <?= Html::csrfMetaTags() ?>
     <?php $this->head() ?>
 </head>
 
