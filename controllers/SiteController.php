@@ -23,10 +23,24 @@ class SiteController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::class,
-                'only' => ['logout'],
                 'rules' => [
+                    // Pages a logged-out visitor needs. "error" stays public so a
+                    // guest who hits a missing page sees the error, not the login form.
                     [
-                        'actions' => ['logout'],
+                        'actions' => [
+                            'login',
+                            'signup',
+                            'request-password-reset',
+                            'reset-password',
+                            'verify-email',
+                            'resend-verification-email',
+                            'error',
+                            'captcha',
+                        ],
+                        'allow' => true,
+                    ],
+                    // Everything else (index, logout, about, contact) needs a logged-in user
+                    [
                         'allow' => true,
                         'roles' => ['@'],
                     ],

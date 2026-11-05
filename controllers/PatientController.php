@@ -14,6 +14,7 @@ use app\models\Sources;
 use app\models\Treatment;
 use app\models\Tumour;
 use Yii;
+use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\helpers\Html;
 use yii\web\Controller;
@@ -33,6 +34,16 @@ class PatientController extends Controller
         return array_merge(
             parent::behaviors(),
             [
+                // Every patient action, including the form's AJAX lookups, needs a logged-in user
+                'access' => [
+                    'class' => AccessControl::class,
+                    'rules' => [
+                        [
+                            'allow' => true,
+                            'roles' => ['@'],
+                        ],
+                    ],
+                ],
                 'verbs' => [
                     'class' => VerbFilter::className(),
                     'actions' => [
