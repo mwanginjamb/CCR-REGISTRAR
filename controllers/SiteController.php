@@ -9,6 +9,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
+use app\components\Rbac;
 use app\models\LoginForm;
 use app\models\ContactForm;
 use app\models\PasswordResetRequestForm;
@@ -24,6 +25,20 @@ class SiteController extends Controller
             'access' => [
                 'class' => AccessControl::class,
                 'rules' => [
+                    // Overview (also the home page) is for qa and admin only
+                    [
+                        'actions' => ['index'],
+                        'allow' => true,
+                        'roles' => Rbac::OVERVIEW_ROLES,
+                    ],
+                    // Other logged-in users (registrars) are sent to their start page
+                    // instead of a 403, since logo/home links point here
+                    [
+                        'actions' => ['index'],
+                        'allow' => false,
+                        'roles' => ['@'],
+                        'denyCallback' => fn($rule, $action) => $action->controller->redirect(Rbac::landingRoute()),
+                    ],
                     // Pages a logged-out visitor needs. "error" stays public so a
                     // guest who hits a missing page sees the error, not the login form.
                     [
@@ -39,7 +54,7 @@ class SiteController extends Controller
                         ],
                         'allow' => true,
                     ],
-                    // Everything else (index, logout, about, contact) needs a logged-in user
+                    // Everything else (logout, about, contact) needs a logged-in user
                     [
                         'allow' => true,
                         'roles' => ['@'],
@@ -102,6 +117,11 @@ class SiteController extends Controller
 
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
+            // Registrars start on the new patient form; qa/admin return to the
+            // page they asked for, or Overview
+            if (!Rbac::canViewOverview()) {
+                return $this->redirect(Rbac::landingRoute());
+            }
             return $this->goBack();
         }
 

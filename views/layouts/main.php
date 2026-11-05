@@ -63,14 +63,16 @@ $this->beginPage();
 
         <!-- Primary Nav Links -->
         <nav class="flex-1 min-h-0 overflow-y-auto no-scrollbar space-y-2">
-            <?= Html::a(
-                '<span class="material-symbols-outlined">dashboard</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Overview</span>',
-                ['/site/index'],
-                [
-                    'class' => 'nav-link flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-white/50 transition-transform duration-200 hover:translate-x-1',
-                    'encode' => false,
-                ]
-            ) ?>
+            <?php if (\app\components\Rbac::canViewOverview()): ?>
+                <?= Html::a(
+                    '<span class="material-symbols-outlined">dashboard</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Overview</span>',
+                    ['/site/index'],
+                    [
+                        'class' => 'nav-link flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-white/50 transition-transform duration-200 hover:translate-x-1',
+                        'encode' => false,
+                    ]
+                ) ?>
+            <?php endif; ?>
             <?= Html::a(
                 '<span class="material-symbols-outlined">query_stats</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Incidence</span>',
                 ['/patient/index'],

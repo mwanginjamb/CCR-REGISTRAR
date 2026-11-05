@@ -58,6 +58,53 @@ final class Rbac
         return in_array($name, self::coreItems(), true);
     }
 
+    /** Roles allowed to open the Overview page (site/index) */
+    public const OVERVIEW_ROLES = [self::ROLE_QA, self::ROLE_ADMIN];
+
+    public static function canViewOverview(): bool
+    {
+        $user = Yii::$app->user;
+        foreach (self::OVERVIEW_ROLES as $role) {
+            if ($user->can($role)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Roles that see every patient in the patient list */
+    public const FULL_PATIENT_LIST_ROLES = [self::ROLE_QA, self::ROLE_ADMIN];
+
+    /**
+     * Whether the patient list is unrestricted for the current user. Everyone
+     * else (registrars) sees only their own records flagged for review.
+     */
+    public static function canViewAllPatients(): bool
+    {
+        $user = Yii::$app->user;
+        foreach (self::FULL_PATIENT_LIST_ROLES as $role) {
+            if ($user->can($role)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Where a logged-in user starts: Overview for qa/admin, the new patient
+     * form for registrars, otherwise the patient list.
+     */
+    public static function landingRoute(): array
+    {
+        if (self::canViewOverview()) {
+            return ['/site/index'];
+        }
+        if (Yii::$app->user->can(self::CREATE_PATIENT)) {
+            return ['/patient/create'];
+        }
+        return ['/patient/index'];
+    }
+
     /**
      * Assigns the default role to a user who has no role yet.
      * Users already escalated by an admin are left untouched.
