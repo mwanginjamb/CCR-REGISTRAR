@@ -107,17 +107,19 @@ if (YII_DEBUG || isset($_GET['debug'])) {
                     <span class="font-inter text-sm font-medium hidden lg:block">Cancer Sites</span>
                 </a>
 
-                <?= $this->render('_settingsNav', ['variant' => 'questionnaire']) ?>
+                <?= $this->render('_sidebarGroups', ['variant' => 'questionnaire']) ?>
             </nav>
 
-            <?= \yii\helpers\Html::a(
-                '<span class="material-symbols-outlined block lg:hidden" data-icon="add">add</span>' .
-                '<span class="hidden lg:block">New Site</span>',
-                ['patient/create'], // Replace with your actual route
-                [
-                    'class' => AuthUi::buttonClass()
-                ]
-            ) ?>
+            <?php if (Yii::$app->user->can(\app\components\Rbac::CREATE_PATIENT)): ?>
+                <?= \yii\helpers\Html::a(
+                    '<span class="material-symbols-outlined block lg:hidden" data-icon="add">add</span>' .
+                    '<span class="hidden lg:block">New Site</span>',
+                    ['patient/create'],
+                    [
+                        'class' => AuthUi::buttonClass()
+                    ]
+                ) ?>
+            <?php endif; ?>
         </aside>
 
         <!-- Page Content -->

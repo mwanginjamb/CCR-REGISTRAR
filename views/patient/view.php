@@ -1,5 +1,6 @@
 <?php
 
+use app\components\Rbac;
 use app\library\FormUi;
 use app\models\FollowUp;
 use app\models\Patient;
@@ -177,22 +178,26 @@ $usernames = $userIds
                 ['index'],
                 ['class' => 'inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-high text-outline font-bold hover:bg-surface-dim transition-colors']
             ) ?>
-            <?= Html::a(
-                '<span class="material-symbols-outlined text-[20px]">delete</span><span class="hidden sm:inline">Delete</span>',
-                ['delete', 'id' => $model->id],
-                [
-                    'class' => 'inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-error font-bold hover:bg-error-container transition-colors',
-                    'data' => [
-                        'confirm' => Yii::t('app', 'Are you sure you want to delete this patient and all related records?'),
-                        'method' => 'post',
-                    ],
-                ]
-            ) ?>
-            <?= Html::a(
-                '<span class="material-symbols-outlined text-[20px]">edit_square</span><span>Edit</span>',
-                ['update', 'id' => $model->id],
-                ['class' => 'inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-br from-primary to-primary-container text-white font-bold shadow-[0_12px_32px_rgba(0,26,72,0.12)] hover:opacity-90 transition-opacity']
-            ) ?>
+            <?php if (Yii::$app->user->can(Rbac::DELETE_PATIENT)): ?>
+                <?= Html::a(
+                    '<span class="material-symbols-outlined text-[20px]">delete</span><span class="hidden sm:inline">Delete</span>',
+                    ['delete', 'id' => $model->id],
+                    [
+                        'class' => 'inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-error font-bold hover:bg-error-container transition-colors',
+                        'data' => [
+                            'confirm' => Yii::t('app', 'Delete this patient? The record is hidden from the registry but kept in the database.'),
+                            'method' => 'post',
+                        ],
+                    ]
+                ) ?>
+            <?php endif; ?>
+            <?php if (Yii::$app->user->can(Rbac::UPDATE_PATIENT_DETAILS)): ?>
+                <?= Html::a(
+                    '<span class="material-symbols-outlined text-[20px]">edit_square</span><span>Edit</span>',
+                    ['update', 'id' => $model->id],
+                    ['class' => 'inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-br from-primary to-primary-container text-white font-bold shadow-[0_12px_32px_rgba(0,26,72,0.12)] hover:opacity-90 transition-opacity']
+                ) ?>
+            <?php endif; ?>
         </div>
 
     </div>
@@ -207,17 +212,19 @@ $usernames = $userIds
                     <p class="text-sm mt-1 whitespace-pre-line"><?= Html::encode($model->review_note) ?></p>
                 <?php endif; ?>
             </div>
-            <?= Html::a(
-                '<span class="material-symbols-outlined text-[20px]">task_alt</span><span>Mark as reviewed</span>',
-                ['mark-reviewed', 'id' => $model->id],
-                [
-                    'class' => 'inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/70 font-bold hover:bg-white transition-colors shrink-0',
-                    'data' => [
-                        'confirm' => 'Confirm that the coding on this record has been checked?',
-                        'method' => 'post',
-                    ],
-                ]
-            ) ?>
+            <?php if (Yii::$app->user->can(Rbac::REVIEW_PATIENT)): ?>
+                <?= Html::a(
+                    '<span class="material-symbols-outlined text-[20px]">task_alt</span><span>Mark as reviewed</span>',
+                    ['mark-reviewed', 'id' => $model->id],
+                    [
+                        'class' => 'inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/70 font-bold hover:bg-white transition-colors shrink-0',
+                        'data' => [
+                            'confirm' => 'Confirm that the coding on this record has been checked?',
+                            'method' => 'post',
+                        ],
+                    ]
+                ) ?>
+            <?php endif; ?>
         </div>
     <?php endif; ?>
 

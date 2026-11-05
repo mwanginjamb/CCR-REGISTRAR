@@ -32,6 +32,10 @@ $config = [
             ],
         ],
         'db' => $db,
+        // Needed by the RBAC migrations and the user/* console commands
+        'authManager' => [
+            'class' => \yii\rbac\DbManager::class,
+        ],
     ],
     'container' => [
         'definitions' => [

@@ -59,6 +59,10 @@ $config = [
             ],
         ],
         'db' => $db,
+        // RBAC: roles registrar / qa / admin, seeded by migration m261105_*_seed_rbac
+        'authManager' => [
+            'class' => \yii\rbac\DbManager::class,
+        ],
 
         'urlManager' => [
             'enablePrettyUrl' => true,

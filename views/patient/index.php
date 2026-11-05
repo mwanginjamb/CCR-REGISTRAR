@@ -8,6 +8,7 @@
  */
 
 use app\assets\PatientAsset;
+use app\components\Rbac;
 use app\library\FormUi;
 use app\models\Patient;
 use yii\helpers\Html;
@@ -15,6 +16,10 @@ use yii\helpers\Url;
 
 PatientAsset::register($this);
 $this->title = 'Patients';
+
+// Row actions follow the user's permissions (registrars cannot delete)
+$canUpdate = Yii::$app->user->can(Rbac::UPDATE_PATIENT_DETAILS);
+$canDelete = Yii::$app->user->can(Rbac::DELETE_PATIENT);
 
 /*
  * Disable Yii2 pagination so every record is rendered into the <table>.
@@ -62,7 +67,9 @@ $exportTitle = Html::encode(Yii::$app->name . ' — Patient Registry');
       Centralised patient records — search, filter, and export.
     </p>
   </div>
-  <?= FormUi::ctaButton('New Patient', 'person_add', ['create']) ?>
+  <?php if (Yii::$app->user->can(Rbac::CREATE_PATIENT)): ?>
+    <?= FormUi::ctaButton('New Patient', 'person_add', ['create']) ?>
+  <?php endif ?>
 </div>
 
 <?php /* ─── Stat chips ──────────────────────────────────────────────────── */ ?>
@@ -192,8 +199,12 @@ $exportTitle = Html::encode(Yii::$app->name . ' — Patient Registry');
             <td class="<?= FormUi::tdClass() ?> text-right">
               <div class="flex items-center justify-end gap-1">
                 <?= FormUi::actionBtn('visibility', ['view', 'id' => $model->id], 'view', ['title' => 'View']) ?>
-                <?= FormUi::actionBtn('edit_square', ['update', 'id' => $model->id], 'edit', ['title' => 'Edit']) ?>
-                <?= FormUi::actionBtn('delete', ['delete', 'id' => $model->id], 'delete', ['title' => 'Delete']) ?>
+                <?php if ($canUpdate): ?>
+                  <?= FormUi::actionBtn('edit_square', ['update', 'id' => $model->id], 'edit', ['title' => 'Edit']) ?>
+                <?php endif ?>
+                <?php if ($canDelete): ?>
+                  <?= FormUi::actionBtn('delete', ['delete', 'id' => $model->id], 'delete', ['title' => 'Delete']) ?>
+                <?php endif ?>
               </div>
             </td>
 
@@ -257,8 +268,12 @@ $exportTitle = Html::encode(Yii::$app->name . ' — Patient Registry');
           </span>
           <div class="flex gap-1">
             <?= FormUi::actionBtnSm('visibility', ['view', 'id' => $model->id], 'view') ?>
-            <?= FormUi::actionBtnSm('edit_square', ['update', 'id' => $model->id], 'edit') ?>
-            <?= FormUi::actionBtnSm('delete', ['delete', 'id' => $model->id], 'delete') ?>
+            <?php if ($canUpdate): ?>
+              <?= FormUi::actionBtnSm('edit_square', ['update', 'id' => $model->id], 'edit') ?>
+            <?php endif ?>
+            <?php if ($canDelete): ?>
+              <?= FormUi::actionBtnSm('delete', ['delete', 'id' => $model->id], 'delete') ?>
+            <?php endif ?>
           </div>
         </div>
 

@@ -25,10 +25,10 @@ use yii\web\NotFoundHttpException;
 abstract class SetupController extends Controller
 {
     /**
-     * Who may manage settings. Switch to ['admin'] once RBAC roles exist;
-     * the Settings menu (views/layouts/_settingsNav.php) checks the same.
+     * Who may manage settings (admin role, via the manageSettings permission).
+     * The Settings menu (views/layouts/_sidebarGroups.php) checks the same.
      */
-    public const ACCESS_ROLES = ['@'];
+    public const ACCESS_ROLES = [Rbac::MANAGE_SETTINGS];
 
     /** @var string ActiveRecord class managed by this controller */
     public string $modelClass;

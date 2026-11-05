@@ -740,4 +740,112 @@ class FormUi
             'class' => 'flex items-center gap-2 text-xs font-label font-medium text-outline mb-3 uppercase tracking-widest',
         ]);
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | GridView defaults (Settings and RBAC lists)
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Registry-styled GridView config; pass the widget's own options to override.
+     *
+     * Usage:
+     *   <?= GridView::widget(FormUi::gridView([
+     *         'dataProvider' => $dataProvider,
+     *         'columns' => FormUi::gridColumns([...]),
+     *       ])) ?>
+     */
+    public static function gridView(array $options): array
+    {
+        return array_merge([
+            'tableOptions' => ['class' => 'w-full text-left border-collapse'],
+            'headerRowOptions' => ['class' => 'bg-surface-container-high'],
+            'filterRowOptions' => ['class' => 'bg-surface-container'],
+            'rowOptions' => ['class' => self::trClass()],
+            'layout' => "{items}\n<div class=\"" . self::gridFooterClass() . "\"><div class=\"text-xs text-outline\">{summary}</div>{pager}</div>",
+            'emptyText' => 'No entries found.',
+            'emptyTextOptions' => ['class' => 'px-6 py-10 text-center text-sm text-on-surface-variant'],
+            'pager' => [
+                'options' => ['class' => 'flex flex-wrap items-center gap-1'],
+                'linkContainerOptions' => ['class' => 'rounded-lg overflow-hidden'],
+                'linkOptions' => ['class' => 'block px-3 py-1.5 text-sm text-on-surface-variant hover:bg-surface-container-high'],
+                'activePageCssClass' => 'bg-primary [&>a]:text-white',
+                'disabledPageCssClass' => 'opacity-40',
+                'disabledListItemSubTagOptions' => ['class' => 'block px-3 py-1.5 text-sm'],
+                'prevPageLabel' => '‹',
+                'nextPageLabel' => '›',
+                'maxButtonCount' => 7,
+            ],
+        ], $options);
+    }
+
+    /**
+     * Applies header/cell/filter styling to data columns. Columns may be
+     * attribute names or configs; set 'td' => 'primary'|'muted' for a cell
+     * variant. Columns with a 'class' (e.g. ActionColumn) are left as given.
+     */
+    public static function gridColumns(array $columns): array
+    {
+        return array_map(static function ($column) {
+            $column = is_string($column) ? ['attribute' => $column] : $column;
+            if (isset($column['class'])) {
+                return $column;
+            }
+
+            $variant = $column['td'] ?? 'default';
+            unset($column['td']);
+
+            return array_merge([
+                'headerOptions' => ['class' => self::thClass()],
+                'contentOptions' => ['class' => self::tdClass($variant)],
+                'filterInputOptions' => ['class' => AuthUi::inputClass() . ' !p-2 !text-sm'],
+            ], $column);
+        }, $columns);
+    }
+
+    /**
+     * Item renderer for checkboxList(): a card per option showing its name and,
+     * when given, a description underneath.
+     *
+     * @param array $descriptions value => description
+     *
+     * Usage:
+     *   $form->field($m, 'roles')->checkboxList($items, ['item' => FormUi::checkboxCard($descriptions)])
+     */
+    public static function checkboxCard(array $descriptions = []): callable
+    {
+        return static function ($index, $label, $name, $checked, $value) use ($descriptions) {
+            $checkbox = Html::checkbox($name, $checked, [
+                'value' => $value,
+                'class' => 'mt-0.5 w-4 h-4 rounded border-outline text-primary focus:ring-primary-container shrink-0',
+            ]);
+            $text = Html::tag('span', Html::encode($label), ['class' => 'block text-sm font-semibold text-on-surface'])
+                . (!empty($descriptions[$value])
+                    ? Html::tag('span', Html::encode($descriptions[$value]), ['class' => 'block text-xs text-on-surface-variant mt-0.5'])
+                    : '');
+
+            return Html::tag('label', $checkbox . Html::tag('span', $text), [
+                'class' => 'flex items-start gap-3 p-3 rounded-xl border border-surface-container-high bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer has-[:checked]:border-primary/40 has-[:checked]:bg-primary-fixed/30',
+            ]);
+        };
+    }
+
+    /**
+     * Right-aligned action column using actionBtn() icons.
+     *
+     * @param array $buttons name => fn($model, $key): string
+     */
+    public static function actionColumn(array $buttons): array
+    {
+        return [
+            'class' => \yii\grid\ActionColumn::class,
+            'header' => 'Actions',
+            'headerOptions' => ['class' => self::thClass(true)],
+            'contentOptions' => ['class' => self::tdClass() . ' text-right whitespace-nowrap'],
+            'template' => implode(' ', array_map(fn($name) => '{' . $name . '}', array_keys($buttons))),
+            'buttons' => array_map(fn($render) => static fn($url, $model, $key) => $render($model, $key), $buttons),
+        ];
+    }
 }

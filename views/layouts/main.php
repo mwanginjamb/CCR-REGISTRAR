@@ -91,7 +91,7 @@ $this->beginPage();
                 ]
             ) ?>
 
-            <?= $this->render('_settingsNav', ['variant' => 'main']) ?>
+            <?= $this->render('_sidebarGroups', ['variant' => 'main']) ?>
         </nav>
 
         <!-- Bottom Actions -->
@@ -99,14 +99,16 @@ $this->beginPage();
             class="mt-auto pt-6 border-t border-outline-variant/20 space-y-2 flex flex-col items-center lg:items-stretch">
 
 
-            <?= \yii\helpers\Html::a(
-                '<span class="material-symbols-outlined block lg:hidden" data-icon="add">add</span>' .
-                '<span class="hidden lg:block">New Site</span>',
-                ['patient/create'], // Replace with your actual route
-                [
-                    'class' => AuthUi::buttonClass()
-                ]
-            ) ?>
+            <?php if (Yii::$app->user->can(\app\components\Rbac::CREATE_PATIENT)): ?>
+                <?= \yii\helpers\Html::a(
+                    '<span class="material-symbols-outlined block lg:hidden" data-icon="add">add</span>' .
+                    '<span class="hidden lg:block">New Site</span>',
+                    ['patient/create'],
+                    [
+                        'class' => AuthUi::buttonClass()
+                    ]
+                ) ?>
+            <?php endif; ?>
             <?= Html::a(
                 '<span class="material-symbols-outlined">logout</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Log Out</span>',
                 ['/site/logout'],

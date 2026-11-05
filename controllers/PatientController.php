@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\components\Rbac;
 use app\library\OptionLabel;
 use app\models\FollowUp;
 use app\models\IcdoMorphology;
@@ -34,13 +35,21 @@ class PatientController extends Controller
         return array_merge(
             parent::behaviors(),
             [
-                // Every patient action, including the form's AJAX lookups, needs a logged-in user
+                // Permissions per action (see app\components\Rbac). An action with no rule is denied.
                 'access' => [
                     'class' => AccessControl::class,
                     'rules' => [
+                        ['actions' => ['index', 'view'], 'allow' => true, 'roles' => [Rbac::VIEW_PATIENT]],
+                        ['actions' => ['create'], 'allow' => true, 'roles' => [Rbac::CREATE_PATIENT]],
+                        // Registrars may update the child records; patient fields need updatePatient (checked in the action)
+                        ['actions' => ['update'], 'allow' => true, 'roles' => [Rbac::UPDATE_PATIENT_DETAILS]],
+                        ['actions' => ['delete'], 'allow' => true, 'roles' => [Rbac::DELETE_PATIENT]],
+                        ['actions' => ['mark-reviewed'], 'allow' => true, 'roles' => [Rbac::REVIEW_PATIENT]],
+                        // AJAX lookups behind the patient form
                         [
+                            'actions' => ['morphology-options', 'laterality-options', 'morphology-behaviour', 'topography-codes'],
                             'allow' => true,
-                            'roles' => ['@'],
+                            'roles' => [Rbac::CREATE_PATIENT, Rbac::UPDATE_PATIENT_DETAILS],
                         ],
                     ],
                 ],
@@ -332,8 +341,11 @@ class PatientController extends Controller
         if ($this->request->isPost && !$this->request->isAjax) {
             $post = $this->request->post();
 
-            // Load Patient, Tumour, FollowUp
-            $model->load($post);
+            // Load Patient, Tumour, FollowUp. Patient fields need updatePatient;
+            // without it (registrar) only the child records are saved.
+            if (Yii::$app->user->can(Rbac::UPDATE_PATIENT)) {
+                $model->load($post);
+            }
             $modelTumour->load($post);
             $modelFollowUp->load($post);
 
@@ -399,6 +411,10 @@ class PatientController extends Controller
                     throw new \Exception('Tumour validation failed');
                 }
 
+                // Removing saved treatment/source rows needs deletePatientDetails (QA);
+                // for a registrar, rows missing from the post are kept.
+                $canDeleteDetails = Yii::$app->user->can(Rbac::DELETE_PATIENT_DETAILS);
+
                 // 3. Synchronize Treatments
                 // Mark for deletion: existing records not present in $newTreatments
                 $existingTreatmentIds = array_map(function ($t) {
@@ -408,7 +424,7 @@ class PatientController extends Controller
                     return $t->id;
                 }, $newTreatments));
                 $toDelete = array_diff($existingTreatmentIds, $newTreatmentIds);
-                if (!empty($toDelete)) {
+                if (!empty($toDelete) && $canDeleteDetails) {
                     Treatment::deleteAll(['id' => $toDelete]);
                 }
 
@@ -444,7 +460,7 @@ class PatientController extends Controller
                     return $s->id;
                 }, $newSources));
                 $toDeleteSources = array_diff($existingSourceIds, $newSourceIds);
-                if (!empty($toDeleteSources)) {
+                if (!empty($toDeleteSources) && $canDeleteDetails) {
                     Sources::deleteAll(['id' => $toDeleteSources]);
                 }
 
@@ -557,15 +573,18 @@ class PatientController extends Controller
         return $this->redirect(['view', 'id' => $id]);
     }
     /**
-     * Deletes an existing Patient model.
-     * If deletion is successful, the browser will be redirected to the 'index' page.
+     * Soft-deletes a patient (QA): the record and its child rows stay in the
+     * database but are hidden. Redirects to the 'index' page.
      * @param int $id ID
      * @return \yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $model = $this->findModel($id);
+        $model->softDelete();
+
+        Yii::$app->session->setFlash('success', 'Patient ' . sprintf('PT-%05d', $model->id) . ' deleted.');
 
         return $this->redirect(['index']);
     }

@@ -1,5 +1,6 @@
 <?php
 
+use app\components\Rbac;
 use app\library\AuthUi;
 use app\library\FormUi;
 use app\services\Lookup;
@@ -16,6 +17,12 @@ use yii\widgets\ActiveForm;
 // print "<pre>";
 // print_r(Lookup::fieldOptions('behaviour'));
 // print "</pre>";
+
+// Registrars edit the child records only: on update, patient fields are read-only
+// without updatePatient (the controller also ignores them), and saved treatment/source
+// rows cannot be removed without deletePatientDetails.
+$patientLocked = !$model->isNewRecord && !Yii::$app->user->can(Rbac::UPDATE_PATIENT);
+$canRemoveSavedRows = Yii::$app->user->can(Rbac::DELETE_PATIENT_DETAILS);
 
 ?>
 
@@ -98,7 +105,14 @@ use yii\widgets\ActiveForm;
                         Patient Information
                     </h3>
 
+                    <?php if ($patientLocked): ?>
+                        <span class="ml-auto"><?= FormUi::badge('Read-only: QA edits patient details', 'warning') ?></span>
+                    <?php endif; ?>
+
                 </div>
+
+                <?php /* Disabled fieldset: inputs are read-only and not submitted */ ?>
+                <fieldset <?= $patientLocked ? 'disabled class="opacity-70"' : '' ?>>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
 
@@ -198,6 +212,8 @@ use yii\widgets\ActiveForm;
                     </div>
 
                 </div>
+
+                </fieldset>
 
             </section>
 
@@ -390,8 +406,10 @@ use yii\widgets\ActiveForm;
                         <div class="treatment-item border p-4 rounded-lg bg-white" data-index="<?= $index ?>">
                             <div class="flex items-center justify-between mb-3">
                                 <span class="text-sm font-semibold text-on-surface-variant">Treatment Entry</span>
-                                <button type="button"
-                                    class="remove-treatment flex items-center justify-center w-8 h-8 rounded-md hover:bg-red-50 text-red-500 transition">✕</button>
+                                <?php if ($canRemoveSavedRows || $treatment->isNewRecord): ?>
+                                    <button type="button"
+                                        class="remove-treatment flex items-center justify-center w-8 h-8 rounded-md hover:bg-red-50 text-red-500 transition">✕</button>
+                                <?php endif; ?>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                                 <?= $form->field($treatment, "[$index]treatment")->dropDownList(\app\models\Treatment::getTreatment(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Treatment', 'showKeys' => false])->label(false) ?>
@@ -460,8 +478,10 @@ use yii\widgets\ActiveForm;
                         <div class="source-item border p-4 rounded-lg bg-white" data-index="<?= $index ?>">
                             <div class="flex items-center justify-between mb-3">
                                 <span class="text-sm font-semibold text-on-surface-variant">Source Entry</span>
-                                <button type="button"
-                                    class="remove-source flex items-center justify-center w-8 h-8 rounded-md hover:bg-red-50 text-red-500 transition">✕</button>
+                                <?php if ($canRemoveSavedRows || $source->isNewRecord): ?>
+                                    <button type="button"
+                                        class="remove-source flex items-center justify-center w-8 h-8 rounded-md hover:bg-red-50 text-red-500 transition">✕</button>
+                                <?php endif; ?>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                                 <?= $form->field($source, "[$index]source_type")->dropDownList(\app\models\Sources::getSourceTypeOptions(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Source Type'])->label(false) ?>

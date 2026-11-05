@@ -28,6 +28,9 @@ use Yii;
  * @property string|null $geo_captured
  * @property int $needs_review
  * @property string|null $review_note
+ * @property int $is_deleted
+ * @property int|null $deleted_at
+ * @property int|null $deleted_by
  */
 class Patient extends \yii\db\ActiveRecord
 {
@@ -132,7 +135,30 @@ class Patient extends \yii\db\ActiveRecord
      */
     public static function find()
     {
+        // Soft-deleted patients are hidden everywhere; use findWithDeleted() to include them
+        return static::findWithDeleted()->andWhere([static::tableName() . '.is_deleted' => 0]);
+    }
+
+    /**
+     * Query that also returns soft-deleted patients.
+     * @return \app\models\queries\PatientQuery
+     */
+    public static function findWithDeleted()
+    {
         return new \app\models\queries\PatientQuery(get_called_class());
+    }
+
+    /**
+     * Soft delete: the patient and its child records stay in the database but
+     * are hidden from the registry.
+     */
+    public function softDelete(): void
+    {
+        $this->updateAttributes([
+            'is_deleted' => 1,
+            'deleted_at' => time(),
+            'deleted_by' => Yii::$app->has('user') && !Yii::$app->user->isGuest ? Yii::$app->user->id : null,
+        ]);
     }
 
     /**

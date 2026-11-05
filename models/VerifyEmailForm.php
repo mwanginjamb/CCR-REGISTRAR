@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use app\components\Rbac;
 use app\models\User;
 use yii\base\InvalidArgumentException;
 use yii\base\Model;
@@ -47,6 +48,14 @@ class VerifyEmailForm extends Model
     {
         $user = $this->_user;
         $user->status = User::STATUS_ACTIVE;
-        return $user->save(false) ? $user : null;
+
+        if (!$user->save(false)) {
+            return null;
+        }
+
+        // Verified accounts start as registrar; an admin escalates them as needed
+        Rbac::assignDefaultRole($user->id);
+
+        return $user;
     }
 }
