@@ -2,6 +2,8 @@
 
 namespace app\models;
 
+use app\components\Rbac;
+use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use app\models\Patient;
@@ -43,7 +45,11 @@ class PatientSearch extends Patient
     {
         $query = Patient::find();
 
-        // add conditions that should always apply here
+        // qa/admin see every patient; registrars only their own records flagged
+        // for review. Applied before validation so no filter input can widen it.
+        if (!Rbac::canViewAllPatients()) {
+            $query->flaggedForReviewBy((int) Yii::$app->user->id);
+        }
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,

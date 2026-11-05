@@ -64,7 +64,11 @@ $exportTitle = Html::encode(Yii::$app->name . ' — Patient Registry');
       Patient Registry
     </h2>
     <p class="text-on-surface-variant mt-2 text-base md:text-lg">
-      Centralised patient records — search, filter, and export.
+      <?php if (Rbac::canViewAllPatients()): ?>
+        Centralised patient records — search, filter, and export.
+      <?php else: ?>
+        Records you registered that are flagged for review. Open one to correct it.
+      <?php endif ?>
     </p>
   </div>
   <?php if (Yii::$app->user->can(Rbac::CREATE_PATIENT)): ?>

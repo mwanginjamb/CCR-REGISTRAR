@@ -15,6 +15,18 @@ class PatientQuery extends \yii\db\ActiveQuery
     }*/
 
     /**
+     * Patients created by the given user that are flagged for review
+     * (the registrar's view of the patient list).
+     */
+    public function flaggedForReviewBy(int $userId)
+    {
+        return $this->andWhere([
+            'patient.created_by' => $userId,
+            'patient.needs_review' => 1,
+        ]);
+    }
+
+    /**
      * {@inheritdoc}
      * @return \app\models\Patient[]|array
      */
