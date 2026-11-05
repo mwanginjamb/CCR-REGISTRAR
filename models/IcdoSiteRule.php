@@ -7,6 +7,9 @@ use Yii;
 /**
  * This is the model class for table "icdo_site_rule".
  *
+ * One rule per topography category (e.g. "C50.*"), read by the patient form and
+ * Tumour::validateLaterality() to decide whether laterality applies to a site.
+ *
  * @property int $id
  * @property string|null $topography_pattern
  * @property int|null $laterality_required
@@ -30,17 +33,43 @@ class IcdoSiteRule extends \yii\db\ActiveRecord
         return 'icdo_site_rule';
     }
 
+    public function behaviors()
+    {
+        return [
+            'timestamp' => [
+                'class' => 'yii\behaviors\TimestampBehavior',
+            ],
+            'blameable' => [
+                'class' => 'yii\behaviors\BlameableBehavior',
+            ],
+        ];
+    }
+
     /**
      * {@inheritdoc}
      */
     public function rules()
     {
         return [
-            [['topography_pattern', 'laterality_required', 'laterality_allowed', 'tnm_allowed', 'grade_allowed', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'default', 'value' => null],
-            [['laterality_required', 'laterality_allowed', 'tnm_allowed', 'grade_allowed', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'integer'],
+            ['topography_pattern', 'trim'],
+            ['topography_pattern', 'filter', 'filter' => 'strtoupper'],
+            ['topography_pattern', 'required'],
+            ['topography_pattern', 'match', 'pattern' => '/^C\d{2}\.\*$/', 'message' => '{attribute} must be a topography category such as C50.*'],
+            [['laterality_required', 'laterality_allowed'], 'default', 'value' => 0],
+            [['tnm_allowed', 'grade_allowed'], 'default', 'value' => null],
+            [['laterality_required', 'laterality_allowed', 'tnm_allowed', 'grade_allowed'], 'boolean'],
+            ['laterality_required', 'validateLateralityRequired'],
             [['topography_pattern'], 'string', 'max' => 50],
             [['topography_pattern'], 'unique'],
         ];
+    }
+
+    // Laterality cannot be required for a site where it is not allowed
+    public function validateLateralityRequired($attribute)
+    {
+        if ($this->laterality_required && !$this->laterality_allowed) {
+            $this->addError($attribute, 'Laterality can only be required when it is allowed.');
+        }
     }
 
     /**
@@ -50,10 +79,10 @@ class IcdoSiteRule extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'topography_pattern' => 'Topography Pattern',
+            'topography_pattern' => 'Topography Category',
             'laterality_required' => 'Laterality Required',
             'laterality_allowed' => 'Laterality Allowed',
-            'tnm_allowed' => 'Tnm Allowed',
+            'tnm_allowed' => 'TNM Allowed',
             'grade_allowed' => 'Grade Allowed',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',

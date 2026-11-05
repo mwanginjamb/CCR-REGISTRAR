@@ -31,17 +31,33 @@ class IcdoTopography extends \yii\db\ActiveRecord
     }
 
     /**
+     * created_at / updated_at are DATETIME columns (the importer writes them as
+     * 'Y-m-d H:i:s'), so the timestamp value is a SQL expression, not time().
+     */
+    public function behaviors()
+    {
+        return [
+            'timestamp' => [
+                'class' => 'yii\behaviors\TimestampBehavior',
+                'value' => new Expression('NOW()'),
+            ],
+        ];
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function rules()
     {
         return [
+            [['code', 'description', 'redcap_value', 'source_version'], 'trim'],
+            ['code', 'filter', 'filter' => 'strtoupper'],
             [['source_version'], 'default', 'value' => null],
             [['is_active'], 'default', 'value' => 1],
-            [['redcap_value', 'code', 'description', 'created_at', 'updated_at'], 'required'],
+            [['redcap_value', 'code', 'description'], 'required'],
+            ['code', 'match', 'pattern' => '/^C\d{2}\.\d$/', 'message' => '{attribute} must look like C50.9.'],
             [['description'], 'string'],
-            [['is_active'], 'integer'],
-            [['created_at', 'updated_at'], 'safe'],
+            [['is_active'], 'boolean'],
             [['redcap_value'], 'string', 'max' => 100],
             [['code'], 'string', 'max' => 10],
             [['source_version'], 'string', 'max' => 50],
@@ -56,11 +72,11 @@ class IcdoTopography extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'redcap_value' => 'Redcap Value',
+            'redcap_value' => 'REDCap Value',
             'code' => 'Code',
             'description' => 'Description',
             'source_version' => 'Source Version',
-            'is_active' => 'Is Active',
+            'is_active' => 'Active',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];

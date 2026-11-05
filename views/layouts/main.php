@@ -60,7 +60,7 @@ $this->beginPage();
         </div>
 
         <!-- Primary Nav Links -->
-        <nav class="flex-1 space-y-2">
+        <nav class="flex-1 min-h-0 overflow-y-auto no-scrollbar space-y-2">
             <?= Html::a(
                 '<span class="material-symbols-outlined">dashboard</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Overview</span>',
                 ['/site/index'],
@@ -89,15 +89,7 @@ $this->beginPage();
                 ]
             ) ?>
 
-            <?= Html::a(
-                '<span class="material-symbols-outlined">local_hospital</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Sources</span>',
-                ['/source-reference/index'],
-                [
-                    'class' => 'nav-link flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-white/50 transition-transform duration-200 hover:translate-x-1',
-                    'encode' => false,
-                    'title' => 'Sources Setup'
-                ]
-            ) ?>
+            <?= $this->render('_settingsNav', ['variant' => 'main']) ?>
         </nav>
 
         <!-- Bottom Actions -->
@@ -111,14 +103,6 @@ $this->beginPage();
                 ['patient/create'], // Replace with your actual route
                 [
                     'class' => AuthUi::buttonClass()
-                ]
-            ) ?>
-            <?= Html::a(
-                '<span class="material-symbols-outlined">settings</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Settings</span>',
-                ['/site/settings'],
-                [
-                    'class' => 'nav-link flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-2 hover:bg-white/50 transition-transform duration-200 hover:translate-x-1 w-full',
-                    'encode' => false,
                 ]
             ) ?>
             <?= Html::a(

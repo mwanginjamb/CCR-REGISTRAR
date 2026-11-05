@@ -89,7 +89,7 @@ if (YII_DEBUG || isset($_GET['debug'])) {
                 </p>
             </div>
 
-            <nav class="flex-1 space-y-1">
+            <nav class="flex-1 min-h-0 overflow-y-auto no-scrollbar space-y-1">
                 <a class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2 text-[#444651] hover:bg-[#eceef0] transition-colors rounded-lg group"
                     href="<?= Url::toRoute(['patient/index']) ?>" title="Registry">
                     <span class="material-symbols-outlined text-xl" data-icon="clinical_notes">clinical_notes</span>
@@ -100,6 +100,8 @@ if (YII_DEBUG || isset($_GET['debug'])) {
                     <span class="material-symbols-outlined text-xl" data-icon="groups">groups</span>
                     <span class="font-inter text-sm font-medium hidden lg:block">Cancer Sites</span>
                 </a>
+
+                <?= $this->render('_settingsNav', ['variant' => 'questionnaire']) ?>
             </nav>
 
             <?= \yii\helpers\Html::a(
