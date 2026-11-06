@@ -223,6 +223,7 @@ class SiteController extends Controller
      */
     public function actionResetPassword($token)
     {
+        $this->layout = 'guest';
         try {
             $model = new \app\models\ResetPasswordForm($token);
         } catch (InvalidArgumentException $e) {

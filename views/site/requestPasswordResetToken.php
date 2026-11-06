@@ -4,37 +4,35 @@
 /** @var yii\bootstrap5\ActiveForm $form */
 /** @var app\models\PasswordResetRequestForm $model */
 
-use yii\bootstrap5\Html;
 use yii\bootstrap5\ActiveForm;
+use yii\bootstrap5\Html;
+use app\library\FormUi;
 
-$this->title = 'Request password reset';
-$this->params['breadcrumbs'][] = $this->title;
+$this->title = 'Reset Your Password';
+$this->params['card_subtitle'] = 'Enter your email and we will send you a link to reset your password.';
 ?>
 <div class="site-request-password-reset">
-    <h1><?= Html::encode($this->title) ?></h1>
 
-    <p>Please fill out your email. A link to reset password will be sent there.</p>
+    <?php $form = ActiveForm::begin(FormUi::formConfig('request-password-reset-form')); ?>
 
-    <div class="row">
-        <div class="col-lg-5">
-            <?php $form = ActiveForm::begin([
-                'id' => 'request-password-reset-form',
-                'options' => ['class' => 'space-y-6'],
-                'fieldConfig' => [
-                    'template' => "{label}\n<div class=\"relative group\">{input}</div>\n{error}",
-                    'labelOptions' => ['class' => 'block font-label text-sm font-semibold text-on-surface-variant'],
-                    'inputOptions' => ['class' => 'w-full pl-12 pr-4 py-3.5 bg-white border ring-1 ring-outline-variant/30 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all'],
-                ]
-            ]); ?>
+    <?= $form->field($model, 'email', FormUi::fieldConfig('mail'))->textInput([
+        'autofocus' => true,
+        'type' => 'email',
+        'placeholder' => 'you@example.org',
+        'autocomplete' => 'email',
+        'class' => FormUi::inputClass(true),
+    ]) ?>
 
-            <?= $form->field($model, 'email')->textInput(['autofocus' => true]) ?>
+    <?= Html::submitButton('Send Reset Link <span class="material-symbols-outlined">arrow_forward</span>', [
+        'class' => FormUi::buttonClass(),
+        'name' => 'reset-button',
+    ]) ?>
 
-            <?= Html::submitButton('Request Password Reset <span class="material-symbols-outlined">arrow_forward</span>', [
-                'class' => 'w-full py-4 bg-primary text-white font-headline font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary-container transition-all flex items-center justify-center gap-2',
-                'name' => 'reset-button'
-            ]) ?>
+    <?php ActiveForm::end(); ?>
 
-            <?php ActiveForm::end(); ?>
-        </div>
-    </div>
+    <?= $this->render('_authLinks', ['links' => [
+        ['Back to login', ['site/login']],
+        ['Resend verification email', ['site/resend-verification-email']],
+    ]]) ?>
+
 </div>

@@ -5,63 +5,50 @@
 /** @var app\models\SignupForm $model */
 
 use yii\bootstrap5\ActiveForm;
-use yii\helpers\Html;
+use yii\bootstrap5\Html;
 use app\library\FormUi;
 
-$this->title = 'Register | Create an Account';
+$this->title = 'Create an Account';
+$this->params['card_subtitle'] = 'Register to request access. You will get an email to verify your address.';
 ?>
+<div class="site-signup">
 
-<div class="row">
+    <?php $form = ActiveForm::begin(FormUi::formConfig('signup-form')); ?>
 
+    <?= $form->field($model, 'username', FormUi::fieldConfig('person'))->textInput([
+        'autofocus' => true,
+        'placeholder' => 'Choose a username',
+        'class' => FormUi::inputClass(true),
+    ])->label('Username') ?>
 
-<div class="form-container">
+    <?= $form->field($model, 'email', FormUi::fieldConfig('mail'))->textInput([
+        'type' => 'email',
+        'placeholder' => 'you@example.org',
+        'autocomplete' => 'email',
+        'class' => FormUi::inputClass(true),
+    ])->label('Email') ?>
 
-            <?php $form = ActiveForm::begin(\app\library\FormUi::formConfig('signup-form')); ?>
+    <?= $form->field($model, 'password', FormUi::fieldConfig('lock'))->passwordInput([
+        'placeholder' => '••••••••',
+        'autocomplete' => 'new-password',
+        'class' => FormUi::inputClass(true),
+    ]) ?>
 
-            <!-- Add an error summary -->
-            <?= $form->errorSummary($model) ?>
+    <?= $form->field($model, 'passwordConfirm', FormUi::fieldConfig('lock_reset'))->passwordInput([
+        'placeholder' => '••••••••',
+        'autocomplete' => 'new-password',
+        'class' => FormUi::inputClass(true),
+    ]) ?>
 
-            <?= $form->field($model, 'username')->textInput([
-                'autofocus' => true,
-                'placeholder' => 'Your Username'
-            ])->label('Username') ?>
+    <?= Html::submitButton('Create Account <span class="material-symbols-outlined">arrow_forward</span>', [
+        'class' => FormUi::buttonClass(),
+        'name' => 'signup-button',
+    ]) ?>
 
-            <?= $form->field($model, 'email')->textInput([
-                'type' => 'email',
-                'placeholder' => 'Your E-mail Address'
-            ])->label('Email') ?>
+    <?php ActiveForm::end(); ?>
 
-            <?= $form->field($model, 'password')->passwordInput([
-                'placeholder' => '••••••••'
-            ]) ?>
+    <?= $this->render('_authLinks', ['links' => [
+        ['Sign in', ['site/login'], 'Already have an account?'],
+    ]]) ?>
 
-            <?= $form->field($model, 'passwordConfirm')->passwordInput([
-                'placeholder' => '••••••••'
-            ]) ?>
-
-
-            <div class="mt-2 flex flex-col gap-1">
-
-
-            </div>
-
-            <?= Html::submitButton('Register to Portal <span class="material-symbols-outlined">arrow_forward</span>', [
-                'class' => 'w-full py-4 bg-primary text-white font-headline font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary-container transition-all flex items-center justify-center gap-2',
-                'name' => 'signup-button'
-            ]) ?>
-
-            <?php ActiveForm::end(); ?>
-
-           
-
-            <div class="mt-12 pt-8 border-t border-surface-container-highest text-center">
-                <div class="text-xs text-gray-500">
-                    Already have an Account ?
-                    <?= Html::a('Sign In', ['site/login'], [
-                        'class' => 'font-semibold text-primary hover:underline'
-                    ]) ?>
-                </div>
-</div>
-                
-    </div>
 </div>
