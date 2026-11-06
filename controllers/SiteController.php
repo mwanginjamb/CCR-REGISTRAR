@@ -66,6 +66,8 @@ class SiteController extends Controller
                 'class' => VerbFilter::class,
                 'actions' => [
                     'logout' => ['post'],
+                    // GET shows the confirm page, POST verifies
+                    'verify-email' => ['get', 'post'],
                 ],
             ],
         ];
@@ -91,6 +93,12 @@ class SiteController extends Controller
 
     public function beforeAction($action)
     {
+        // Logged-out visitors see errors in the auth shell, not the app layout
+        // with an empty sidebar
+        if ($action->id === 'error' && Yii::$app->user->isGuest) {
+            $this->layout = 'guest';
+        }
+
         return parent::beforeAction($action);
     }
 
@@ -258,26 +266,44 @@ class SiteController extends Controller
     }
 
     /**
-     * Verify email address
+     * Verify email address: GET shows a confirm page, POST verifies.
      *
      * @param string $token
-     * @throws BadRequestHttpException
-     * @return yii\web\Response
+     * @return Response|string
      */
     public function actionVerifyEmail($token)
     {
+        $this->layout = 'guest';
+        $session = Yii::$app->session;
+
         try {
             $model = new \app\models\VerifyEmailForm($token);
         } catch (InvalidArgumentException $e) {
-            throw new BadRequestHttpException($e->getMessage());
-        }
-        if ($model->verifyEmail()) {
-            Yii::$app->session->setFlash('success', 'Your email has been confirmed!');
-            return $this->goHome();
+            // Unknown or superseded link (e.g. a newer verification email was sent)
+            $session->setFlash('error', 'This verification link is invalid or has been replaced by a newer one. Enter your email below to receive a new link.');
+            return $this->redirect(['site/resend-verification-email']);
         }
 
-        Yii::$app->session->setFlash('error', 'Sorry, we are unable to verify your account with provided token.');
-        return $this->goHome();
+        // Already verified: by an earlier click, a mail link scanner, or an admin
+        if ($model->isAlreadyVerified()) {
+            $session->setFlash('info', 'Your email address is already verified. Please log in.');
+            return $this->redirect(['site/login']);
+        }
+
+        // The emailed link only opens this page; verifying needs a POST from the
+        // "Confirm" button, so link scanners that prefetch (GET) the link can't
+        // verify an account on the user's behalf.
+        if (!Yii::$app->request->isPost) {
+            return $this->render('verifyEmail', ['token' => $token]);
+        }
+
+        if ($model->verifyEmail()) {
+            $session->setFlash('success', 'Your email has been confirmed! You can now log in.');
+            return $this->redirect(['site/login']);
+        }
+
+        $session->setFlash('error', 'Sorry, we are unable to verify your account with provided token.');
+        return $this->redirect(['site/login']);
     }
 
     /**
