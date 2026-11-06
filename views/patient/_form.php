@@ -77,18 +77,8 @@ $canRemoveSavedRows = Yii::$app->user->can(Rbac::DELETE_PATIENT_DETAILS);
             ]); ?>
 
 
-            <!-- Error summary -->
-            <?php if ($model->hasErrors('_form')): ?>
-                <div class="alert alert-danger">
-                    <strong>Validation Errors:</strong>
-                    <ul>
-                        <?php foreach ($model->getErrors('_form') as $error): ?>
-                            <li><?= Html::encode($error) ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
-            <?php endif; ?>
-            <?= $form->errorSummary($model); // still show Patient’s own errors ?>
+            <!-- Error summary (danger theme), grouped by form section -->
+            <?= $this->render('_errorSummary', ['model' => $model]) ?>
 
 
             <!-- SECTION 1 -->

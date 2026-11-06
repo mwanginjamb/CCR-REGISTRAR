@@ -8,6 +8,44 @@
     }
 }
 
+/*
+ * Yii ActiveForm validation states (server and client side).
+ * A field container gets .has-error; its message renders in .help-block
+ * (or a custom errorOptions class, which these rules leave alone).
+ *
+ * Deliberately outside @layer: Yii adds these classes at runtime from vendor
+ * code, which Tailwind does not scan, so layered rules would be purged.
+ */
+.has-error input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.has-error select,
+.has-error textarea {
+    @apply ring-2 ring-error/60 bg-error-container/30;
+}
+
+.has-error input[type="checkbox"],
+.has-error input[type="radio"] {
+    @apply border-error;
+}
+
+.has-error label {
+    @apply text-error;
+}
+
+.help-block:empty {
+    @apply hidden;
+}
+
+.has-error .help-block {
+    @apply mt-1 flex items-center gap-1 text-xs font-medium text-error;
+}
+
+.has-error .help-block::before {
+    content: 'error';
+    font-family: 'Material Symbols Outlined';
+    font-size: 14px;
+    line-height: 1;
+}
+
 @layer utilities {
     .material-symbols-outlined {
         font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
