@@ -83,16 +83,6 @@ $this->beginPage();
                 ]
             ) ?>
 
-            <?= Html::a(
-                '<span class="material-symbols-outlined">assessment</span><span class="nav-label font-[\'Inter\'] font-medium text-sm">Reports</span>',
-                ['/report/index'],
-                [
-                    'class' => 'nav-link flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-white/50 transition-transform duration-200 hover:translate-x-1',
-                    'encode' => false,
-                    'title' => 'Power BI Reports'
-                ]
-            ) ?>
-
             <?= $this->render('_sidebarGroups', ['variant' => 'main']) ?>
         </nav>
 
