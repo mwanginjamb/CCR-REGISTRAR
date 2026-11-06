@@ -85,7 +85,38 @@ QA can send any case back to the registrar who recorded it.
 
 **Deleted records** are hidden from the registry but kept in the database, so they can be recovered and audited.
 
-## 7. Working offline
+## 7. Overview dashboard (QA and administrators)
+
+The Overview page gives QA and administrators a live picture of the registry. Its figures are calculated from the database each time the page opens, and deleted records are always excluded.
+
+**Headline figures**
+- **Registered cases:** the total number of cases in the registry.
+- **New this month:** cases registered so far this month, with the change from last month.
+- **Complete abstracts:** the share of cases with every core tumour field recorded: incidence date, basis of diagnosis, primary site, histology, behaviour and stage.
+- **Flagged for review:** cases needing review, split into those awaiting the registrar, those awaiting QA, and reviews resolved in the last 30 days.
+
+**Registry quality indicators.** These are the two standard measures of diagnostic validity used by the International Agency for Research on Cancer (IARC):
+- **Morphologically verified (MV%):** the share of cases confirmed by cytology or histology. Higher is better.
+- **Death certificate only (DCO%):** the share of cases known only from a death certificate. Lower is better.
+
+**Charts**
+
+| Chart | What it shows |
+|---|---|
+| **Cases registered per month** | Registrations over the last 12 months, by the date entered into the registry: a measure of registrar workload |
+| **Cases by primary site** | The most common cancer sites by ICD-O-3 category, with the remainder grouped as "Other sites" |
+| **Stage at diagnosis** | Cases at each stage, in stage order, including cases with no stage recorded |
+| **Basis of diagnosis** | How each case was diagnosed, in code order, including cases with no basis recorded |
+| **Data completeness** | How often each core tumour field is filled in, to show where abstracting needs attention |
+| **Most active registrars** | Cases registered by each registrar in the last 30 days |
+
+**Reading the charts**
+- **Exact values:** hovering over or tabbing to a bar shows its exact figure.
+- **Table view:** every chart can be shown as a table, for exact numbers and for screen-reader users.
+- **No data yet:** each chart says so clearly instead of showing an empty frame.
+- **Quick links:** the page has shortcuts to the patient registry and the new-case form.
+
+## 8. Working offline
 
 The application is designed for fieldwork with unreliable connectivity.
 
@@ -94,7 +125,7 @@ The application is designed for fieldwork with unreliable connectivity.
 - **Automatic upload:** saved cases upload automatically when the connection returns, with automatic retries. Failed uploads are kept on the device for another attempt.
 - **Offline suggestions:** suggestions such as source numbers keep working offline.
 
-## 8. Reference data management (administrators)
+## 9. Reference data management (administrators)
 
 Administrators can maintain the coding reference lists in the application, without technical support.
 
@@ -112,7 +143,7 @@ Administrators can maintain the coding reference lists in the application, witho
 
 **REDCap dictionary import.** The registry's REDCap data dictionary can be re-imported to refresh the coded answer lists. This keeps the application aligned with the REDCap project.
 
-## 9. Accounts and access management
+## 10. Accounts and access management
 
 **For all users**
 - **Self-registration:** users sign up and confirm their email address before they can log in.
@@ -126,7 +157,7 @@ Administrators can maintain the coding reference lists in the application, witho
 - **System users:** see all accounts and their status, and activate or deactivate them. A deactivated user can no longer log in.
 - **Lockout protection:** administrators cannot remove their own administrator role or deactivate their own account.
 
-## 10. Security and privacy measures
+## 11. Security and privacy measures
 
 - **Login required:** every page with patient data requires a login, and every action is checked against the user's role.
 - **Hidden actions:** users only see the actions their role allows.
@@ -136,13 +167,12 @@ Administrators can maintain the coding reference lists in the application, witho
 - **Connection security:** all traffic is encrypted (HTTPS), and the production server sends standard browser security protections.
 - **Separate configuration:** database and email credentials are kept out of the application code.
 
-## 11. Pre-launch status
+## 12. Pre-launch status
 
-The features above are built, and the QA review workflow has been tested end to end. Before real patient data is entered, the team is closing a short list of launch items:
+The features above are built. The QA review workflow and the Overview dashboard have been tested end to end. Before real patient data is entered, the team is closing a short list of launch items:
 
 - **Secure the offline upload connection:** require a logged-in user.
 - **Decide case visibility:** whether registrars should see only the cases they registered.
-- **Overview dashboard:** connect it to live statistics. It currently shows placeholder figures.
 - **Production settings and credentials:** finalise them.
 - **Production database:** prepare it and remove test data.
 - **Testing:** a hands-on test of every role's workflow, including email delivery.
