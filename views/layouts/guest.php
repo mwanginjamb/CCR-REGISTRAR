@@ -113,7 +113,8 @@ $this->beginPage();
     <main class="w-full max-w-md md:max-w-lg lg:max-w-md transition-all duration-300">
 
         <!-- Brand identity ──────────────────────────────────────────── -->
-        <div class="flex flex-col items-center mb-10 md:mb-12">
+        <a href="<?= Html::encode(Yii::$app->homeUrl) ?>" title="Home"
+           class="flex flex-col items-center mb-10 md:mb-12 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
             <div class="w-16 h-16 md:w-20 md:h-20
                     bg-primary-container rounded-xl
                     flex items-center justify-center mb-4
@@ -129,7 +130,7 @@ $this->beginPage();
             <p class="font-label text-on-surface-variant text-sm md:text-base mt-1">
                 <?= Html::encode($institution) ?>
             </p>
-        </div>
+        </a>
 
         <!-- ── Auth card ───────────────────────────────────────────── -->
         <div class="bg-surface-container-lowest rounded-xl p-8 md:p-10

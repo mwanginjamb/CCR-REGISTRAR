@@ -38,9 +38,10 @@ if (YII_DEBUG || isset($_GET['debug'])) {
     <header
         class="bg-slate-50 flex justify-between items-center w-full px-4 md:px-6 py-3 h-16 fixed top-0 z-50 border-b border-surface-container-high">
         <div class="flex items-center gap-4 lg:gap-8">
-            <span class="text-xl font-bold text-[#001a48] tracking-tight">
+            <a href="<?= Html::encode(Yii::$app->homeUrl) ?>" title="Home"
+               class="text-xl font-bold text-[#001a48] tracking-tight rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 OncoRegistry
-            </span>
+            </a>
             <!-- connection indicator injected near page header -->
             <span id="connection-status"></span>
             <!-- sync toast -->
@@ -81,9 +82,10 @@ if (YII_DEBUG || isset($_GET['debug'])) {
         <aside
             class="bg-[#f2f4f6] h-[calc(100vh-64px)] w-20 lg:w-64 fixed left-0 flex flex-col py-6 px-3 lg:px-4 space-y-2 border-r border-surface-container-high z-40">
 
-            <div class="mb-6 px-2 text-center lg:text-left">
+            <a href="<?= Html::encode(Yii::$app->homeUrl) ?>" title="Home"
+               class="block mb-6 px-2 text-center lg:text-left rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 <h2 class="font-extrabold text-[#001a48] hidden lg:block">
-                    <?= Yii::$app->name ?>
+                    <?= Html::encode(Yii::$app->name) ?>
                 </h2>
                 <span class="material-symbols-outlined text-primary block lg:hidden">
                     clinical_notes
@@ -91,7 +93,7 @@ if (YII_DEBUG || isset($_GET['debug'])) {
                 <p class="text-[10px] text-on-surface-variant hidden lg:block">
                     Precision Data Entry
                 </p>
-            </div>
+            </a>
 
             <nav class="flex-1 min-h-0 overflow-y-auto no-scrollbar space-y-1">
                 <a class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2 text-[#444651] hover:bg-[#eceef0] transition-colors rounded-lg group"

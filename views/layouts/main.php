@@ -49,7 +49,9 @@ $this->beginPage();
 
         <!-- Logo -->
         <div class="mb-10 lg:px-4 flex justify-center lg:justify-start">
-            <div class="flex items-center gap-3">
+            <?php /* Logo links home (site/index; registrars are redirected to their start page) */ ?>
+            <a href="<?= Html::encode(Yii::$app->homeUrl) ?>" title="Home" aria-label="Clinical Curator home"
+               class="flex items-center gap-3 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 <div
                     class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-white shrink-0">
                     <span class="material-symbols-outlined">biotech</span>
@@ -59,7 +61,7 @@ $this->beginPage();
                         Curator</h1>
                     <p class="text-[10px] uppercase tracking-widest text-secondary font-bold">Precision Registry</p>
                 </div>
-            </div>
+            </a>
         </div>
 
         <!-- Primary Nav Links -->
