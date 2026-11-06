@@ -191,6 +191,13 @@ $usernames = $userIds
                     ]
                 ) ?>
             <?php endif; ?>
+            <?php if (Yii::$app->user->can(Rbac::REVIEW_PATIENT) && !$model->hasActiveReview()): ?>
+                <?= Html::a(
+                    '<span class="material-symbols-outlined text-[20px]">flag</span><span class="hidden sm:inline">Flag for review</span>',
+                    ['review/flag', 'patientId' => $model->id],
+                    ['class' => 'inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[#7a5c00] font-bold hover:bg-[#fff3cd] transition-colors']
+                ) ?>
+            <?php endif; ?>
             <?php if (Yii::$app->user->can(Rbac::UPDATE_PATIENT_DETAILS)): ?>
                 <?= Html::a(
                     '<span class="material-symbols-outlined text-[20px]">edit_square</span><span>Edit</span>',
@@ -202,31 +209,8 @@ $usernames = $userIds
 
     </div>
 
-    <?php /* ─── Review banner ───────────────────────────────────────────── */ ?>
-    <?php if ($model->needs_review): ?>
-        <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-8 px-5 py-4 rounded-2xl bg-[#fff3cd] text-[#7a5c00]">
-            <span class="material-symbols-outlined shrink-0">rule</span>
-            <div class="flex-1 min-w-0">
-                <p class="text-sm font-bold">This record needs review</p>
-                <?php if ($model->review_note): ?>
-                    <p class="text-sm mt-1 whitespace-pre-line"><?= Html::encode($model->review_note) ?></p>
-                <?php endif; ?>
-            </div>
-            <?php if (Yii::$app->user->can(Rbac::REVIEW_PATIENT)): ?>
-                <?= Html::a(
-                    '<span class="material-symbols-outlined text-[20px]">task_alt</span><span>Mark as reviewed</span>',
-                    ['mark-reviewed', 'id' => $model->id],
-                    [
-                        'class' => 'inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/70 font-bold hover:bg-white transition-colors shrink-0',
-                        'data' => [
-                            'confirm' => 'Confirm that the coding on this record has been checked?',
-                            'method' => 'post',
-                        ],
-                    ]
-                ) ?>
-            <?php endif; ?>
-        </div>
-    <?php endif; ?>
+    <?php /* ─── Review banner: system warnings + active QA review ────────── */ ?>
+    <?= $this->render('_reviewBanner', ['model' => $model]) ?>
 
     <?php /* ─── Clinical summary strip ──────────────────────────────────── */ ?>
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -405,6 +389,9 @@ $usernames = $userIds
                     </ul>
                 <?php endif; ?>
             </section>
+
+            <?php /* ── QA review history ────────────────────────────────── */ ?>
+            <?= $this->render('_reviewHistory', ['model' => $model, 'card' => $card, 'sectionHeader' => $sectionHeader]) ?>
 
         </div>
 

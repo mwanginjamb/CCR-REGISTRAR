@@ -567,7 +567,11 @@ class PatientController extends Controller
      */
     public function actionMarkReviewed($id)
     {
-        $this->findModel($id)->markReviewed();
+        // Closes active QA reviews (with the optional resolution note) and clears system warnings
+        $this->findModel($id)->markReviewed(
+            (int) Yii::$app->user->id,
+            $this->request->post('resolution_note')
+        );
         Yii::$app->session->setFlash('success', 'Record marked as reviewed.');
 
         return $this->redirect(['view', 'id' => $id]);

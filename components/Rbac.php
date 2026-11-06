@@ -36,6 +36,8 @@ final class Rbac
     public const UPDATE_PATIENT_DETAILS = 'updatePatientDetails';
     public const DELETE_PATIENT_DETAILS = 'deletePatientDetails';
     public const REVIEW_PATIENT = 'reviewPatient';
+    /** Registrar sends a corrected case back to QA (migration m261106_090000) */
+    public const RESUBMIT_PATIENT_REVIEW = 'resubmitPatientReview';
     public const MANAGE_SETTINGS = 'manageSettings';
     public const MANAGE_RBAC = 'manageRbac';
 
@@ -49,7 +51,7 @@ final class Rbac
             self::ROLE_REGISTRAR, self::ROLE_QA, self::ROLE_ADMIN,
             self::VIEW_PATIENT, self::CREATE_PATIENT, self::UPDATE_PATIENT, self::DELETE_PATIENT,
             self::CREATE_PATIENT_DETAILS, self::UPDATE_PATIENT_DETAILS, self::DELETE_PATIENT_DETAILS,
-            self::REVIEW_PATIENT, self::MANAGE_SETTINGS, self::MANAGE_RBAC,
+            self::REVIEW_PATIENT, self::RESUBMIT_PATIENT_REVIEW, self::MANAGE_SETTINGS, self::MANAGE_RBAC,
         ];
     }
 

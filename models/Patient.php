@@ -162,22 +162,72 @@ class Patient extends \yii\db\ActiveRecord
     }
 
     /**
-     * Raises or clears the review flag from a save's non-blocking warnings.
-     * Deliberately not in rules(), so forms and the sync API cannot set it.
+     * Stores a save's non-blocking (system) warnings in review_note and
+     * recomputes the review flag. Deliberately not in rules(), so forms and
+     * the sync API cannot set it.
      *
      * @param string[] $warnings
      */
     public function syncReviewFlag(array $warnings): void
     {
+        $this->updateAttributes(['review_note' => $warnings ? implode("\n", $warnings) : null]);
+        $this->refreshReviewFlag();
+    }
+
+    /**
+     * needs_review = system warnings present OR a QA review still active.
+     * A save without warnings therefore never clears a QA flag.
+     */
+    public function refreshReviewFlag(): void
+    {
         $this->updateAttributes([
-            'needs_review' => $warnings ? 1 : 0,
-            'review_note' => $warnings ? implode("\n", $warnings) : null,
+            'needs_review' => ($this->review_note !== null && $this->review_note !== '') || $this->hasActiveReview() ? 1 : 0,
         ]);
     }
 
-    public function markReviewed(): void
+    /**
+     * QA marks the case reviewed: closes active QA reviews and clears the
+     * system warnings.
+     */
+    public function markReviewed(?int $qaUserId = null, ?string $resolutionNote = null): void
     {
+        foreach ($this->activeReviews as $review) {
+            $review->resolve((int) $qaUserId, $resolutionNote);
+        }
+
         $this->updateAttributes(['needs_review' => 0, 'review_note' => null]);
+    }
+
+    /**
+     * QA reviews, newest first.
+     * @return \yii\db\ActiveQuery
+     */
+    public function getReviews()
+    {
+        return $this->hasMany(PatientReview::class, ['patient_id' => 'id'])
+            ->orderBy(['flagged_at' => SORT_DESC, 'id' => SORT_DESC]);
+    }
+
+    /**
+     * QA reviews that are open or resubmitted.
+     * @return \yii\db\ActiveQuery
+     */
+    public function getActiveReviews()
+    {
+        return $this->getReviews()->andWhere(['status' => PatientReview::ACTIVE_STATUSES]);
+    }
+
+    public function hasActiveReview(): bool
+    {
+        return $this->getActiveReviews()->exists();
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getCreator()
+    {
+        return $this->hasOne(User::class, ['id' => 'created_by']);
     }
 
     // Ethnicity from the REDCap dictionary (field "ethnicity").
