@@ -65,11 +65,9 @@ if (YII_DEBUG || isset($_GET['debug'])) {
                 <span class="material-symbols-outlined">settings</span>
             </button>
 
-            <?php if (!Yii::$app->user->isGuest): ?>
-                <p class="text-xs font-bold text-primary leading-none ml-2 hidden sm:block">
-                    <?= Html::encode(Yii::$app->user->identity->username) ?>
-                </p>
-            <?php endif; ?>
+            <div class="ml-2">
+                <?= $this->render('_userBadge', ['showEmail' => false]) ?>
+            </div>
 
             <div class="h-8 w-8 rounded-full bg-primary-fixed overflow-hidden ml-2">
                 <?= Html::img($userAvatar, ['class' => 'w-full h-full object-cover']) ?>

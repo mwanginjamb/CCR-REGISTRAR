@@ -166,14 +166,7 @@ $this->beginPage();
 
                 <!-- User Info -->
                 <div class="flex items-center gap-3">
-                    <div class="text-right hidden sm:block">
-                        <p class="text-xs font-bold text-primary leading-none">
-                            <?= Html::encode(Yii::$app->user->identity->username ?? '') ?>
-                        </p>
-                        <p class="text-[10px] text-on-surface-variant">
-                            <?= Html::encode(Yii::$app->user->identity->email ?? '') ?>
-                        </p>
-                    </div>
+                    <?= $this->render('_userBadge', ['showEmail' => true]) ?>
                     <?= Html::img($userAvatar, ['class' => 'w-8 h-8 lg:w-10 lg:h-10 rounded-full border-2 border-white shadow-sm object-cover']) ?>
                 </div>
             </div>
