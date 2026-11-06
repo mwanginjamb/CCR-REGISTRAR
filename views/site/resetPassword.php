@@ -20,7 +20,13 @@ $this->params['card_subtitle'] = 'Enter the new password for your account.';
         'placeholder' => '••••••••',
         'autocomplete' => 'new-password',
         'class' => FormUi::inputClass(true),
-    ])->label('New Password') ?>
+    ]) ?>
+
+    <?= $form->field($model, 'passwordConfirm', FormUi::fieldConfig('lock_reset'))->passwordInput([
+        'placeholder' => '••••••••',
+        'autocomplete' => 'new-password',
+        'class' => FormUi::inputClass(true),
+    ]) ?>
 
     <?= Html::submitButton('Save Password <span class="material-symbols-outlined">check</span>', [
         'class' => FormUi::buttonClass(),
