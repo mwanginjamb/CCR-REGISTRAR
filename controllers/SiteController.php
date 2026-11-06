@@ -9,6 +9,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
+use app\components\Dashboard;
 use app\components\Rbac;
 use app\models\LoginForm;
 use app\models\ContactForm;
@@ -94,13 +95,28 @@ class SiteController extends Controller
     }
 
     /**
-     * Displays homepage.
+     * Overview dashboard (qa/admin): live registry metrics from app\components\Dashboard.
      *
      * @return string
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $dashboard = new Dashboard();
+
+        return $this->render('index', [
+            'metrics' => [
+                'total' => $dashboard->totalCases(),
+                'newThisMonth' => $dashboard->newCasesThisMonth(),
+                'review' => $dashboard->reviewStatus(),
+                'completeness' => $dashboard->completeness(),
+                'quality' => $dashboard->qualityIndicators(),
+                'bySite' => $dashboard->casesBySite(),
+                'byMonth' => $dashboard->registrationsByMonth(),
+                'stage' => $dashboard->stageDistribution(),
+                'basis' => $dashboard->basisDistribution(),
+                'topRegistrars' => $dashboard->topRegistrars(),
+            ],
+        ]);
     }
 
     /**
