@@ -149,28 +149,7 @@ $this->beginPage();
             </div>
         </header>
 
-        <!-- Flash Alerts -->
-        <?php if (Yii::$app->session->hasFlash('success')): ?>
-            <div
-                class="mx-4 lg:mx-8 mt-4 p-4 bg-secondary-container/20 border border-secondary/20 rounded-xl flex items-center gap-3">
-                <span class="material-symbols-outlined text-secondary">check_circle</span>
-                <p class="text-sm font-medium text-on-secondary-container">
-                    <?= Html::encode(Yii::$app->session->getFlash('success')) ?>
-                </p>
-            </div>
-        <?php endif ?>
-
-        <?php if (Yii::$app->session->hasFlash('error')): ?>
-            <div
-                class="mx-4 lg:mx-8 mt-4 p-4 bg-error-container/40 border border-error/20 rounded-xl flex items-center gap-3">
-                <span class="material-symbols-outlined text-error">error</span>
-                <p class="text-sm font-medium text-on-error-container">
-                    <?= Html::encode(Yii::$app->session->getFlash('error')) ?>
-                </p>
-            </div>
-        <?php endif ?>
-
-        <!-- Page Content -->
+        <!-- Page Content (flash alerts come from _flashAlerts below) -->
         <div class="p-4 lg:p-8">
             <?= $this->render('_breadcrumbs') ?>
             <?= $this->render('_flashAlerts') ?>

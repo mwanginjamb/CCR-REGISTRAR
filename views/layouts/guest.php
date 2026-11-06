@@ -156,6 +156,12 @@ $this->beginPage();
                 </header>
             <?php endif ?>
 
+            <!-- ── Flash messages (signup, password reset, email verification…) ── -->
+            <?php // flashes survive redirects (e.g. signup → home → login) until shown here ?>
+            <div class="relative">
+                <?= $this->render('_flashAlerts') ?>
+            </div>
+
             <!-- ── View content injected here ─────────────────────── -->
             <?= $content ?>
             <!-- ─────────────────────────────────────────────────────── -->
