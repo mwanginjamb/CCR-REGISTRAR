@@ -3,11 +3,12 @@
 Status of the cancer registry app for its first release to registrars, QA and admin users.
 
 - **Assessed:** 2026-11-06, on branch `feat/qa-review` (tag `v0.1.0`)
+- **Updated:** 2026-11-06, on branch `feat/review-notifications` (see *Resolved since v0.1.0*)
 - **Verdict:** not ready for real patient data yet. Fix the blockers, clean up production, then run a supervised pilot with a few registrars, one QA user and one admin before a wider rollout.
 
 ## Blockers
 
-Fix these before real registrars enter real patient data.
+Fix these before real registrars enter real patient data. Numbers are kept from the original assessment; blocker 3 is resolved (see *Resolved since v0.1.0*).
 
 ### 1. The offline-sync API accepts records from anyone
 
@@ -22,12 +23,6 @@ The registrar's patient list only shows their own flagged cases, but `patient/vi
 
 - **Decide:** should registrars only see and edit cases they created?
 - **Note:** after creating a case, a registrar is sent to its view page, so any restriction must still allow their own cases.
-
-### 3. The Overview dashboard shows made-up numbers
-
-`views/site/index.php` contains hardcoded figures (12,842 patients, 92.4%, …), and `SiteController::actionIndex()` passes it no data. QA and admins see fake statistics.
-
-- **Fix:** connect it to real counts, or hide the page until it is.
 
 ### 4. Debug mode is on in the code
 
@@ -61,7 +56,7 @@ The registrar's patient list only shows their own flagged cases, but `patient/vi
 
 These are fine for a supervised pilot, but not for a full release.
 
-- **Decorative header controls:** the search box, notification bell and help icon do nothing. The About and Contact pages are still the Yii template's.
+- **Template pages:** the About and Contact pages are still the Yii template's.
 - **No audit trail:** records store who created and last updated them, but not who viewed or changed what. A cancer registry usually needs this for data protection.
 - **Offline sync and QA warnings:** the sync API returns save warnings (for example, an unrecognised site/histology combination), but the offline sync script ignores them.
 - **REDCap mismatches:**
@@ -73,6 +68,38 @@ These are fine for a supervised pilot, but not for a full release.
   - email QA when a registrar resubmits a case;
   - email the registrar when a case is resolved.
 
+## Resolved since v0.1.0
+
+### Blocker 3: the Overview dashboard showed made-up numbers
+
+Resolved on `feat/dashboard`.
+
+- **Before:** `views/site/index.php` had hardcoded figures (12,842 patients, 92.4%, …).
+- **Now:** a new `app\components\Dashboard` calculates every figure from the database, excluding deleted patients:
+  - totals and new cases this month;
+  - review workload;
+  - data completeness;
+  - the IARC MV% and DCO% indicators;
+  - cases by site, stage and basis of diagnosis;
+  - the most active registrars.
+- **Tested** against seeded data, with every figure matching the hand-computed values, and against sparse data, where the empty states show correctly.
+
+### Fix soon: decorative header controls
+
+Resolved on `feat/review-notifications`.
+
+- **Removed:** the search box and the help icon (the settings gear in the patient-form layout), which did nothing.
+- **Notification bell:** now a review inbox, with a red bubble counting the cases waiting on the user. The count comes from a new `app\components\ReviewInbox`:
+
+  | Role | Counts |
+  |---|---|
+  | Registrar | their own flagged cases waiting on them (not ones already resubmitted to QA) |
+  | QA | cases resubmitted by registrars, plus system-flagged cases with no QA review yet |
+  | Admin | every flagged case |
+
+- **Clicking the bell** opens the patient list filtered to exactly those cases, using the same rule as the count, with a "Show all patients" link.
+- **Tested** with a scenario covering each case type: the bell count equals the filtered list for every role.
+
 ## In good shape
 
 - **Patient data entry:** validated against the ICD-O and REDCap dictionaries.
@@ -80,5 +107,8 @@ These are fine for a supervised pilot, but not for a full release.
   - Source number suggestions that also work offline.
 - **Roles:** registrar, QA and admin are enforced on every patient action. Patients are soft-deleted, not removed.
 - **QA review workflow:** flag, email the registrar, resubmit, resolve, with history on each case.
+- **Review notifications:** a header bell with a count of the review items waiting on each user.
+- **Overview dashboard:** live registry figures and IARC quality indicators for QA and admins.
+- **Installable app:** installable from any page, with correct icons, favicon and an offline fallback page.
 - **Admin screens:** Settings for ICD-O codes, site rules, site–morphology rules and sources; RBAC screens for roles, permissions, user roles and system users.
 - **Accounts:** login, signup, email verification and password reset, all with consistent styling.

@@ -3,6 +3,7 @@
 namespace app\models;
 
 use app\components\Rbac;
+use app\components\ReviewInbox;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
@@ -49,6 +50,12 @@ class PatientSearch extends Patient
         // for review. Applied before validation so no filter input can widen it.
         if (!Rbac::canViewAllPatients()) {
             $query->flaggedForReviewBy((int) Yii::$app->user->id);
+        }
+
+        // ?review=1 (the header bell): only the review items waiting on this user,
+        // using the same rule as the bell's count
+        if (!empty($params['review']) && ($scope = ReviewInbox::scopeForCurrentUser()) !== null) {
+            ReviewInbox::applyScope($query, $scope, (int) Yii::$app->user->id, Patient::tableName());
         }
 
         $dataProvider = new ActiveDataProvider([

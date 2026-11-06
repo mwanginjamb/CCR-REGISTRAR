@@ -9,6 +9,7 @@
 
 use app\assets\PatientAsset;
 use app\components\Rbac;
+use app\components\ReviewInbox;
 use app\library\FormUi;
 use app\models\Patient;
 use yii\helpers\Html;
@@ -55,6 +56,15 @@ $religionVariant = [
 // Export title baked into the JS via PHP string interpolation
 $exportTitle = Html::encode(Yii::$app->name . ' — Patient Registry');
 ?>
+
+<?php /* ─── Review filter notice (opened from the header bell) ───────────── */ ?>
+<?php if (Yii::$app->request->get('review') && ($reviewScope = ReviewInbox::scopeForCurrentUser()) !== null): ?>
+  <div class="mb-6 flex flex-col sm:flex-row sm:items-center gap-3 rounded-2xl bg-[#fff3cd] px-5 py-3 text-[#7a5c00]">
+    <span class="material-symbols-outlined shrink-0" aria-hidden="true">notifications_active</span>
+    <p class="flex-1 text-sm font-semibold"><?= Html::encode(ReviewInbox::describe($reviewScope, $totalCount)) ?></p>
+    <?= Html::a('Show all patients', ['index'], ['class' => 'text-sm font-bold underline underline-offset-2 hover:no-underline']) ?>
+  </div>
+<?php endif ?>
 
 <?php /* ─── Page header ─────────────────────────────────────────────────── */ ?>
 <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8 md:mb-12">

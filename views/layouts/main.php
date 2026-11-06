@@ -132,28 +132,12 @@ $this->beginPage();
                     id="sidebar-toggle" aria-label="Toggle sidebar">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
-
-                <!-- Search -->
-                <div class="relative hidden sm:block">
-                    <span
-                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                    <input
-                        class="bg-surface-container-highest border-none rounded-full pl-10 pr-4 py-1.5 text-sm w-48 md:w-64 focus:ring-2 focus:ring-primary-container"
-                        placeholder="Search registry..." type="text" />
-                </div>
             </div>
 
             <div class="flex items-center gap-2 lg:gap-4">
-                <button
-                    class="w-10 h-10 flex items-center justify-center text-slate-500 hover:bg-[#eceef0] rounded-full transition-colors"
-                    aria-label="Notifications">
-                    <span class="material-symbols-outlined">notifications</span>
-                </button>
-                <button
-                    class="hidden md:flex w-10 h-10 items-center justify-center text-slate-500 hover:bg-[#eceef0] rounded-full transition-colors"
-                    aria-label="Help">
-                    <span class="material-symbols-outlined">help</span>
-                </button>
+                <?= $this->render('_reviewBell', [
+                    'buttonClass' => 'w-10 h-10 flex items-center justify-center text-slate-500 hover:bg-[#eceef0] rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                ]) ?>
 
                 <div class="h-8 w-px bg-outline-variant/30 mx-1 lg:mx-2"></div>
 
