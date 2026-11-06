@@ -23,7 +23,7 @@ if (YII_DEBUG || isset($_GET['debug'])) {
     <meta charset="<?= Yii::$app->charset ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= Html::encode($this->title) ?></title>
-    <?= $this->registerLinkTag(['rel' => 'manifest', 'href' => '/manifest.json']); ?>
+    <?= $this->render('_pwaHead') ?>
 
     <?= Html::csrfMetaTags() ?>
     <!-- csrf meta for JS -->

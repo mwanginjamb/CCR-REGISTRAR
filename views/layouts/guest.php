@@ -52,6 +52,7 @@ $this->beginPage();
 
     <title><?= Html::encode($this->title . ' — ' . $appName) ?></title>
 
+    <?= $this->render('_pwaHead') ?>
     <?= Html::csrfMetaTags() ?>
     <?php $this->head() ?>
 

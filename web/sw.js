@@ -4,7 +4,7 @@
  */
 
 // Define constants
-const CACHE_NAME = 'clinical-registry-v1.0.5';
+const CACHE_NAME = 'clinical-registry-v1.0.6';
 const SYNC_TAG = 'sync-patient-records';
 const API_SYNC_URL = '/patient-api/create';
 
@@ -15,13 +15,22 @@ console.log('[SW] Service Worker script loaded at:', new Date().toISOString());
 const SHELL_ASSETS = [
     '/',
     '/patient/create',
+    '/offline.html',
     '/css/tailwind.css',
     '/js/offline-db.js',
     '/js/geo-tag.js',
     '/js/patientForm.js',
     '/js/essentialTnmFields.js',
-    '/manifest.json'
+    '/manifest.json',
+    '/favicon.ico',
+    '/icons/icon-192.png',
+    '/icons/icon-512.png',
+    '/icons/icon-192-maskable.png',
+    '/icons/icon-512-maskable.png'
 ];
+
+// Shown for page navigations that fail offline and are not in the cache
+const OFFLINE_PAGE = '/offline.html';
 
 // Install event
 self.addEventListener('install', (event) => {
@@ -160,10 +169,11 @@ self.addEventListener('fetch', (event) => {
         event.respondWith(
             fetch(event.request)
                 .catch(() => {
-                    return caches.match(event.request)
-                        .then(response => {
-                            return response || caches.match('/');
-                        });
+                    // Cached pages (the new-case form, '/') are served as before; the query
+                    // string is ignored so e.g. /patient/create?source=x still finds the form.
+                    // Anything else gets the offline page instead of an unrelated cached page.
+                    return caches.match(event.request, { ignoreSearch: true })
+                        .then(response => response || caches.match(OFFLINE_PAGE));
                 })
         );
         return;

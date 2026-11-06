@@ -33,6 +33,7 @@ $this->beginPage();
         rel="stylesheet" />
 
     <?php // yii.js reads the token from these for data-method="post" links (logout, delete, …) ?>
+    <?= $this->render('_pwaHead') ?>
     <?= Html::csrfMetaTags() ?>
     <?php $this->head() ?>
 </head>

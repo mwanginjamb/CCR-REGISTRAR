@@ -1,12 +1,15 @@
 {
+    "id": "/oncoreg-kcr-app",
     "name": "KEMRI Cancer Registry Case Registration Form",
     "short_name": "OncoReg",
     "description": "Official Kenya Medical Research Institute (KEMRI) platform for secure, reliable cancer population-based case registration and clinical data tracking.",
     "lang": "en-US",
-    "start_url": "/patient/create/?utm_source=pwa",
-    "id": "/oncoreg-kcr-app",
+    "dir": "ltr",
+    "start_url": "/patient/create",
+    "scope": "/",
     "display": "standalone",
-    "orientation": "portrait-primary",
+    "display_override": ["standalone", "minimal-ui"],
+    "orientation": "any",
     "background_color": "#ffffff",
     "theme_color": "#001A48",
     "categories": [
@@ -14,49 +17,35 @@
         "productivity"
     ],
     "icons": [
-        {
-            "src": "/icons/icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png",
-            "purpose": "any"
-        },
-        {
-            "src": "/icons/icon-192-maskable.png",
-            "sizes": "192x192",
-            "type": "image/png",
-            "purpose": "maskable"
-        },
-        {
-            "src": "/icons/icon-512.png",
-            "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "any"
-        },
-        {
-            "src": "/icons/icon-512-maskable.png",
-            "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "maskable"
-        }
+        { "src": "/icons/icon-48x48.png", "sizes": "48x48", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-128x128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-144x144.png", "sizes": "144x144", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-152x152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-384x384.png", "sizes": "384x384", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+        { "src": "/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
     ],
     "screenshots": [
         {
             "src": "/images/narrow-ss3.png",
-            "sizes": "750x1334",
+            "sizes": "1012x1387",
             "type": "image/png",
             "form_factor": "narrow",
             "label": "Patient Registration Dashboard on Mobile"
         },
         {
             "src": "/images/ss2.png",
-            "sizes": "1280x720",
+            "sizes": "2560x1528",
             "type": "image/png",
             "form_factor": "wide",
             "label": "Comprehensive Oncology Case Entry on Desktop"
         },
         {
             "src": "/images/ss1.png",
-            "sizes": "1280x720",
+            "sizes": "2560x1528",
             "type": "image/png",
             "form_factor": "wide",
             "label": "Analytics and Pathology Report Tracking"
@@ -69,22 +58,16 @@
             "description": "Open a blank form to register a new oncology case",
             "url": "/patient/create",
             "icons": [
-                {
-                    "src": "/icons/icon-192-maskable.png",
-                    "sizes": "96x96"
-                }
+                { "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png" }
             ]
         },
         {
-            "name": "Offline Queue",
-            "short_name": "Offline Data",
-            "description": "View case files pending synchronization",
-            "url": "/patient/offline",
+            "name": "Patient Registry",
+            "short_name": "Registry",
+            "description": "Open the list of registered cases",
+            "url": "/patient/index",
             "icons": [
-                {
-                    "src": "/icons/icon-192-maskable.png",
-                    "sizes": "96x96"
-                }
+                { "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png" }
             ]
         }
     ],
