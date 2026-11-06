@@ -143,7 +143,12 @@ $exportTitle = Html::encode(Yii::$app->name . ' — Patient Registry');
           <tr class="<?= FormUi::trClass() ?>">
 
             <?php /* Patient ID */ ?>
-            <td class="<?= FormUi::tdClass('primary') ?>"><?= Html::encode($patientId) ?></td>
+            <td class="<?= FormUi::tdClass('primary') ?>">
+              <?= Html::a(Html::encode($patientId), ['view', 'id' => $model->id], [
+                'class' => 'hover:underline underline-offset-4 decoration-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded',
+                'title' => 'View ' . $patientId,
+              ]) ?>
+            </td>
 
             <?php /* Full Name + National ID as subtext */ ?>
             <td class="<?= FormUi::tdClass() ?>">
@@ -239,7 +244,10 @@ $exportTitle = Html::encode(Yii::$app->name . ' — Patient Registry');
         <div class="flex justify-between items-start mb-3">
           <div>
             <p class="text-[10px] font-bold text-outline-variant uppercase tracking-widest mb-1">
-              <?= Html::encode($patientId) ?>
+              <?= Html::a(Html::encode($patientId), ['view', 'id' => $model->id], [
+                'class' => 'hover:text-primary hover:underline underline-offset-2',
+                'title' => 'View ' . $patientId,
+              ]) ?>
             </p>
             <h4 class="font-bold text-primary text-sm">
               <?= Html::encode($model->full_name ?? '—') ?>
