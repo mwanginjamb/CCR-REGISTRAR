@@ -120,8 +120,8 @@ foreach ($modelTreatments as $treatment) {
     }
 }
 $treatmentLabels = Treatment::getTreatment();
-$treatmentStatuses = Treatment::getTreatmentStatus();
-$treatmentStatusVariant = [1 => 'default', 2 => 'secondary', 3 => 'warning'];
+// Status codes per the therapy's own REDCap list: 1 No, 2 Yes, Unknown 9 (99 for surgery)
+$treatmentStatusVariant = [1 => 'default', 2 => 'secondary', 9 => 'warning', 99 => 'warning'];
 
 $sourceTypes = Sources::getSourceTypeOptions();
 $sourceReferences = SourceReference::optionsByType();
@@ -309,8 +309,7 @@ $usernames = $userIds
                             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                                 <?= $item('Metastasis', $text($decode(Tumour::getMetastasis(), $t->metastasis))) ?>
                                 <?= $item('Regional Nodes Involvement', $text($decode(Tumour::getRegionalNodesInvolvement(), $t->regional_nodes_involvement))) ?>
-                                <?= $item('Localized Advanced', $text($decode(Tumour::getLocalizedAdvanced(), $t->localized_advanced))) ?>
-                                <?= $item('Localized Limited', $text($decode(Tumour::getLocalizedLimited(), $t->localized_limited))) ?>
+                                <?= $item('Local Extent (T)', $text($decode(Tumour::getLocalizedAdvanced(), $t->localized_advanced))) ?>
                             </dl>
                         <?php endif; ?>
                     </div>
@@ -329,7 +328,7 @@ $usernames = $userIds
                     </div>
                     <ul class="divide-y divide-surface-container-high rounded-xl border border-surface-container-high">
                         <?php foreach ($treatmentRows as $treatment): ?>
-                            <?php $status = $decode($treatmentStatuses, $treatment->treatment_status); ?>
+                            <?php $status = $decode(Treatment::getTreatmentStatus($treatment->treatment), $treatment->treatment_status); ?>
                             <li class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 items-center px-4 py-3">
                                 <span class="col-span-2 sm:col-span-1 text-sm font-bold text-primary">
                                     <?= Html::encode($decode($treatmentLabels, $treatment->treatment)) ?>

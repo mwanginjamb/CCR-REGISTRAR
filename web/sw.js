@@ -4,7 +4,7 @@
  */
 
 // Define constants
-const CACHE_NAME = 'clinical-registry-v1.0.6';
+const CACHE_NAME = 'clinical-registry-v1.0.7';
 const SYNC_TAG = 'sync-patient-records';
 const API_SYNC_URL = '/patient-api/create';
 

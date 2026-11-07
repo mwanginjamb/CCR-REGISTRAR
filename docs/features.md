@@ -30,7 +30,7 @@ A single guided form captures a full case, section by section, with a step navig
 |---|---|
 | **Patient** | Name, national ID or passport, next-of-kin phone, date of birth (age is calculated automatically), place of birth, ethnic group, religion |
 | **Tumour** | Incidence date, basis of diagnosis, primary site, sub-site, laterality, histology, behaviour, grade, stage, and TNM staging (full TNM or the essential TNM fields) |
-| **Treatment** | One or more treatments (surgery, chemotherapy, immunotherapy, radiation, other), each with status and date, plus concurrent illness |
+| **Treatment** | One or more treatments (surgery, chemotherapy, immuno, radiotherapy, hormone therapy, other therapy), each with status and date, plus concurrent illness |
 | **Sources** | One or more information sources (hospital, laboratory, hospice), each with source number, the patient's file number at that source, and date |
 | **Follow-up** | Present status (alive or dead), cause of death, last date of contact, remarks |
 

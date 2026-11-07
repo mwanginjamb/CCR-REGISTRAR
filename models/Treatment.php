@@ -9,7 +9,7 @@ use Yii;
  * This is the model class for table "treatment".
  *
  * @property int $id
- * @property string|null $treatment
+ * @property string|null $treatment REDCap field name of the therapy (see TYPES)
  * @property int|null $treatment_status
  * @property string|null $treatment_date
  * @property int|null $patient_id
@@ -21,6 +21,25 @@ use Yii;
  */
 class Treatment extends \yii\db\ActiveRecord
 {
+    /**
+     * First-course treatments on the CRF (item 21). Keys are the REDCap field names that
+     * hold each therapy's status, so a stored row maps straight onto its export field;
+     * labels are fallbacks for when the dictionary has not been imported.
+     */
+    public const TYPES = [
+        'surgery' => 'Surgery',
+        'chemotherapy' => 'Chemotherapy',
+        'immuno' => 'Immuno',
+        'radiotherapy' => 'Radiotherapy',
+        'hormone_therapy' => 'Hormone therapy',
+        'other_therapy' => 'Other therapy',
+    ];
+
+    /**
+     * REDCap records "other therapy" as free text with no status field, so its status
+     * uses the list the other non-surgical therapies share (1 No, 2 Yes, 9 Unknown).
+     */
+    private const SHARED_STATUS_FIELD = 'chemotherapy';
 
 
     /**
@@ -46,6 +65,8 @@ class Treatment extends \yii\db\ActiveRecord
             [['treatment_date'], 'safe'],
             [['concurrent_illness'], 'string'],
             [['treatment'], 'string', 'max' => 255],
+            ['treatment', 'in', 'range' => array_keys(self::TYPES), 'message' => '{attribute} must be selected from the list.'],
+            ['treatment_status', 'validateTreatmentStatus'],
         ];
     }
 
@@ -77,24 +98,51 @@ class Treatment extends \yii\db\ActiveRecord
         return new \app\models\queries\TreatmentQuery(get_called_class());
     }
 
-    // Get Treatment
-    public static function getTreatment()
+    // Status must come from the selected therapy's own dictionary list
+    public function validateTreatmentStatus($attribute)
     {
-        return [
-            'surgery' => 'Surgery',
-            'chemotherapy' => 'Chemotherapy',
-            'immunotherapy' => 'Immunotherapy',
-            'radiation' => 'Radiation',
-            'other' => 'Other',
-        ];
+        if (!isset(self::getTreatmentStatus($this->treatment)[$this->$attribute])) {
+            $this->addError($attribute, '{attribute} must be selected from the list.');
+        }
     }
 
-    // Get Treatment Status from the REDCap dictionary: 1 No, 2 Yes, 9 Unknown.
-    // REDCap has one status field per therapy; chemotherapy, immuno, radiotherapy and
-    // hormone_therapy share this list (surgery alone codes Unknown as 99).
-    public static function getTreatmentStatus()
+    // Treatment types, labelled from the REDCap dictionary: surgery, chemotherapy, immuno, ...
+    public static function getTreatment()
     {
-        return Lookup::fieldOptions('chemotherapy');
+        $types = [];
+        foreach (self::TYPES as $field => $fallback) {
+            $types[$field] = Lookup::fieldLabel($field) ?? $fallback;
+        }
+        return $types;
+    }
+
+    // Get Treatment Status from the REDCap dictionary for one therapy.
+    // Each therapy has its own status field: surgery codes Unknown as 99, the others as 9,
+    // so the stored code is exactly what REDCap expects for that therapy.
+    public static function getTreatmentStatus(?string $treatment = null)
+    {
+        $field = isset(self::TYPES[$treatment]) && $treatment !== 'other_therapy'
+            ? $treatment
+            : self::SHARED_STATUS_FIELD;
+
+        return Lookup::fieldOptions($field);
+    }
+
+    /**
+     * Status list per treatment type, for the form to swap a row's status options
+     * when its treatment changes. Lists of [code, label] pairs keep dictionary order in JSON.
+     *
+     * @return array<string, array<int, array{0: string, 1: string}>>
+     */
+    public static function statusOptionsByType(): array
+    {
+        $byType = [];
+        foreach (array_keys(self::TYPES) as $type) {
+            foreach (self::getTreatmentStatus($type) as $code => $label) {
+                $byType[$type][] = [(string) $code, $label];
+            }
+        }
+        return $byType;
     }
 
 }

@@ -32,6 +32,7 @@ use app\library\AuthUi;
                     'disabled' => 'disabled'
                 ]) ?>
 
+            <?php /* Status options follow the chosen treatment; form.js swaps them on change */ ?>
             <?= $form->field(new \app\models\Treatment(), "[__index__]treatment_status")
                 ->dropDownList(\app\models\Treatment::getTreatmentStatus(), [
                     'class' => AuthUi::inputClass(),

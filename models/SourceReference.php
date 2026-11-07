@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use app\services\Lookup;
 use Yii;
 
 /**
@@ -54,6 +55,7 @@ class SourceReference extends \yii\db\ActiveRecord
             ['source_type', 'in', 'range' => array_keys(Sources::getSourceTypeOptions())],
             [['source_no', 'redcap_value'], 'string', 'max' => 20],
             [['name'], 'string', 'max' => 255],
+            ['redcap_value', 'validateRedcapValue'],
             ['is_active', 'boolean'],
             ['is_active', 'default', 'value' => 1],
             [
@@ -82,6 +84,24 @@ class SourceReference extends \yii\db\ActiveRecord
             'created_by' => Yii::t('app', 'Created By'),
             'updated_by' => Yii::t('app', 'Updated By'),
         ];
+    }
+
+    /**
+     * A hospital's REDCap value must be a code from the dictionary's hospital list
+     * (source_1_hosp; source_2_hosp is identical). Labs and hospices are free text in
+     * REDCap, so their value is not checked. Skipped until a dictionary is imported.
+     */
+    public function validateRedcapValue($attribute)
+    {
+        if ((int) $this->source_type !== Sources::TYPE_HOSPITAL) {
+            return;
+        }
+
+        $hospitals = Lookup::fieldOptions('source_1_hosp');
+
+        if ($hospitals !== [] && !isset($hospitals[$this->$attribute])) {
+            $this->addError($attribute, '{attribute} must be a hospital code from the REDCap dictionary (field source_1_hosp).');
+        }
     }
 
     /**

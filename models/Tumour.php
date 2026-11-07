@@ -26,8 +26,7 @@ use yii\helpers\ArrayHelper;
  * @property int|null $full_tnm
  * @property int|null $metastasis
  * @property int|null $regional_nodes_involvement
- * @property int|null $localized_advanced
- * @property int|null $localized_limited
+ * @property int|null $localized_advanced essential TNM local extent: 1 = A (T3/T4), 0 = L (T1/T2)
  * @property int|null $created_at
  * @property int|null $updated_at
  * @property int|null $created_by
@@ -77,11 +76,11 @@ class Tumour extends \yii\db\ActiveRecord
         return [
 
             // explicit safe rule for all attributes
-            [['basis_of_diagnosis', 'primary_site', 'topography_code', 'histology', 'behaviour', 'grade', 'stage', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'safe'],
+            [['basis_of_diagnosis', 'primary_site', 'topography_code', 'histology', 'behaviour', 'grade', 'stage', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'safe'],
 
-            [['incident_date', 'basis_of_diagnosis', 'primary_site', 'topography_code', 'histology', 'behaviour', 'grade', 'stage', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by', 'full_tnm'], 'default', 'value' => null],
+            [['incident_date', 'basis_of_diagnosis', 'primary_site', 'topography_code', 'histology', 'behaviour', 'grade', 'stage', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'created_at', 'updated_at', 'created_by', 'updated_by', 'full_tnm'], 'default', 'value' => null],
             [['patient_id', 'incident_date', 'basis_of_diagnosis', 'primary_site'], 'required'],
-            [['patient_id', 'basis_of_diagnosis', 'laterality', 'histology', 'behaviour', 'grade', 'stage', 'full_tnm', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'localized_limited', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'integer'],
+            [['patient_id', 'basis_of_diagnosis', 'laterality', 'histology', 'behaviour', 'grade', 'stage', 'full_tnm', 'metastasis', 'regional_nodes_involvement', 'localized_advanced', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'integer'],
             [['incident_date'], 'safe'],
             [['primary_site', 't', 'n', 'm'], 'string', 'max' => 255],
             [['topography_code'], 'string', 'max' => 10],
@@ -101,6 +100,9 @@ class Tumour extends \yii\db\ActiveRecord
             ['laterality', 'in', 'range' => fn() => array_keys(self::getLaterality()), 'message' => '{attribute} must be selected from the list.'],
             ['grade', 'in', 'range' => fn() => array_keys(self::getGrade()), 'message' => '{attribute} must be selected from the list.'],
             ['stage', 'in', 'range' => fn() => array_keys(self::getStage()), 'message' => '{attribute} must be selected from the list.'],
+            ['metastasis', 'in', 'range' => fn() => array_keys(self::getMetastasis()), 'message' => '{attribute} must be selected from the list.'],
+            ['regional_nodes_involvement', 'in', 'range' => fn() => array_keys(self::getRegionalNodesInvolvement()), 'message' => '{attribute} must be selected from the list.'],
+            ['localized_advanced', 'in', 'range' => fn() => array_keys(self::getLocalizedAdvanced()), 'message' => '{attribute} must be selected from the list.'],
 
             ['primary_site', 'filter', 'filter' => fn($v) => $v === null ? null : strtoupper(trim($v))],
             ['primary_site', 'in', 'range' => fn() => array_keys(IcdoTopography::primarySiteOptions()), 'message' => '{attribute} must be selected from the list.'],
@@ -168,8 +170,7 @@ class Tumour extends \yii\db\ActiveRecord
             'full_tnm' => 'Full Tnm',
             'metastasis' => 'Metastasis',
             'regional_nodes_involvement' => 'Regional Nodes Involvement',
-            'localized_advanced' => 'Localized Advanced',
-            'localized_limited' => 'Localized Limited',
+            'localized_advanced' => 'Local Extent (T)',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
             'created_by' => 'Created By',
@@ -299,11 +300,11 @@ class Tumour extends \yii\db\ActiveRecord
             $this->metastasis,
             $this->regional_nodes_involvement,
             $this->localized_advanced,
-            $this->localized_limited
         ];
 
+        // 0 is a real answer ("No"), so only null / '' count as unused
         foreach ($fields as $field) {
-            if (!empty($field)) {
+            if ($field !== null && $field !== '') {
                 $this->addError(
                     $attribute,
                     'Essential TNM fields should not be used when Full TNM is available.'
@@ -407,40 +408,33 @@ class Tumour extends \yii\db\ActiveRecord
         return Lookup::fieldOptions('stage');
     }
 
-    // Get Metastasis: M- (absence of  regional/ distance metastasis), M+ (presence of regional/ distance metastasis)
+    /*
+     * Essential TNM (CRF item 20), filled when full TNM is not available.
+     *
+     * REDCap asks these as a per-site question tree (essential_tnm_staging picks one of
+     * eight sites, each with its own fields), but every site codes its answers the same
+     * way: 0 = No, 1 = Yes. The CRF collects the same three answers for any site, so the
+     * lists come from the colorectal tree, whose questions match the CRF wording exactly
+     * (M+/M-, R+/R-, A (T3/T4) / L (T1/T2)). The stored codes carry over to any site's
+     * fields on export.
+     */
+
+    // Distant metastasis: 1 Yes, M+ (M1); 0 No, (M-)
     public static function getMetastasis()
     {
-        return [
-            1 => 'M-',
-            2 => 'M+'
-        ];
+        return Lookup::fieldOptions('colorectal_cancer_metastasis');
     }
 
-    // Get Regional Nodes Involvement: N- (absence of regional nodes), N+ (presence of regional nodes)
+    // Regional node involvement: 1 Yes, R+; 0 No, (R-)
     public static function getRegionalNodesInvolvement()
     {
-        return [
-            1 => 'N-',
-            2 => 'N+'
-        ];
+        return Lookup::fieldOptions('colorectal_regional_node_involvement');
     }
 
-    // Get Localized Advanced: T3 Localized, T4 Advanced
+    // Local extent (T): 1 Yes, A (T3/T4) localized advanced; 0 No, L (T1/T2) localized limited
     public static function getLocalizedAdvanced()
     {
-        return [
-            1 => 'T3 Localized',
-            2 => 'T4 Advanced'
-        ];
-    }
-
-    // Get Localized Limited: T1 Localized, T2 Limited
-    public static function getLocalizedLimited()
-    {
-        return [
-            1 => 'T1 Localized',
-            2 => 'T2 Limited'
-        ];
+        return Lookup::fieldOptions('colorectal_bowel_wall');
     }
 
 

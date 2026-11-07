@@ -124,6 +124,40 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     });
 
+    // Each therapy has its own REDCap status list (surgery codes Unknown as 99, the
+    // others as 9), so rebuild a row's status options when its treatment changes.
+    // The chosen status is kept by code, or else by label (Unknown 9 <-> 99).
+    let statusOptionsByType = {};
+    try {
+        statusOptionsByType = JSON.parse(wrapper.dataset.statusOptions || '{}');
+    } catch (err) {
+        console.warn('Treatment status options could not be read', err);
+    }
+
+    wrapper.addEventListener('change', function (e) {
+        const typeSelect = e.target;
+        if (!typeSelect.matches('select[name$="[treatment]"]')) return;
+
+        const options = statusOptionsByType[typeSelect.value];
+        const statusSelect = typeSelect.closest('.treatment-item')
+            ?.querySelector('select[name$="[treatment_status]"]');
+        if (!options || !statusSelect) return;
+
+        const previous = statusSelect.selectedOptions[0];
+        const previousValue = statusSelect.value;
+        const previousLabel = previousValue !== '' && previous ? previous.text : null;
+
+        // Keep the prompt option, replace the rest
+        Array.from(statusSelect.options)
+            .filter(opt => opt.value !== '')
+            .forEach(opt => opt.remove());
+        options.forEach(([code, label]) => statusSelect.add(new Option(label, code)));
+
+        const match = options.find(([code]) => code === previousValue)
+            || options.find(([, label]) => label === previousLabel);
+        statusSelect.value = match ? match[0] : '';
+    });
+
     // Only seed a new row if there are NO existing rows (e.g., on create page)
     if (!wrapper.querySelector('.treatment-item')) {
         addTreatmentRow();

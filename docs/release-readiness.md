@@ -3,7 +3,7 @@
 Status of the cancer registry app for its first release to registrars, QA and admin users.
 
 - **Assessed:** 2026-11-06, on branch `feat/qa-review` (tag `v0.1.0`)
-- **Updated:** 2026-11-06, on branch `feat/review-notifications` (see *Resolved since v0.1.0*)
+- **Updated:** 2026-11-07, on branch `fix/redcap-mismatches` (see *Resolved since v0.1.0*)
 - **Verdict:** not ready for real patient data yet. Fix the blockers, clean up production, then run a supervised pilot with a few registrars, one QA user and one admin before a wider rollout.
 
 ## Blockers
@@ -59,10 +59,10 @@ These are fine for a supervised pilot, but not for a full release.
 - **Template pages:** the About and Contact pages are still the Yii template's.
 - **No audit trail:** records store who created and last updated them, but not who viewed or changed what. A cancer registry usually needs this for data protection.
 - **Offline sync and QA warnings:** the sync API returns save warnings (for example, an unrecognised site/histology combination), but the offline sync script ignores them.
-- **REDCap mismatches:**
-  - The essential TNM fields, treatment types and source types are still hardcoded; the dictionary models them differently.
-  - Surgery's "Unknown" is coded `99`, while the other treatment status fields use `9`.
-  - Both will matter for a REDCap export.
+- **REDCap export gaps** (left over from the REDCap mismatch fix, see *Resolved since v0.1.0*):
+  - "Other therapy" is a free-text name in REDCap, but the form has no field for the name.
+  - REDCap has two source slots; the form allows any number of sources.
+  - A patient can have two rows for the same treatment type; REDCap has one field per type.
 - **Backups and monitoring:** no backup or monitoring setup is in place for the production database.
 - **Possible QA follow-ups:**
   - email QA when a registrar resubmits a case;
@@ -99,6 +99,30 @@ Resolved on `feat/review-notifications`.
 
 - **Clicking the bell** opens the patient list filtered to exactly those cases, using the same rule as the count, with a "Show all patients" link.
 - **Tested** with a scenario covering each case type: the bell count equals the filtered list for every role.
+
+### Fix soon: REDCap mismatches
+
+Resolved on `fix/redcap-mismatches`. Essential TNM, treatment and source codes now follow the REDCap dictionary, so they can be exported without translation.
+
+- **Essential TNM** (CRF item 20):
+  - Options come from the dictionary through `Lookup`, as for the other tumour fields. Answers are coded `0` No / `1` Yes, the same for all eight REDCap site groups.
+  - The CRF's single T answer, A (T3/T4) or L (T1/T2), is now one field, `localized_advanced`. The `localized_limited` column is gone.
+- **Treatments** (CRF item 21):
+  - Each type is stored under its REDCap field name: `surgery`, `chemotherapy`, `immuno`, `radiotherapy`, `hormone_therapy` and `other_therapy`. Hormone therapy is new; it is on the CRF but was missing from the form.
+  - Each type's status list comes from that type's own dictionary field. Surgery stores Unknown as `99` and the other types store `9`, which is what REDCap expects. The form updates the status options when the treatment type changes.
+- **Sources** (CRF items 23–25):
+  - REDCap has no list of source types. It has hospital, lab and hospice fields in each of two source slots. `Sources::REDCAP_FIELDS` records which REDCap field each source type exports to.
+  - A hospital's REDCap value in Settings → Sources must now be a code from the dictionary's hospital list.
+- **Existing data:** migration `m261107_090000` remaps stored codes. Its `down()` can restore the old columns, but T1 vs T2 and T3 vs T4 can't be recovered.
+- **To do:**
+  - Run `php yii migrate` on each server.
+  - Check any tumour the migration flags as having both "advanced" and "limited" set.
+  - Records saved offline with the old codes will be rejected when they sync, so sync or clear offline queues before deploying.
+- **Tested:**
+  - Validation of every new code list.
+  - The migration up, down and up again.
+  - The create, update and view pages rendered as admin.
+  - An update saved through the controller with surgery "Unknown" and hormone therapy, inside a rolled-back transaction.
 
 ## In good shape
 

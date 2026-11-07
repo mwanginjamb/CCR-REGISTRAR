@@ -336,24 +336,19 @@ $canRemoveSavedRows = Yii::$app->user->can(Rbac::DELETE_PATIENT_DETAILS);
                         <!-- Add your essential TNM fields here -->
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
-                            <!-- metastasis -->
+                            <!-- metastasis (M) -->
                             <div>
                                 <?= $form->field($modelTumour, 'metastasis')->dropDownList(\app\models\Tumour::getMetastasis(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Metastasis']) ?>
                             </div>
 
-                            <!-- regional_nodes_involvement -->
+                            <!-- regional_nodes_involvement (N) -->
                             <div>
                                 <?= $form->field($modelTumour, 'regional_nodes_involvement')->dropDownList(\app\models\Tumour::getRegionalNodesInvolvement(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Regional Nodes Involvement']) ?>
                             </div>
 
-                            <!-- localized_advanced -->
+                            <!-- local extent (T): localized advanced A (T3/T4) or localized limited L (T1/T2) -->
                             <div>
-                                <?= $form->field($modelTumour, 'localized_advanced')->dropDownList(\app\models\Tumour::getLocalizedAdvanced(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Localized Advanced']) ?>
-                            </div>
-
-                            <!-- localized_limited -->
-                            <div>
-                                <?= $form->field($modelTumour, 'localized_limited')->dropDownList(\app\models\Tumour::getLocalizedLimited(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Localized Limited']) ?>
+                                <?= $form->field($modelTumour, 'localized_advanced')->dropDownList(\app\models\Tumour::getLocalizedAdvanced(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Local Extent']) ?>
                             </div>
 
                         </div>
@@ -391,7 +386,10 @@ $canRemoveSavedRows = Yii::$app->user->can(Rbac::DELETE_PATIENT_DETAILS);
                 <!-- A row with treatment checkbox with a value(surgery), treatment_status (1 - No, 2 - Yes, 3 - unknown), treatment_date input -->
 
                 <!-- Treatment Row -->
-                <div id="treatment-wrapper" class="space-y-4">
+                <!-- Each therapy has its own status list (surgery codes Unknown as 99, the others as 9);
+                     form.js swaps a row's status options when its treatment changes. -->
+                <div id="treatment-wrapper" class="space-y-4"
+                    data-status-options="<?= Html::encode(\yii\helpers\Json::encode(\app\models\Treatment::statusOptionsByType())) ?>">
                     <?php foreach ($modelTreatments as $index => $treatment): ?>
                         <div class="treatment-item border p-4 rounded-lg bg-white" data-index="<?= $index ?>">
                             <div class="flex items-center justify-between mb-3">
@@ -403,7 +401,7 @@ $canRemoveSavedRows = Yii::$app->user->can(Rbac::DELETE_PATIENT_DETAILS);
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                                 <?= $form->field($treatment, "[$index]treatment")->dropDownList(\app\models\Treatment::getTreatment(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Treatment', 'showKeys' => false])->label(false) ?>
-                                <?= $form->field($treatment, "[$index]treatment_status")->dropDownList(\app\models\Treatment::getTreatmentStatus(), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Status'])->label(false) ?>
+                                <?= $form->field($treatment, "[$index]treatment_status")->dropDownList(\app\models\Treatment::getTreatmentStatus($treatment->treatment), ['class' => AuthUi::inputClass(), 'prompt' => 'Select Status'])->label(false) ?>
                                 <?= $form->field($treatment, "[$index]treatment_date")->textInput(['type' => 'date', 'class' => AuthUi::inputClass()])->label(false) ?>
                                 <?= Html::activeHiddenInput($treatment, "[$index]id") ?>
                             </div>
