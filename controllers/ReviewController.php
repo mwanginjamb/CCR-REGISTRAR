@@ -125,7 +125,7 @@ class ReviewController extends Controller
 
     private function findPatient($id): Patient
     {
-        $patient = Patient::findOne(['id' => $id]);
+        $patient = Patient::find()->visibleToCurrentUser()->andWhere(['patient.id' => $id])->one();
         if ($patient === null) {
             throw new NotFoundHttpException('Patient not found.');
         }

@@ -15,15 +15,24 @@ class PatientQuery extends \yii\db\ActiveQuery
     }*/
 
     /**
-     * Patients created by the given user that are flagged for review
-     * (the registrar's view of the patient list).
+     * Patients created by the given user (a registrar's view of the registry),
+     * whether or not they are flagged for review.
      */
-    public function flaggedForReviewBy(int $userId)
+    public function createdBy(int $userId)
     {
-        return $this->andWhere([
-            'patient.created_by' => $userId,
-            'patient.needs_review' => 1,
-        ]);
+        return $this->andWhere(['patient.created_by' => $userId]);
+    }
+
+    /**
+     * Patients the current user may see: all of them for qa/admin, otherwise
+     * only those they created. See Rbac::canViewAllPatients().
+     */
+    public function visibleToCurrentUser()
+    {
+        if (\app\components\Rbac::canViewAllPatients()) {
+            return $this;
+        }
+        return $this->createdBy((int) \Yii::$app->user->id);
     }
 
     /**

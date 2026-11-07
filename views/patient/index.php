@@ -77,7 +77,7 @@ $exportTitle = Html::encode(Yii::$app->name . ' — Patient Registry');
       <?php if (Rbac::canViewAllPatients()): ?>
         Centralised patient records — search, filter, and export.
       <?php else: ?>
-        Records you registered that are flagged for review. Open one to correct it.
+        Records you registered. Those flagged for review need correcting.
       <?php endif ?>
     </p>
   </div>

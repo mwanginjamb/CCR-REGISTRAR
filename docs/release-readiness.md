@@ -8,7 +8,7 @@ Status of the cancer registry app for its first release to registrars, QA and ad
 
 ## Blockers
 
-Fix these before real registrars enter real patient data. Numbers are kept from the original assessment; blocker 3 is resolved (see *Resolved since v0.1.0*).
+Fix these before real registrars enter real patient data. Numbers are kept from the original assessment; blockers 2 and 3 are resolved (see *Resolved since v0.1.0*).
 
 ### 1. The offline-sync API accepts records from anyone
 
@@ -16,13 +16,6 @@ Fix these before real registrars enter real patient data. Numbers are kept from 
 
 - **Fix:** require a logged-in user with `createPatient`.
 - **Decide first:** what happens to records queued offline when the session has expired. For example, keep them queued and ask the user to log in again before syncing.
-
-### 2. Registrars can open and edit any patient by URL
-
-The registrar's patient list only shows their own flagged cases, but `patient/view` and `patient/update` aren't restricted. A registrar can open any patient by typing its ID.
-
-- **Decide:** should registrars only see and edit cases they created?
-- **Note:** after creating a case, a registrar is sent to its view page, so any restriction must still allow their own cases.
 
 ### 4. Debug mode is on in the code
 
@@ -69,6 +62,17 @@ These are fine for a supervised pilot, but not for a full release.
   - email the registrar when a case is resolved.
 
 ## Resolved since v0.1.0
+
+### Blocker 2: registrars could open and edit any patient by URL
+
+Resolved on `fix/redcap-mismatches`. Decision: registrars only see and edit the cases they created (`patient.created_by` is their user id), including cases under QA review.
+
+- **Before:** the registrar's patient list showed only their own flagged cases, but `patient/view` and `patient/update` loaded any patient by ID.
+- **Now:** a single rule, `PatientQuery::visibleToCurrentUser()`, limits registrars to their own cases. QA and admin still see every case.
+  - **Patient list:** shows all of the registrar's own cases, flagged or not (previously only flagged ones).
+  - **Single records:** `PatientController::findModel()` and `ReviewController` use the same rule, so every patient and review page shows "page not found" for another registrar's case. That way a registrar can't tell whether the case exists.
+  - **After creating a case** the registrar is still sent to its view page, because the new record's `created_by` is their own id.
+- **Tested:** PHP syntax check only. Still to do: as a registrar, check the list, open your own case, and confirm that opening another registrar's case ID gives "page not found". Do this as part of blocker 7.
 
 ### Blocker 3: the Overview dashboard showed made-up numbers
 
@@ -129,7 +133,7 @@ Resolved on `fix/redcap-mismatches`. Essential TNM, treatment and source codes n
 - **Patient data entry:** validated against the ICD-O and REDCap dictionaries.
   - Typeable primary site and "C" sub-site fields.
   - Source number suggestions that also work offline.
-- **Roles:** registrar, QA and admin are enforced on every patient action. Patients are soft-deleted, not removed.
+- **Roles:** registrar, QA and admin are enforced on every patient action. Registrars only see their own cases. Patients are soft-deleted, not removed.
 - **QA review workflow:** flag, email the registrar, resubmit, resolve, with history on each case.
 - **Review notifications:** a header bell with a count of the review items waiting on each user.
 - **Overview dashboard:** live registry figures and IARC quality indicators for QA and admins.

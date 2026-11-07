@@ -77,7 +77,7 @@ QA can send any case back to the registrar who recorded it.
 - **Export:** cases can be copied or exported to CSV, Excel or PDF, or printed.
 - **Case numbers** link straight to each case page.
 - **Pending review:** a counter shows how many cases are flagged for review.
-- **Registrars' view:** registrars see a focused list: the cases they registered that are currently flagged for review.
+- **Registrars' view:** registrars see only the cases they registered, including cases under review. Opening another registrar's case returns "page not found".
 
 **Case page**
 - **Full case summary:** patient details, tumour details with code descriptions, staging, treatments, sources, follow-up, the registration map and the record's history.
@@ -172,7 +172,6 @@ Administrators can maintain the coding reference lists in the application, witho
 The features above are built. The QA review workflow and the Overview dashboard have been tested end to end. Before real patient data is entered, the team is closing a short list of launch items:
 
 - **Secure the offline upload connection:** require a logged-in user.
-- **Decide case visibility:** whether registrars should see only the cases they registered.
 - **Production settings and credentials:** finalise them.
 - **Production database:** prepare it and remove test data.
 - **Testing:** a hands-on test of every role's workflow, including email delivery.

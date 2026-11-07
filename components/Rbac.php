@@ -78,8 +78,9 @@ final class Rbac
     public const FULL_PATIENT_LIST_ROLES = [self::ROLE_QA, self::ROLE_ADMIN];
 
     /**
-     * Whether the patient list is unrestricted for the current user. Everyone
-     * else (registrars) sees only their own records flagged for review.
+     * Whether patient records are unrestricted for the current user. Everyone
+     * else (registrars) can only list and open patients they created
+     * (PatientQuery::visibleToCurrentUser()).
      */
     public static function canViewAllPatients(): bool
     {

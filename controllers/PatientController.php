@@ -595,14 +595,20 @@ class PatientController extends Controller
 
     /**
      * Finds the Patient model based on its primary key value.
-     * If the model is not found, a 404 HTTP exception will be thrown.
+     * Registrars can only load patients they created; anything else is a 404,
+     * so every action (view, update, ...) is limited to the user's own records.
      * @param int $id ID
      * @return Patient the loaded model
-     * @throws NotFoundHttpException if the model cannot be found
+     * @throws NotFoundHttpException if the model cannot be found or is not visible to the user
      */
     protected function findModel($id)
     {
-        if (($model = Patient::findOne(['id' => $id])) !== null) {
+        $model = Patient::find()
+            ->visibleToCurrentUser()
+            ->andWhere(['patient.id' => $id])
+            ->one();
+
+        if ($model !== null) {
             return $model;
         }
 

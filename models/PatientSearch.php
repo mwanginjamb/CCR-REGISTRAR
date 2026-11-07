@@ -44,13 +44,10 @@ class PatientSearch extends Patient
      */
     public function search($params, $formName = null)
     {
-        $query = Patient::find();
-
-        // qa/admin see every patient; registrars only their own records flagged
-        // for review. Applied before validation so no filter input can widen it.
-        if (!Rbac::canViewAllPatients()) {
-            $query->flaggedForReviewBy((int) Yii::$app->user->id);
-        }
+        // qa/admin see every patient; registrars only the records they created
+        // (flagged for review or not). Applied before validation so no filter
+        // input can widen it.
+        $query = Patient::find()->visibleToCurrentUser();
 
         // ?review=1 (the header bell): only the review items waiting on this user,
         // using the same rule as the bell's count
